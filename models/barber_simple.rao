@@ -42,7 +42,7 @@ set init() {
 }
 
 set terminateCondition() {
-	return currentTime >= 12 * 7 * 70;
+	return currentTime >= 7 * 12 * 60;
 }
 
 result Занятость_парикмахера = watchState(Парикмахерская.состояние_парикмахера == Состояние_парикмахера.Занят);

@@ -70,7 +70,7 @@ set init() {
 }
 
 set terminateCondition() {
-	return currentTime >= 360;
+	return currentTime >= 7 * 12 * 60;
 }
 
 result Занятость_парикмахера_1 = watchState(Парикмахер_1.состояние_парикмахера == Состояние_парикмахера.Занят);
