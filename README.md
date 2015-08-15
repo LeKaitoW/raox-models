@@ -3,7 +3,9 @@
 
 ## Модель парикмахерской
 [barber_simple.rao](https://github.com/aurusov/rdo-xtext-models/blob/master/models/barber_simple.rao) - Модель простейшей СМО
+
 [barber_events.rao](https://github.com/aurusov/rdo-xtext-models/blob/master/models/barber_events.rao) - Модель простейшей СМО на событиях
+
 [barber_clients.rao](https://github.com/aurusov/rdo-xtext-models/blob/master/models/barber_clients.rao) - Модель простейшей СМО с клиентами
 
 ## Модель игры 5
