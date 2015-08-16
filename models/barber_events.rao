@@ -16,8 +16,7 @@ event clientInput() {
 	if (barberShop.barberState == BarberState.free) {
 		barberShop.barberState = BarberState.busy;
 		serviceFinished.plan(currentTime + serviceDuration.next());
-	}
-	else {
+	} else {
 		barberShop.queueLength++;
 	}
 }
@@ -30,8 +29,7 @@ event serviceFinished() {
 	if (barberShop.queueLength > 0) {
 		barberShop.queueLength--;
 		serviceFinished.plan(currentTime + serviceDuration.next());
-	}
-	else {
+	} else {
 		barberShop.barberState = BarberState.free;
 	}
 }
