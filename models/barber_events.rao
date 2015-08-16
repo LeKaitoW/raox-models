@@ -8,7 +8,7 @@ type BarberShop {
 resource barberShop = BarberShop.create(*, *);
 
 sequence clientInputInterval = int enumerative() {
-	14 13 17 15 16 15 14 22 19
+	14, 13, 17, 15, 16, 15, 14, 22, 19
 }
 
 event clientInput() {
@@ -22,7 +22,7 @@ event clientInput() {
 }
 
 sequence serviceDuration = int enumerative() {
-	18 12 14 15 14 15 13 14 17
+	18, 12, 14, 15, 14, 15, 13, 14, 17
 }
 
 event serviceFinished() {
