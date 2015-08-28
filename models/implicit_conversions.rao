@@ -1,0 +1,52 @@
+type Test {
+	double d;
+}
+
+resource selftest_resource = Test.create(1);
+sequence selftest_sequence = int uniform(123456789, 1, 2);
+
+boolean test_function(double d) {
+	return true;
+}
+
+boolean test_resource(int i) {
+	Test.create(i);
+
+	return true;
+}
+
+boolean test_sequence(int a, int b) {
+	selftest_sequence.next(a, b);
+
+	return true;
+}
+
+event test_event(double d) {
+}
+
+set init() {
+	test_event.plan(currentTime, 1);
+}
+
+rule test_rule(double d) {
+	relevant rel_test = Test.select(rel_test.d == 1);
+	set execute() {
+		rel_test.d = 2;
+	}
+}
+
+operation test_operation(double d) {
+	relevant rel_test = Test.select(rel_test.d == 2);
+	set begin() {
+		rel_test.d = 3;
+	}
+}
+
+dpt test {
+	activity test_rule_activity checks test_rule(1);
+	activity test_pattern_activity checks test_rule(1);
+}
+
+result test_case_1 = getValue(test_function(1));
+result test_case_2 = getValue(test_resource(1));
+result test_case_3 = getValue(test_sequence(1, 2));
