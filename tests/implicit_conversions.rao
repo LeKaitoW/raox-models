@@ -15,6 +15,16 @@ boolean test_resource(int i) {
 	return true;
 }
 
+boolean test_expressions(int i) {
+	double d = i;
+	int j = 2;
+	int k = 3;
+	double dd = k;
+	if (dd < j)
+		return false;
+	return true;
+}
+
 boolean test_sequence(int a, int b) {
 	selftest_sequence.next(a, b);
 
@@ -44,9 +54,10 @@ operation test_operation(double d) {
 
 dpt test {
 	activity test_rule_activity checks test_rule(1);
-	activity test_pattern_activity checks test_rule(1);
+	activity test_operation_activity checks test_operation(1);
 }
 
 result test_case_1 = getValue(test_function(1));
 result test_case_2 = getValue(test_resource(1));
 result test_case_3 = getValue(test_sequence(1, 2));
+result test_case_4 = getValue(test_expressions(1));
