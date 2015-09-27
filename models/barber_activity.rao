@@ -1,0 +1,52 @@
+enum BarberState {free, busy}
+
+type BarberShop {
+	BarberState barberState = BarberState.free;
+	int queueLength = 0;
+}
+
+resource barberShop = BarberShop.create(*, *);
+
+sequence clientInputInterval = int enumerative() {
+	14, 13, 17, 15, 16, 15, 14, 22, 19
+}
+
+event ClientInput() {
+	ClientInput.plan(currentTime + clientInputInterval.next());
+	barberShop.queueLength++;
+}
+
+sequence serviceDuration = int enumerative() {
+	18, 12, 14, 15, 14, 15, 13, 14, 17
+}
+
+operation Service() {
+	relevant barberShop = BarberShop.select(barberShop.queueLength > 0 and
+		barberShop.barberState == BarberState.free
+	);
+
+	set begin() {
+		barberShop.barberState = BarberState.busy;
+		barberShop.queueLength--;
+	}
+
+	set duration() {
+		return serviceDuration.next();
+	}
+
+	set end() {
+		barberShop.barberState = BarberState.free;
+	}
+}
+
+dpt model {
+	activity service checks Service();
+}
+
+set init() {
+	ClientInput.plan(clientInputInterval.next());
+}
+
+set terminateCondition() {
+	return currentTime > 44;
+}
