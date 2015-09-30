@@ -408,4 +408,3 @@ frame frame_1 {
 	text(Деталь_10.положение, 350, 435, Color.BLACK);
 	text(Деталь_10.состояние, 600, 435, Color.BLACK);
 }
-
