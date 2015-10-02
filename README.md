@@ -12,3 +12,6 @@
 
 ## Модель игры 5
 [game_5.rao](models/game_5.rao)
+
+## Модель ГПС
+[fms.rao](models/fms.rao)
