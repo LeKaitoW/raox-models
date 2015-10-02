@@ -73,14 +73,6 @@ resource деталь_8 = Детали.create(8, *, *);
 resource деталь_9 = Детали.create(9, *, *);
 resource деталь_10 = Детали.create(10, *, *);
 
-event Таймер() {
-	Таймер.plan(currentTime + 0.5);
-}
-
-set init() {
-//	Таймер.plan(0);
-}
-
 set terminateCondition() {
 	return накопитель_2.текущее_количество == 10 or currentTime >= 1000;
 }
