@@ -5,29 +5,23 @@ type BarberShop {
 	int queueLength = 0;
 }
 
-resource barberShop = BarberShop.create(*, *);
+resource barberShop = BarberShop.create(BarberState.free, 0);
 
-sequence clientInputInterval = int enumerative() {
-	14, 13, 17, 15, 16, 15, 14, 22, 19
-}
+sequence clientInputInterval = new Values(#[14, 13, 17, 15, 16, 15, 14, 22, 19])
 
 event ClientInput() {
 	ClientInput.plan(currentTime + clientInputInterval.next());
-	barberShop.queueLength++;
+	barberShop.queueLength = barberShop.queueLength + 1;
 }
 
-sequence serviceDuration = int enumerative() {
-	18, 12, 14, 15, 14, 15, 13, 14, 17
-}
+sequence serviceDuration = new Values(#[18, 12, 14, 15, 14, 15, 13, 14, 17])
 
 operation Service() {
-	relevant barberShop = BarberShop.select(barberShop.queueLength > 0 and
-		barberShop.barberState == BarberState.free
-	);
+	relevant barberShop_ = barberShop.onlyif[queueLength > 0 && barberState == BarberState.free];
 
 	set begin() {
-		barberShop.barberState = BarberState.busy;
-		barberShop.queueLength--;
+		barberShop_.barberState = BarberState.busy;
+		barberShop_.queueLength = barberShop_.queueLength - 1;
 	}
 
 	set duration() {
@@ -35,12 +29,12 @@ operation Service() {
 	}
 
 	set end() {
-		barberShop.barberState = BarberState.free;
+		barberShop_.barberState = BarberState.free;
 	}
 }
 
-dpt model {
-	activity service checks Service();
+logic Model {
+	activity service = new Activity(Service.create());
 }
 
 set init() {
@@ -48,5 +42,5 @@ set init() {
 }
 
 set terminateCondition() {
-	return currentTime > 44;
+	return currentTime >= 480;
 }
