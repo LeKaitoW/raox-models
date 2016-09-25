@@ -313,6 +313,7 @@ logic Model {
 
 frame Frame {
 	set init() {
+		background = new Background(800, 600, RaoColor.WHITE)
 	}
 	set draw() {
 		drawText('Время:', 10, 5);
