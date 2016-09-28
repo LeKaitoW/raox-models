@@ -1,6 +1,6 @@
 enum Место_дырки {СПРАВА, СЛЕВА, СВЕРХУ, СНИЗУ, ДЫРКИ_РЯДОМ_НЕТ}
 
-type Фишка {
+type Фишки {
 	int номер;
 	int место;
 }
@@ -9,15 +9,15 @@ type Дырка {
 	int место;
 }
 
-resource фишка1 = Фишка.create(1, 2);
-resource фишка2 = Фишка.create(2, 3);
-resource фишка3 = Фишка.create(3, 6);
-resource фишка4 = Фишка.create(4, 4);
-resource фишка5 = Фишка.create(5, 5);
+resource фишка1 = Фишки.create(1, 2);
+resource фишка2 = Фишки.create(2, 3);
+resource фишка3 = Фишки.create(3, 6);
+resource фишка4 = Фишки.create(4, 4);
+resource фишка5 = Фишки.create(5, 5);
 resource дырка = Дырка.create(1);
 
 rule Перемещение_фишки (Место_дырки куда_перемещать, int на_сколько_перемещать) {
-	relevant _фишка =  Фишка.all.filter[где_дырка(место) == куда_перемещать].any();
+	relevant _фишка = Фишки.accessible.filter[где_дырка(место) == куда_перемещать].any();
 	relevant _дырка = дырка;
 
 	set execute() {
@@ -59,8 +59,8 @@ search Расстановка_фишек {
 	edge перемещение_вниз = new Edge(Перемещение_фишки.create(Место_дырки.СНИЗУ, длина_поля), 1)
 
 	set init() {
-		startCondition = [Фишка.all.exists[номер != место]]
-		terminateCondition = [Фишка.all.forall[номер == место]]
+		startCondition = [Фишки.accessible.exists[номер != место]]
+		terminateCondition = [Фишки.accessible.forall[номер == место]]
 		heuristic = [0.0]
 		compareTops = true
 	}
