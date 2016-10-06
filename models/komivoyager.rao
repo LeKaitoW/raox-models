@@ -39,10 +39,10 @@ type OneOfKind{
 	crossbreed crossbreeded;
 }
 
-sequence koordinatesWidth = new Uniform(123456789,0,width);
+sequence koordinatesWidth = new Uniform(987654321,0,width);
 sequence koordinatesHight = new Uniform(123456789,0,hight);
-sequence citiesSqnc = new Uniform(123456789,1,cities+1);
-sequence gensSqnc = new Uniform(123456789,0,gensAmount);
+sequence citiesSqnc = new Uniform(123456,1,cities+1);
+sequence gensSqnc = new Uniform(33425454,0,gensAmount);
 
 resource wayZh = WayOfVoyager.create(new ArrayList<Double>(cities));
 resource wayR = WayOfVoyager.create(new ArrayList<Double>(cities));
@@ -108,7 +108,7 @@ event Evolution(){
 	Crossbreeding.plan(currentTime);
 	Mutation.plan(currentTime);
 	Competition.plan(currentTime);
-  ResetKind.plan(currentTime);
+  	ResetKind.plan(currentTime);
 	Evolution.plan(currentTime+1);
 }
 
