@@ -19,16 +19,16 @@ sequence serviceDuration = new Values(#[18, 12, 14, 15, 14, 15, 13, 14, 17])
 operation Service() {
 	relevant barberShop_ = barberShop.onlyif[queueLength > 0 && barberState == BarberState.free];
 
-	set begin() {
+	def begin() {
 		barberShop_.barberState = BarberState.busy;
 		barberShop_.queueLength = barberShop_.queueLength - 1;
 	}
 
-	set duration() {
+	def duration() {
 		return serviceDuration.next();
 	}
 
-	set end() {
+	def end() {
 		barberShop_.barberState = BarberState.free;
 	}
 }
@@ -37,10 +37,10 @@ logic Model {
 	activity service = new Activity(Service.create());
 }
 
-set init() {
+def init() {
 	ClientInput.plan(clientInputInterval.next());
 }
 
-set terminateCondition() {
+def terminateCondition() {
 	return currentTime >= 480;
 }

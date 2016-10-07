@@ -11,11 +11,11 @@ event Событие_поступления_звонка() {
 
 sequence интервал_поступления = new Exponential(123456789, 1 / 30.0);
 
-set init() {
+def init() {
 	Событие_поступления_звонка.plan(currentTime + интервал_поступления.next());
 }
 
-set terminateCondition() {
+def terminateCondition() {
 	return currentTime >= 12 * 7 * 50;
 }
 
