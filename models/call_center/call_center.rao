@@ -19,4 +19,4 @@ def terminateCondition() {
 	return currentTime >= 12 * 7 * 50;
 }
 
-result Всего_звонков = new Value([служба_техподдержки.количество_звонков]);
+result Всего_звонков = new Result([служба_техподдержки.количество_звонков], new LastValueStatistics());
