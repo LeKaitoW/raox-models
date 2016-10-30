@@ -19,4 +19,4 @@ def terminateCondition() {
 
 sequence newCallInterval = new Exponential(123456789, 1 / 30.0);
 
-result totalCallCount = new Result([techSupport.callsCount]);
+result totalCallsCount = new Result([techSupport.callsCount]);
