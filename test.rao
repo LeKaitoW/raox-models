@@ -1,0 +1,25 @@
+enum Состояние_газовой_горелки {Горит, Не_горит}
+type Газовая_горелка {
+    double Мощность_double;
+}
+
+resource газовая_горелка = Газовая_горелка.create (30);
+
+sequence рандом = new Normal(123, 0, 1);
+
+def init() {
+    Таймер.plan(currentTime + 1);
+    //Таймер.plan(0);
+    //Таймер.plan(5);
+}
+
+event Таймер() {
+    Таймер.plan(currentTime + 1);
+    газовая_горелка.мощность_double=газовая_горелка.мощность_double + (газовая_горелка.мощность_double + 20)/;
+    }
+    
+def terminateCondition() {
+    return currentTime > 3600;
+}
+
+
