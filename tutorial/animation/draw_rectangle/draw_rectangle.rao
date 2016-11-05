@@ -1,0 +1,27 @@
+constant width = 100
+constant height = 100
+
+event Timer() {
+	Timer.plan(currentTime + 1)
+}
+
+def init() {
+	Timer.plan(currentTime + 1)
+}
+
+def terminateCondition() {
+	return currentTime >= 1000000
+}
+
+frame Bird {
+	def init() {
+		background = new Background(width + 4, height + 4, RaoColor.WHITE)
+	}
+
+	def draw() {
+		val degree = currentTime % 180 / 180 * Math.PI
+		val rect_width = Math.abs((Math.cos(degree) * width) as int)
+		val rect_height = Math.abs((Math.sin(degree) * height) as int)
+		drawRectangle((width - rect_width) / 2, 0, rect_width, rect_height, RaoColor.DARK_CYAN, RaoColor.BLACK)
+	}
+}
