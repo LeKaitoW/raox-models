@@ -1,5 +1,6 @@
 constant width = 100
 constant height = 100
+constant radius = Math.min(width, height) / 2
 
 event Timer() {
 	Timer.plan(currentTime + 1)
@@ -20,7 +21,6 @@ frame Bird {
 
 	def draw() {
 		val degree = currentTime % 360 / 180 * Math.PI
-		val radius = Math.min(width, height) / 2
 		drawLine(radius + (Math.cos(degree) * radius) as int, radius - (Math.sin(degree) * radius) as int,
 			radius + (Math.cos(degree + Math.PI) * radius) as int,
 			radius - (Math.sin(degree + Math.PI) * radius) as int)
