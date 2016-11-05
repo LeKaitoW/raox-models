@@ -21,7 +21,6 @@ frame Frame {
 
 	def draw() {
 		val degree = currentTime % 360 / 180 * Math.PI
-		drawTriangle(radius + (Math.cos(degree) * radius) as int, 0, 0, height, width, height, RaoColor.DARK_CYAN,
-			RaoColor.BLACK)
+		drawTriangle(radius + (Math.cos(degree) * radius) as int, 0, 0, height, width, height)
 	}
 }

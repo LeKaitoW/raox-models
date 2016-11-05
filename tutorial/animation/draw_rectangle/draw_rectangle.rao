@@ -22,6 +22,6 @@ frame Frame {
 		val degree = currentTime % 180 / 180 * Math.PI
 		val rect_width = Math.abs((Math.cos(degree) * width) as int)
 		val rect_height = Math.abs((Math.sin(degree) * height) as int)
-		drawRectangle((width - rect_width) / 2, 0, rect_width, rect_height, RaoColor.DARK_CYAN, RaoColor.BLACK)
+		drawRectangle((width - rect_width) / 2, 0, rect_width, rect_height)
 	}
 }
