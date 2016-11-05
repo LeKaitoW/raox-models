@@ -1,0 +1,27 @@
+constant width = 100
+constant height = 100
+constant radius = Math.min(width, height) / 2
+
+event Timer() {
+	Timer.plan(currentTime + 1)
+}
+
+def init() {
+	Timer.plan(currentTime + 1)
+}
+
+def terminateCondition() {
+	return currentTime >= 1000000
+}
+
+frame Bird {
+	def init() {
+		background = new Background(width + 5, height + 5, RaoColor.WHITE)
+	}
+
+	def draw() {
+		val degree = currentTime % 360 / 180 * Math.PI
+		drawTriangle(radius + (Math.cos(degree) * radius) as int, 0, 0, height, width, height, RaoColor.DARK_CYAN,
+			RaoColor.BLACK)
+	}
+}
