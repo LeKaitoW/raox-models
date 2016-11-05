@@ -11,7 +11,7 @@
 [barber_clients](barber/barber_clients) - Модель простейшей СМО с клиентами
 
 ## Модель игры 5
-[game_5](game_5)
+[game_5](tutorial/game_5)
 
 ## Модель ГПС
 [fms](fms)
