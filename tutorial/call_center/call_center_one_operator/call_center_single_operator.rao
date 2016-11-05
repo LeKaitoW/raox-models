@@ -1,0 +1,50 @@
+enum OperatorState {FREE, BUSY}
+
+type TechSupport {
+	OperatorState operatorState;
+	int queueLength;
+	int peopleServed;
+}
+
+resource techSupport = TechSupport.create(OperatorState.FREE, 0, 0);
+
+event NewCall() {
+	techSupport.queueLength = techSupport.queueLength + 1;
+	NewCall.plan(currentTime + newCallInterval.next());
+}
+
+operation CallProcessingPattern() {
+	relevant _techSupport = techSupport.onlyif[queueLength > 0 && operatorState == OperatorState.FREE];
+
+	def begin() {
+		_techSupport.queueLength = _techSupport.queueLength - 1;
+		_techSupport.operatorState = OperatorState.BUSY;
+	}
+
+	def duration() {
+		return callProcessingTime.next();
+	}
+
+	def end() {
+		_techSupport.peopleServed = _techSupport.peopleServed + 1;
+		_techSupport.operatorState = OperatorState.FREE;
+	}
+}
+
+sequence newCallInterval = new Exponential(123456789, 1 / 30.0);
+sequence callProcessingTime = new Uniform(123456789, 20, 40);
+
+logic Model {
+	activity callProcessing = new Activity(CallProcessingPattern.create());
+}
+
+def init() {
+	NewCall.plan(newCallInterval.next());
+}
+
+def terminateCondition() {
+	return currentTime >= 480;
+}
+
+result totalPeopleServed = new Result([techSupport.peopleServed]);
+result queueLengthStatistics = new Result([techSupport.queueLength]);

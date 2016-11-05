@@ -1,0 +1,26 @@
+constant width = 100
+constant height = 100
+constant max_radius = Math.min(width, height)
+
+event Timer() {
+	Timer.plan(currentTime + 1)
+}
+
+def init() {
+	Timer.plan(currentTime + 1)
+}
+
+def terminateCondition() {
+	return currentTime >= 1000000
+}
+
+frame Frame {
+	def init() {
+		background = new Background(width + 5, height + 5, RaoColor.WHITE)
+	}
+
+	def draw() {
+		val degree = currentTime % 360 / 180 * Math.PI
+		drawCircle(width / 2, height / 2, (Math.cos(degree) * max_radius) as int)
+	}
+}
