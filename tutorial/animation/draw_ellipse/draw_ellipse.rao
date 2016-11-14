@@ -1,0 +1,27 @@
+constant width = 100
+constant height = 100
+
+event Timer() {
+	Timer.plan(currentTime + 1)
+}
+
+def init() {
+	Timer.plan(currentTime + 1)
+}
+
+def terminateCondition() {
+	return currentTime >= 1000000
+}
+
+frame Frame {
+	def init() {
+		background = new Background(width + 5, height + 5, RaoColor.WHITE)
+	}
+
+	def draw() {
+		val degree = currentTime % 360 / 180 * Math.PI
+		val ellipse_width = Math.abs(Math.cos(degree) * width) as int
+		val ellipse_height = ellipse_width / 2
+		drawEllipse((width - ellipse_width) / 2, (height - ellipse_height) / 2, ellipse_width, ellipse_height)
+	}
+}
