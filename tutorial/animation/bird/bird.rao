@@ -7,8 +7,15 @@ constant height = bg_forest_b_height;
 type Sprite {
 	int bg_forest_b_left;
 	int bg_forest_c_left;
+	int bird_x;
 	int bird_y;
 	String bird_sprite_image;
+}
+
+type Mouse {
+	boolean down;
+	int x;
+	int y;
 }
 
 sequence birdSpriteNames = new Values(
@@ -16,7 +23,17 @@ sequence birdSpriteNames = new Values(
 		"img/bird/frame-5.png", "img/bird/frame-6.png", "img/bird/frame-7.png", "img/bird/frame-8.png"]);
 sequence bird_dx = new Uniform(123456789, -1, 1);
 
-resource sprite = Sprite.create(0, 0, 20, birdSpriteNames.next());
+resource sprite = Sprite.create(0, 0, 100, 20, birdSpriteNames.next());
+resource mouse = Mouse.create(false, 0, 0);
+
+int sign(int value) {
+	if (value == 0)
+		return 0
+	else if (value > 0)
+		return 1
+	else
+		return -1
+}
 
 event Timer() {
 	if (sprite.bg_forest_b_left <= 0)
@@ -35,10 +52,20 @@ event Timer() {
 	else if (bird_dx_current < -0.3)
 		sprite.bird_y = sprite.bird_y - 1
 
+	if (mouse.down) {
+		sprite.bird_x = sprite.bird_x + sign(mouse.x - sprite.bird_x);
+		sprite.bird_y = sprite.bird_y + sign(mouse.y - sprite.bird_y);
+	}
+
+	if (sprite.bird_x < 0)
+		sprite.bird_x = 0
+	if (sprite.bird_x > 200)
+		sprite.bird_x = 200
 	if (sprite.bird_y < 0)
 		sprite.bird_y = 0
 	if (sprite.bird_y > 100)
 		sprite.bird_y = 100
+
 	if (currentTime % 3 == 0)
 		sprite.bird_sprite_image = birdSpriteNames.next()
 
@@ -64,12 +91,60 @@ frame Bird {
 		drawImage("img/background/bg_forest_b.png", width - sprite.bg_forest_b_left, 0, sprite.bg_forest_b_left,
 			bg_forest_b_height, 0, 0, sprite.bg_forest_b_left + 1, bg_forest_b_height)
 
-		drawImage(sprite.bird_sprite_image, 100, sprite.bird_y, 50, 34)
+		drawImage(sprite.bird_sprite_image, sprite.bird_x, sprite.bird_y, 50, 34)
 
 		drawImage("img/background/bg_forest_c.png", 0, 0, width - sprite.bg_forest_c_left, bg_forest_c_height,
 			sprite.bg_forest_c_left, height - bg_forest_c_height, width - sprite.bg_forest_c_left, bg_forest_c_height)
 		drawImage("img/background/bg_forest_c.png", width - sprite.bg_forest_c_left, 0, sprite.bg_forest_c_left,
 			bg_forest_c_height, 0, height - bg_forest_c_height, sprite.bg_forest_c_left + 1, bg_forest_c_height)
+	}
+
+	def mouseDown(int x, int y, int button, int stateMask) {
+		mouse.down = true
+	}
+
+	def mouseUp(int x, int y, int button, int stateMask) {
+		mouse.down = false
+	}
+
+	def mouseMove(int x, int y, int button, int stateMask) {
+		mouse.x = x
+		mouse.y = y
+	}
+
+	def keyPressed(int keyCode, int stateMask) {
+		switch (keyCode) {
+			case (1 << 24) + 1: {
+				mouse.down = true
+				mouse.x = sprite.bird_x
+				mouse.y = sprite.bird_y - 100
+			}
+			case (1 << 24) + 2: {
+				mouse.down = true
+				mouse.x = sprite.bird_x
+				mouse.y = sprite.bird_y + 100
+			}
+			case (1 << 24) + 3: {
+				mouse.down = true
+				mouse.x = sprite.bird_x - 100
+				mouse.y = sprite.bird_y
+			}
+			case (1 << 24) + 4: {
+				mouse.down = true
+				mouse.x = sprite.bird_x + 100
+				mouse.y = sprite.bird_y
+			}
+		}
+	}
+
+	def keyReleased(int keyCode, int stateMask) {
+		switch (keyCode) {
+			case (1 << 24) + 1,
+			case (1 << 24) + 2,
+			case (1 << 24) + 3,
+			case (1 << 24) + 4:
+				mouse.down = false
+		}
 	}
 }
 
