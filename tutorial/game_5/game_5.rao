@@ -9,12 +9,12 @@ type Дырка {
 	int место;
 }
 
-resource фишка1 = Фишки.create(1, 2);
-resource фишка2 = Фишки.create(2, 3);
-resource фишка3 = Фишки.create(3, 6);
-resource фишка4 = Фишки.create(4, 4);
-resource фишка5 = Фишки.create(5, 5);
-resource дырка = Дырка.create(1);
+resource фишка1 = Фишки.create(1, 1)
+resource фишка2 = Фишки.create(2, 6)
+resource фишка3 = Фишки.create(3, 4)
+resource фишка4 = Фишки.create(4, 2)
+resource фишка5 = Фишки.create(5, 5)
+resource дырка = Дырка.create(3)
 
 rule Перемещение_фишки (Место_дырки куда_перемещать, int на_сколько_перемещать) {
 	relevant _фишка = Фишки.accessible.filter[где_дырка(место) == куда_перемещать].any();
@@ -52,6 +52,28 @@ int столбец(int место) {
 	return Место_дырки.ДЫРКИ_РЯДОМ_НЕТ
 }
 
+int Номер_фишки_на_месте(int место) {
+	if (место == фишка1.место) {
+		return 1
+	} else if (место == фишка2.место) {
+		return 2
+	} else if (место == фишка3.место) {
+		return 3
+	} else if (место == фишка4.место) {
+		return 4
+	} else if (место == фишка5.место) {
+		return 5
+	}
+	return 0
+}
+
+int eur() {
+	var ответ = 0
+	ответ += Math.abs(Номер_фишки_на_месте(1) + Номер_фишки_на_месте(2) + Номер_фишки_на_месте(3) - 6)
+	ответ += Math.abs(Номер_фишки_на_месте(4) + Номер_фишки_на_месте(5) + Номер_фишки_на_месте(6) - 9)
+	return ответ
+}
+
 search Расстановка_фишек {
 	edge перемещение_вправо = new Edge(Перемещение_фишки.create(Место_дырки.СПРАВА, 1), 1)
 	edge перемещение_влево = new Edge(Перемещение_фишки.create(Место_дырки.СЛЕВА, -1), 1)
@@ -61,7 +83,7 @@ search Расстановка_фишек {
 	def init() {
 		startCondition = [Фишки.accessible.exists[номер != место]]
 		terminateCondition = [Фишки.accessible.forall[номер == место]]
-		heuristic = [0.0]
+		heuristic = [eur() as double]
 		compareTops = true
 	}
 }
