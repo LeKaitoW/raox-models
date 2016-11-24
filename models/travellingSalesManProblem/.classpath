@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<classpath>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
+	<classpathentry kind="src" path="src-gen"/>
+	<classpathentry kind="lib" path="D:/LocalData/au00368/Downloads/raox-eclipse-3.2.0-win-x64/raox/dropins/ru.bmstu.rk9.rao.lib-3.2.0.jar" sourcepath="D:/LocalData/au00368/Downloads/raox-eclipse-3.2.0-win-x64/raox/dropins/ru.bmstu.rk9.rao.lib-3.2.0.jar"/>
+	<classpathentry kind="lib" path="D:/LocalData/au00368/Downloads/raox-eclipse-3.2.0-win-x64/raox/plugins/org.eclipse.xtext.xbase.lib_2.10.0.v201605250459.jar"/>
+	<classpathentry kind="output" path="bin"/>
+</classpath>
