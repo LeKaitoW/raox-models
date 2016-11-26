@@ -1,17 +1,20 @@
 ## Модель call-центра
-[call_center.rao](models/call_center.rao) - Простейшая событийная модель поступления звонков
+[call_center](tutorial/call_center) - Простейшая событийная модель поступления звонков
 
 ## Модель парикмахерской
-[barber_simple.rao](models/barber_simple.rao) - Модель простейшей СМО
+[barber_simple](barber/barber_simple) - Модель простейшей СМО
 
-[barber_events.rao](models/barber_events.rao) - Модель простейшей СМО на событиях
+[barber_events](barber/barber_events) - Модель простейшей СМО на событиях
 
-[barber_activity.rao](models/barber_activity.rao) - Модель простейшей СМО с активностью
+[barber_activity](barber/barber_activity) - Модель простейшей СМО с активностью
 
-[barber_clients.rao](models/barber_clients.rao) - Модель простейшей СМО с клиентами
+[barber_clients](barber/barber_clients) - Модель простейшей СМО с клиентами
 
 ## Модель игры 5
-[game_5.rao](models/game_5.rao)
+[game_5](tutorial/game_5)
 
 ## Модель ГПС
-[fms.rao](models/fms.rao)
+[fms](fms)
+
+## Пример анимации
+[bird](tutorial/animation/bird)
