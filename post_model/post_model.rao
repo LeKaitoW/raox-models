@@ -1,0 +1,128 @@
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {enter, start_service}
+
+type PostDepartment {
+	int queLength;
+}
+
+type Client {
+	TypeService service;
+	ClientState state;
+}
+
+type Window {
+	WindowState windowState;
+	OperatorState operatorState;
+	int servedPeople;
+	TypeService[] service;
+	SheduleDay[] shedule;
+}
+
+type SheduleDay {
+	int timeStart = 8;
+	int timeEnd = 20;
+}
+
+resource fullDay = new SheduleDay(8, 20);
+resource close = new SheduleDay(0, 0);
+resource firstHalf = new SheduleDay(8, 14);
+resource secondHalf = new SheduleDay(14, 20);
+ 
+sequence clientEnterInterval = new Uniform(123456789, 10, 50);//new Exponential(123456789, 1/30.0);
+sequence serviceDuration = new Uniform(123456789, 20, 40);
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
+
+resource post = PostDepartment.create(0);
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf)
+); 
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close)
+);
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close)
+);
+
+event ClientEnterEvent() {
+	Client.create(randomTypeService.next(), ClientState.enter);
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	post.queLength = post.queLength + 1;
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + 60);
+	var windows = Window.all;
+	
+	for (var j =0; j < windows.length; j++) {
+		var window = windows.get(j);
+		
+		if ( isWindowOpen(window)) {			
+			window.windowState = WindowState.open;
+		}
+		else {
+			window.windowState = WindowState.close;
+		}
+	}
+}
+
+operation ExampleClientService() {
+	relevant _post = post.onlyif[ queLength > 0 ]
+	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+			&&  service.contains(_client.service) ].minBySafe[ servedPeople ];
+			
+	def duration() {
+		return serviceDuration.next();
+	}
+	
+	def begin() {
+		_post.queLength = _post.queLength - 1;
+		_client.state = ClientState.start_service;
+		_window.operatorState = OperatorState.busy		
+	}
+	
+	def end() {		 
+		_window.operatorState = OperatorState.free;					
+		_window.servedPeople = _window.servedPeople + 1;
+		_client.erase();
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ExampleClientService.create());
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	EveryHourEvent.plan(currentTime);	
+}
+
+def terminateCondition() {
+	return currentTime >= 7 * 12 * 60;
+}
+
+boolean isWindowOpen(Window window) {	
+	var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+	var currentHour = currentTime / 60 % 12 + 8;	
+	var start = window.shedule.get(currentDay).timeStart
+	var end = window.shedule.get(currentDay).timeEnd
+
+	return currentHour >=start && currentHour <= end;
+}
+
+result operatorBusyness1 = new Result([window1.operatorState]);
+result operatorBusyness2 = new Result([window2.operatorState]);
+result operatorBusyness3 = new Result([window3.operatorState]);
+result win1 = new Result([window1.windowState]);
+result win2 = new Result([window2.windowState]);
+result win3 = new Result([window3.windowState]);
+//result queueLength = new Value([post.queLength]);
+//result servedAll1 = new Value([window1.servedPeople]);
+//result servedAll2 = new Value([window2.servedPeople]);
+//result capacity = new Value([window.servedPeople / currentTime * 60]);
+//result periodOfWork = new Value([currentTime / 60]);						
