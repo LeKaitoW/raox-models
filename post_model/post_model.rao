@@ -5,6 +5,11 @@ enum WindowState {open, close}
 enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
 enum ClientState {enter, start_service}
 
+constant send_letter_time = 3;
+constant receive_letter_time = 5;
+constant send_delivery_time = 8;
+constant receive_delivery_time = 6;
+
 type PostDepartment {
 	int queLength;
 }
@@ -77,7 +82,23 @@ operation ExampleClientService() {
 			&&  service.contains(_client.service) ].minBySafe[ servedPeople ];
 			
 	def duration() {
-		return serviceDuration.next();
+		switch(_client.service) {
+			case TypeService.send_letter: {
+				return send_letter_time
+			}
+			case TypeService.receive_letter: {
+				return receive_letter_time;
+			}
+			case TypeService.send_delivery: {
+				return send_delivery_time
+			}
+			case TypeService.receive_delivery: {
+				return send_delivery_time
+			}
+			default: {
+				return serviceDuration.next();
+			}
+		}		
 	}
 	
 	def begin() {
