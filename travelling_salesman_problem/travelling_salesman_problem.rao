@@ -360,8 +360,8 @@ frame GraphOfЭволюция {
 
 			def draw(){
 				for (город : Города.all.filter[флаг_отрисовки == отрисовка.N]) {
-					drawCircle(intValue(рамка + город.x * A / ширина_поля),
-						intValue(рамка + город.y * B / высота_поля), 3);
+					drawCircle((рамка + город.x * A / ширина_поля) as int,
+						(рамка + город.y * B / высота_поля) as int, 3);
 					drawText(toString(город.номер), рамка + (город.x * A / ширина_поля) as int + отступ_текста,
 						рамка + (город.y * B / высота_поля + отступ_текста) as int);
 					город.флаг_отрисовки = отрисовка.Y
@@ -374,48 +374,48 @@ frame GraphOfЭволюция {
 				for (var i = 0; i < особь.маршрут.size() - 1; i++) {
 					val current = особь.маршрут.get(i);
 					val next = особь.маршрут.get(i + 1);
-					drawLine(intValue(рамка + current.x * A / ширина_поля),
-						intValue(рамка + current.y * B / высота_поля), intValue(рамка + next.x * A / ширина_поля),
-						intValue(рамка + next.y * B / высота_поля), RaoColor.RED);
-				}
-				val current = особь.маршрут.get(особь.маршрут.size() - 1);
-				val next = особь.маршрут.get(0);
-				drawLine(intValue(рамка + current.x * A / ширина_поля), intValue(рамка + current.y * B / высота_поля),
-					intValue(рамка + next.x * A / ширина_поля), intValue(рамка + next.y * B / высота_поля),
-					RaoColor.RED);
-				}
-			}
-
-			frame Маршрут_методом_жадного_алгоритма {
-				def init(){
-					background = new Background(A + 2 * рамка, B + 2 * рамка, RaoColor.WHITE);
+					drawLine((рамка + current.x * A / ширина_поля) as int, (рамка + current.y * B / высота_поля) as int,
+						(рамка + next.x * A / ширина_поля) as int, (рамка + next.y * B / высота_поля) as int,
+						RaoColor.RED);
+					}
+					val current = особь.маршрут.get(особь.маршрут.size() - 1);
+					val next = особь.маршрут.get(0);
+					drawLine((рамка + current.x * A / ширина_поля) as int, (рамка + current.y * B / высота_поля) as int,
+						(рамка + next.x * A / ширина_поля) as int, (рамка + next.y * B / высота_поля) as int,
+						RaoColor.RED);
+					}
 				}
 
-				def draw(){
-					for (город : Города.all.filter[флаг_отрисовки == отрисовка.N]) {
-						drawCircle(intValue(рамка + город.x * A / ширина_поля),
-							intValue(рамка + город.y * B / высота_поля), 3);
-						drawText(toString(город.номер), рамка + (город.x * A / ширина_поля) as int + отступ_текста,
-							рамка + (город.y * B / высота_поля + отступ_текста) as int);
-						город.флаг_отрисовки = отрисовка.Y
+				frame Маршрут_методом_жадного_алгоритма {
+					def init(){
+						background = new Background(A + 2 * рамка, B + 2 * рамка, RaoColor.WHITE);
 					}
-					Сброс_флага_отрисовки();
-					if (маршрут_методом_жадного_алгоритма.маршрут.size() <= 1) {
-						return;
+
+					def draw(){
+						for (город : Города.all.filter[флаг_отрисовки == отрисовка.N]) {
+							drawCircle((рамка + город.x * A / ширина_поля) as int,
+								(рамка + город.y * B / высота_поля) as int, 3);
+							drawText(toString(город.номер), рамка + (город.x * A / ширина_поля) as int + отступ_текста,
+								рамка + (город.y * B / высота_поля + отступ_текста) as int);
+							город.флаг_отрисовки = отрисовка.Y
+						}
+						Сброс_флага_отрисовки();
+						if (маршрут_методом_жадного_алгоритма.маршрут.size() <= 1) {
+							return;
+						}
+						for (var i = 0; i < маршрут_методом_жадного_алгоритма.маршрут.size() - 1; i++) {
+							val current = маршрут_методом_жадного_алгоритма.маршрут.get(i);
+							val next = маршрут_методом_жадного_алгоритма.маршрут.get(i + 1);
+							drawLine((рамка + current.x * A / ширина_поля) as int,
+								(рамка + current.y * B / высота_поля) as int, (рамка + next.x * A / ширина_поля) as int,
+								(рамка + next.y * B / высота_поля) as int, RaoColor.GREEN);
+						}
+						val current = маршрут_методом_жадного_алгоритма.маршрут.get(
+							маршрут_методом_жадного_алгоритма.маршрут.size() - 1);
+						val next = маршрут_методом_жадного_алгоритма.маршрут.get(0);
+						drawLine((рамка + current.x * A / ширина_поля) as int,
+							(рамка + current.y * B / высота_поля) as int, (рамка + next.x * A / ширина_поля) as int,
+							(рамка + next.y * B / высота_поля) as int, RaoColor.GREEN);
 					}
-					for (var i = 0; i < маршрут_методом_жадного_алгоритма.маршрут.size() - 1; i++) {
-						val current = маршрут_методом_жадного_алгоритма.маршрут.get(i);
-						val next = маршрут_методом_жадного_алгоритма.маршрут.get(i + 1);
-						drawLine(intValue(рамка + current.x * A / ширина_поля),
-							intValue(рамка + current.y * B / высота_поля), intValue(рамка + next.x * A / ширина_поля),
-							intValue(рамка + next.y * B / высота_поля), RaoColor.GREEN);
-					}
-					val current = маршрут_методом_жадного_алгоритма.маршрут.get(
-						маршрут_методом_жадного_алгоритма.маршрут.size() - 1);
-					val next = маршрут_методом_жадного_алгоритма.маршрут.get(0);
-					drawLine(intValue(рамка + current.x * A / ширина_поля),
-						intValue(рамка + current.y * B / высота_поля), intValue(рамка + next.x * A / ширина_поля),
-						intValue(рамка + next.y * B / высота_поля), RaoColor.GREEN);
 				}
-			}
-			
+				
