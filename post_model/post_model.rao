@@ -1,14 +1,14 @@
 import java.util.Arrays
 
 enum OperatorState {free, busy}
-enum WindowState {open, close}
+enum WindowState {open, close, in_postwork}
 enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
 enum ClientState {enter, start_service}
 
-constant send_letter_time = 3;
-constant receive_letter_time = 5;
-constant send_delivery_time = 8;
-constant receive_delivery_time = 6;
+constant send_letter_time = 13.0;
+constant receive_letter_time = 15.0;
+constant send_delivery_time = 18.0;
+constant receive_delivery_time = 10.0;
 
 type PostDepartment {
 	int queLength;
@@ -22,9 +22,10 @@ type Client {
 type Window {
 	WindowState windowState;
 	OperatorState operatorState;
-	int servedPeople;
+	int servedPeopleAll;	
 	TypeService[] service;
 	SheduleDay[] shedule;
+	double postTime;
 }
 
 type SheduleDay {
@@ -32,10 +33,10 @@ type SheduleDay {
 	int timeEnd = 20;
 }
 
-resource fullDay = new SheduleDay(8, 20);
+resource fullDay = new SheduleDay(8, 19);
 resource close = new SheduleDay(0, 0);
 resource firstHalf = new SheduleDay(8, 14);
-resource secondHalf = new SheduleDay(14, 20);
+resource secondHalf = new SheduleDay(14, 19);
  
 sequence clientEnterInterval = new Uniform(123456789, 10, 50);//new Exponential(123456789, 1/30.0);
 sequence serviceDuration = new Uniform(123456789, 20, 40);
@@ -43,14 +44,17 @@ sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
 
 resource post = PostDepartment.create(0);
-resource window1 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
-	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf)
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0
 ); 
-resource window2 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
-	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close)
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0
 );
-resource window3 = Window.create(WindowState.close, OperatorState.free, 0, Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
-	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close)
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0
 );
 
 event ClientEnterEvent() {
@@ -69,36 +73,45 @@ event EveryHourEvent() {
 		if ( isWindowOpen(window)) {			
 			window.windowState = WindowState.open;
 		}
-		else {
-			window.windowState = WindowState.close;
+		else if(window.windowState == WindowState.open){
+			window.windowState = WindowState.in_postwork;
+			log(window.postTime as int);
+			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
 		}
 	}
+}
+
+event CloseWindowEvent(Window win) {
+	win.windowState = WindowState.close;
+	log('window_closed');
+	win.postTime = 0;	
+}
+
+// At the end of day post closes and there are no clients
+event EndOfDayEvent() {
+	var clients = Client.all;
+	
+	log(currentTime);
+	log(currentTime % 12);
+	for (var i = 0; i < clients.length; i++) {
+		var client = clients.get(i);
+		if ( client.state == ClientState.enter) {
+			client.erase();
+			post.queLength = post.queLength - 1;
+			log('done');
+		}
+	}
+	EndOfDayEvent.plan(currentTime + 12 * 60);
 }
 
 operation ExampleClientService() {
 	relevant _post = post.onlyif[ queLength > 0 ]
 	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
 	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
-			&&  service.contains(_client.service) ].minBySafe[ servedPeople ];
+			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
 			
 	def duration() {
-		switch(_client.service) {
-			case TypeService.send_letter: {
-				return send_letter_time
-			}
-			case TypeService.receive_letter: {
-				return receive_letter_time;
-			}
-			case TypeService.send_delivery: {
-				return send_delivery_time
-			}
-			case TypeService.receive_delivery: {
-				return send_delivery_time
-			}
-			default: {
-				return serviceDuration.next();
-			}
-		}		
+		return getDuration(_client);
 	}
 	
 	def begin() {
@@ -109,7 +122,8 @@ operation ExampleClientService() {
 	
 	def end() {		 
 		_window.operatorState = OperatorState.free;					
-		_window.servedPeople = _window.servedPeople + 1;
+		_window.servedPeopleAll = _window.servedPeopleAll + 1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.1;
 		_client.erase();
 	}
 }
@@ -121,6 +135,7 @@ logic Model {
 def init() {
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
 	EveryHourEvent.plan(currentTime);	
+	EndOfDayEvent.plan(currentTime + 12 * 60 );
 }
 
 def terminateCondition() {
@@ -134,6 +149,26 @@ boolean isWindowOpen(Window window) {
 	var end = window.shedule.get(currentDay).timeEnd
 
 	return currentHour >=start && currentHour <= end;
+}
+
+double getDuration(Client client) {
+	switch(client.service) {
+			case TypeService.send_letter: {
+				return send_letter_time
+			}
+			case TypeService.receive_letter: {
+				return receive_letter_time;
+			}
+			case TypeService.send_delivery: {
+				return send_delivery_time
+			}
+			case TypeService.receive_delivery: {
+				return receive_delivery_time
+			}
+			default: {
+				return serviceDuration.next();
+			}
+		}		
 }
 
 result operatorBusyness1 = new Result([window1.operatorState]);
@@ -269,4 +304,4 @@ frame Ramochka {
 		
 		
     }
-    }
+}
