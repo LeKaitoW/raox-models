@@ -294,24 +294,24 @@ RaoColor Цвет_по_типу (Тип_танкера тип){
 	}
 		
 }
-String Картинка_танкера (Тип_танкера тип, Состояние_танкера состояние){
+String Картинка_танкера (Тип_танкера тип, Состояние_танкера состояние, boolean horizontal){
 	if (тип == Тип_танкера.Тип1) {
 		if (состояние == Состояние_танкера.Буксируется_к_причалам || состояние == Состояние_танкера.Пришел)
-			return "images/tanker1_empty.png"
+			return "images/" +  "tanker1_empty.png"
 		else if (состояние == Состояние_танкера.Буксируется_от_причалов)
-			return "images/tanker1_full.png"
+			return "images/" + "tanker1_full.png"
 	}
 	else if (тип == Тип_танкера.Тип2) {
 		if (состояние == Состояние_танкера.Буксируется_к_причалам || состояние == Состояние_танкера.Пришел)
-			return "images/tanker2_empty.png"
+			return "images/" + "tanker2_empty.png"
 		else if (состояние == Состояние_танкера.Буксируется_от_причалов)
-			return "images/tanker2_full.png"
+			return "images/" + "tanker2_full.png"
 	}
 	else if (тип == Тип_танкера.Тип2) {
 		if (состояние == Состояние_танкера.Буксируется_к_причалам || состояние == Состояние_танкера.Пришел)
-			return "images/tanker3_empty.png"
+			return "images/" + "tanker3_empty.png"
 		else if (состояние == Состояние_танкера.Буксируется_от_причалов)
-			return "images/tanker3_full.png"
+			return "images/" + "tanker3_full.png"
 	}
 }
 
