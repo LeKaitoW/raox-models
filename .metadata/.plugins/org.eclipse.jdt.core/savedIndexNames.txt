@@ -1,2 +1,0 @@
-INDEX VERSION 1.129+C:\Users\Александр\Downloads\urusov\raox-models\.metadata\.plugins\org.eclipse.jdt.core
-1494505223.index
