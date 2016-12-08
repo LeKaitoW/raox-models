@@ -75,7 +75,7 @@ event EveryHourEvent() {
 		}
 		else if(window.windowState == WindowState.open){
 			window.windowState = WindowState.in_postwork;
-			log(window.postTime as int);
+			
 			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
 		}
 	}
@@ -84,6 +84,7 @@ event EveryHourEvent() {
 event CloseWindowEvent(Window win) {
 	win.windowState = WindowState.close;
 	log('window_closed');
+	log(win.postTime as int);
 	win.postTime = 0;	
 }
 
@@ -123,7 +124,7 @@ operation ExampleClientService() {
 	def end() {		 
 		_window.operatorState = OperatorState.free;					
 		_window.servedPeopleAll = _window.servedPeopleAll + 1;
-		_window.postTime = _window.postTime + getDuration(_client) * 0.1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;
 		_client.erase();
 	}
 }
@@ -135,7 +136,7 @@ logic Model {
 def init() {
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
 	EveryHourEvent.plan(currentTime);	
-	EndOfDayEvent.plan(currentTime + 12 * 60 );
+	EndOfDayEvent.plan(currentTime + 12 * 60 - 2 );
 }
 
 def terminateCondition() {
