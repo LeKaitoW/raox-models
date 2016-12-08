@@ -5,20 +5,20 @@ enum WindowState {open, close, in_postwork}
 enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
 enum ClientState {enter, start_service}
 
-constant send_letter_time = 13.0;
-constant receive_letter_time = 15.0;
-constant send_delivery_time = 18.0;
+constant send_letter_time = 4.0;
+constant receive_letter_time = 12.0;
+constant send_delivery_time = 15.0;
 constant receive_delivery_time = 10.0;
 
 type PostDepartment {
-	int queLength;	
+	int queLength;		
 }
 
 type Client {	
 	int id;
 	TypeService service;
 	ClientState state;
-	
+	double enterTime;
 }
 
 type Window {
@@ -28,6 +28,7 @@ type Window {
 	TypeService[] service;
 	SheduleDay[] shedule;
 	double postTime;
+	double queueTimeAll;
 }
 
 type SheduleDay {
@@ -41,28 +42,28 @@ resource firstHalf = new SheduleDay(8, 14);
 resource secondHalf = new SheduleDay(14, 19);
  
 sequence clientEnterInterval = new Uniform(123456789, 10, 50);//new Exponential(123456789, 1/30.0);
-sequence serviceDuration = new Uniform(123456789, 20, 40);
+sequence serviceDuration = new Uniform(123456789, 10, 50);
 sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
 
 resource post = PostDepartment.create(0);
 resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
 	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
-	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
 ); 
 resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
 	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
-	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0, 0
 );
 resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
 	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
-	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0, 0
 );
 
 event ClientEnterEvent() {
 	var id = Client.all.size;
 	post.queLength = post.queLength + 1;
-	Client.create(id, randomTypeService.next(), ClientState.enter);
+	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);	
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
 	
 }
@@ -79,7 +80,7 @@ event EveryHourEvent() {
 		}
 		else if(window.windowState == WindowState.open){
 			window.windowState = WindowState.in_postwork;
-			
+			log(window.windowState);
 			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
 		}
 	}
@@ -100,9 +101,10 @@ event EndOfDayEvent() {
 	log(currentTime % 12);
 	for (var i = 0; i < clients.length; i++) {
 		var client = clients.get(i);		
-		client.erase();
-		post.queLength = post.queLength - 1;
-		log('done');		
+		if ( client.state == ClientState.enter ) {
+			client.erase();
+			post.queLength = post.queLength - 1;			
+		}	
 	}
 	EndOfDayEvent.plan(currentTime + 12 * 60);
 }
@@ -112,7 +114,7 @@ operation ExampleClientService() {
 //	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
 //	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
 //			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
-	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
 	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
 	
 	def duration() {
@@ -122,13 +124,14 @@ operation ExampleClientService() {
 	def begin() {
 		_post.queLength = _post.queLength - 1;
 		_client.state = ClientState.start_service;
-		_window.operatorState = OperatorState.busy		
+		_window.operatorState = OperatorState.busy	
+		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
 	}
 	
 	def end() {		 
 		_window.operatorState = OperatorState.free;					
 		_window.servedPeopleAll = _window.servedPeopleAll + 1;
-		_window.postTime = _window.postTime + getDuration(_client) * 0.2;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;		
 		_client.erase();
 	}
 }
@@ -176,18 +179,29 @@ double getDuration(Client client) {
 		}		
 }
 
+dataSource ServiceDuration<Double>(Window win) {
+    def evaluate() {
+        return win.postTime * 5;
+    }
+}
+
 result operatorBusyness1 = new Result([window1.operatorState]);
 result operatorBusyness2 = new Result([window2.operatorState]);
 result operatorBusyness3 = new Result([window3.operatorState]);
-result win1 = new Result([window1.windowState]);
-result win2 = new Result([window2.windowState]);
-result win3 = new Result([window3.windowState]);
+result windowState1 = new Result([window1.windowState]);
+result windowState2 = new Result([window2.windowState]);
+result windowState3 = new Result([window3.windowState]);
+result queue_time1 = new Result([window1.queueTimeAll/window1.servedPeopleAll], new LastValueStatistics());
+result queue_time2 = new Result([window2.queueTimeAll/window2.servedPeopleAll], new LastValueStatistics());
+result queue_time3 = new Result([window3.queueTimeAll/window3.servedPeopleAll], new LastValueStatistics());
+result queue_time_all = new Result([(window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll)
+	/(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll)
+], new LastValueStatistics());
+result serviceDuration1 = new Result(new ServiceDuration(window1));
+result serviceDuration2 = new Result(new ServiceDuration(window2));
+result serviceDuration3 = new Result(new ServiceDuration(window3));
 result queue_length = new Result([post.queLength]);
-//result queueLength = new Value([post.queLength]);
-//result servedAll1 = new Value([window1.servedPeople]);
-//result servedAll2 = new Value([window2.servedPeople]);
-//result capacity = new Value([window.servedPeople / currentTime * 60]);
-//result periodOfWork = new Value([currentTime / 60]);						
+result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) /( 7 * 12 )], new LastValueStatistics());						
 
 //______________________________________________________________________________
 //Animation from Katerina =)
@@ -264,8 +278,7 @@ frame Ramochka {
         	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
         }
         
-        //Текущее время
-  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+        //Текущее время  
 		var currentHour = (currentTime / 60 % 12 + 8) as int;
 		var currentMinute = (currentTime % 60) as int;
         drawText(String.valueOf(currentHour), 340, 37);				//Часы
