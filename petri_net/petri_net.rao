@@ -79,3 +79,123 @@ def init() {
 def terminateCondition() {
 	return наличие_обработанной_заготовки_в_накопителе.количество_маркеров == 10;
 }
+
+frame Анимация_сети_Петри {
+	def init() {
+		background = new Background(685, 450, RaoColor.WHITE)
+	}
+	def draw() {
+		drawImage("img/petri.png", 0, 0)
+		drawText("P1", 15, 100, RaoColor.BLACK)
+		drawText("P2", 140, 100, RaoColor.BLACK)
+		drawText("P3", 265, 100, RaoColor.BLACK)
+		drawText("P4", 390, 100, RaoColor.BLACK)
+		drawText("P5", 515, 100, RaoColor.BLACK)
+		drawText("P6", 640, 100, RaoColor.BLACK)
+		drawText("P7", 170, 35, RaoColor.BLACK)
+		drawText("P8", 494, 35, RaoColor.BLACK)
+		drawText("P9", 332, 206, RaoColor.BLACK)
+		drawText("t1", 84, 80, RaoColor.BLACK)
+		drawText("t2", 209, 80, RaoColor.BLACK)
+		drawText("t3", 334, 80, RaoColor.BLACK)
+		drawText("t4", 459, 80, RaoColor.BLACK)
+		drawText("t5", 584, 80, RaoColor.BLACK)
+
+		drawText(
+			"P1 - наличие заготовки в накопителе" + "\n" + "P2 - заготовка установлена на первом станке" + "\n" +
+				"P3 - заготовка обработана на первом станке" + "\n" + "P4 - заготовка установлена на втором станке" +
+				"\n" + "P5 - заготовка обработана на втором станке" + "\n" +
+				"P6 - наличие обработанной заготовки в накопителе" + "\n" + "P7 - первый станок свободен" + "\n" +
+				"P8 - второй станок свободен" + "\n" + "P9 - робот свободен", 10, 300, RaoColor.BLACK)
+		drawText(
+			"t1 - загрузка первого станка" + "\n" + "t2 - обработка на первом станке" + "\n" + "t3 - переустановка" +
+				"\n" + "t4 - обработка на втором станке" + "\n" + "t5 - разгрузка второго станка", 350, 300,
+			RaoColor.BLACK)
+
+			if (наличие_заготовки_в_накопителе.количество_маркеров > 0) {
+				if (наличие_заготовки_в_накопителе.количество_маркеров == 1) {
+					drawCircle(24, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_заготовки_в_накопителе.количество_маркеров == 2) {
+					drawCircle(24, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(24, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_заготовки_в_накопителе.количество_маркеров == 3) {
+					drawCircle(20, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(20, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(30, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_заготовки_в_накопителе.количество_маркеров == 4) {
+					drawCircle(18, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(18, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(32, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(32, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_заготовки_в_накопителе.количество_маркеров > 4) {
+					drawText(Integer.toString(наличие_заготовки_в_накопителе.количество_маркеров), 15, 137,
+						RaoColor.BLACK)
+				}
+			}
+			if (заготовка_установлена_на_первом_станке.количество_маркеров > 0) {
+				drawCircle(149, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (заготовка_обработана_на_первом_станке.количество_маркеров > 0) {
+				drawCircle(274, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (заготовка_установлена_на_втором_станке.количество_маркеров > 0) {
+				drawCircle(399, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (заготовка_обработана_на_втором_станке.количество_маркеров > 0) {
+				drawCircle(524, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (робот_свободен.количество_маркеров > 0) {
+				drawCircle(339, 250, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (первый_станок_свободен.количество_маркеров > 0) {
+				drawCircle(215, 22, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (второй_станок_свободен.количество_маркеров > 0) {
+				drawCircle(464, 22, 10, RaoColor.BLACK, RaoColor.BLACK)
+			}
+			if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров > 0) {
+				if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров == 1) {
+					drawCircle(649, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров == 2) {
+					drawCircle(649, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(649, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров == 3) {
+					drawCircle(645, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(645, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(655, 144, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров == 4) {
+					drawCircle(643, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(643, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(657, 136, 10, RaoColor.BLACK, RaoColor.BLACK)
+					drawCircle(657, 152, 10, RaoColor.BLACK, RaoColor.BLACK)
+				}
+				if (наличие_обработанной_заготовки_в_накопителе.количество_маркеров > 4) {
+					drawText(Integer.toString(наличие_обработанной_заготовки_в_накопителе.количество_маркеров), 642,
+						137, RaoColor.BLACK)
+				}
+			}
+			if (!загрузка_первого_станка.accessible) {
+				drawRectangle(84, 105, 11, 80, RaoColor.WHITE, RaoColor.WHITE)
+			}
+			if (!обработка_на_первом_станке.accessible) {
+				drawRectangle(209, 105, 11, 80, RaoColor.WHITE, RaoColor.WHITE)
+			}
+			if (!переустановка.accessible) {
+				drawRectangle(333, 105, 11, 80, RaoColor.WHITE, RaoColor.WHITE)
+			}
+			if (!обработка_на_втором_станке.accessible) {
+				drawRectangle(458, 105, 11, 80, RaoColor.WHITE, RaoColor.WHITE)
+			}
+			if (!разгрузка_второго_станка.accessible) {
+				drawRectangle(583, 105, 11, 80, RaoColor.WHITE, RaoColor.WHITE)
+			}
+		}
+	}
+
