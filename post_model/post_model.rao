@@ -11,12 +11,14 @@ constant send_delivery_time = 18.0;
 constant receive_delivery_time = 10.0;
 
 type PostDepartment {
-	int queLength;
+	int queLength;	
 }
 
-type Client {
+type Client {	
+	int id;
 	TypeService service;
 	ClientState state;
+	
 }
 
 type Window {
@@ -58,14 +60,16 @@ resource window3 = Window.create(WindowState.close, OperatorState.free, 0,
 );
 
 event ClientEnterEvent() {
-	Client.create(randomTypeService.next(), ClientState.enter);
-	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	var id = Client.all.size;
 	post.queLength = post.queLength + 1;
+	Client.create(id, randomTypeService.next(), ClientState.enter);
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	
 }
 
 event EveryHourEvent() {
 	EveryHourEvent.plan(currentTime + 60);
-	var windows = Window.all;
+	var windows = Window.accessible;
 	
 	for (var j =0; j < windows.length; j++) {
 		var window = windows.get(j);
@@ -90,27 +94,27 @@ event CloseWindowEvent(Window win) {
 
 // At the end of day post closes and there are no clients
 event EndOfDayEvent() {
-	var clients = Client.all;
+	var clients = Client.accessible;
 	
 	log(currentTime);
 	log(currentTime % 12);
 	for (var i = 0; i < clients.length; i++) {
-		var client = clients.get(i);
-		if ( client.state == ClientState.enter) {
-			client.erase();
-			post.queLength = post.queLength - 1;
-			log('done');
-		}
+		var client = clients.get(i);		
+		client.erase();
+		post.queLength = post.queLength - 1;
+		log('done');		
 	}
 	EndOfDayEvent.plan(currentTime + 12 * 60);
 }
 
 operation ExampleClientService() {
-	relevant _post = post.onlyif[ queLength > 0 ]
-	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
-	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
-			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
-			
+	relevant _post = post.onlyif[ queLength > 0 ]	
+//	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+//			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].any;
+	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+	
 	def duration() {
 		return getDuration(_client);
 	}
@@ -178,6 +182,7 @@ result operatorBusyness3 = new Result([window3.operatorState]);
 result win1 = new Result([window1.windowState]);
 result win2 = new Result([window2.windowState]);
 result win3 = new Result([window3.windowState]);
+result queue_length = new Result([post.queLength]);
 //result queueLength = new Value([post.queLength]);
 //result servedAll1 = new Value([window1.servedPeople]);
 //result servedAll2 = new Value([window2.servedPeople]);
