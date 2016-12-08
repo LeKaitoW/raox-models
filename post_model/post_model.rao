@@ -44,6 +44,7 @@ sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
 
 resource post = PostDepartment.create(0);
+
 resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
 	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
 	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0
@@ -193,13 +194,13 @@ frame Ramochka {
     }
     def draw() {
     	
-    	//РџРµСЂРµРјРµРЅРЅС‹Рµ РґР»СЏ РІСЂРµРјРµРЅРё
+    	//Переменные для времени
     	
     	
-    	//С„РѕРЅ РђРЅРёРјР°С†РёРё
+    	//фон Анимации
     	drawImage("picpic/fon.bmp", 0, 0); 	
     	
-    	//РўР°Р±Р»РёС‡РєРё "Р—Р°РєСЂС‹С‚Рѕ" Рё "РћС‚РєСЂС‹С‚Рѕ"
+    	//Таблички "Закрыто" и "Открыто"
     	if (window1.windowState == WindowState.open)
     	{ 
     		drawImage("picpic/open.bmp", 245, 85);     
@@ -225,7 +226,7 @@ frame Ramochka {
         	drawImage("picpic/close.bmp", 915, 180);
         }
         
-        //РЎС‚Р°С‚СѓСЃ "РЎРІРѕР±РѕРґРµРЅ" Рё "Р—Р°РЅСЏС‚"
+        //Статус "Свободен" и "Занят"
         if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
         {
         	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
@@ -259,14 +260,14 @@ frame Ramochka {
         	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
         }
         
-        //РўРµРєСѓС‰РµРµ РІСЂРµРјСЏ
+        //Текущее время
   //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
 		var currentHour = (currentTime / 60 % 12 + 8) as int;
 		var currentMinute = (currentTime % 60) as int;
-        drawText(String.valueOf(currentHour), 340, 37);				//Р§Р°СЃС‹
-        drawText(String.valueOf(currentMinute), 400, 37);			//РњРёРЅСѓС‚С‹
+        drawText(String.valueOf(currentHour), 340, 37);				//Часы
+        drawText(String.valueOf(currentMinute), 400, 37);			//Минуты
         
-        //Р”Р»РёРЅР° РѕС‡РµСЂРµРґРё
+        //Длина очереди
         drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
         drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
         
@@ -275,25 +276,33 @@ frame Ramochka {
     //		drawImage("picpic/open.bmp", 245, 85);     
      //   }
 
-        //РЎРїРёСЃРєРё СЃРµСЂРІРёСЃРѕРІ
-        	//Р”Р»СЏ РѕРєРЅР° в„–1
+        //Списки сервисов
+        	//Для окна №1
         drawText("Service", 365, 165);
         drawText("1. Send letter", 345, 180);
         drawText("2. Receive letter", 345, 195);
         drawText("3. Magazine subscription", 345, 210);
         drawText("4. Lottery", 345, 225);
         
-        	//Р”Р»СЏ РѕРєРЅР° в„–2
+        	//Для окна №2
         drawText("Service", 695, 165);
         drawText("1. Send letter", 675, 180);
-        drawText("2. Р ublicservices", 675, 195);
-        drawText("3. Р ayments", 675, 210);
+        drawText("2. Рublicservices", 675, 195);
+        drawText("3. Рayments", 675, 210);
 
-       		 //Р”Р»СЏ РѕРєРЅР° в„–3
+       		 //Для окна №3
         drawText("Service", 1035, 165);
         drawText("1. Send delivery", 1015, 180);
         drawText("2. Receive delivery", 1015, 195);     
         
+        
+        //Третье состояние окна
+        if (window1.windowState == WindowState.in_postwork)
+        	//&&(window2.windowState == WindowState.in_postwork)&&(window3.windowState == WindowState.in_postwork)
+        
+    	{ 
+    		drawImage("picpic/dopwork.png", 245, 85);
+    	}
 
 	//	val dy = Math.abs(8 - currentTime % 8) as int;
 	//val dx = Math.abs(8 - currentTime % 16) as int;
