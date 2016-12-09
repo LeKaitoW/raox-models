@@ -17,14 +17,6 @@ enum мутация {Y, N}
 enum скрещивание {Y, N}
 enum отбор {Y, N}
 
-enum фазы {фаза_мутации, фаза_скрещивания, фаза_отбора}
-
-type Переменная_состояния {
-	фазы текущая_фаза
-}
-
-resource глобальная_переменная_состояния = Переменная_состояния.create(фазы.фаза_мутации)
-
 type Города {
 	int номер
 	выбор флаг_выбора
@@ -306,7 +298,7 @@ String toString(int value){
 	return Integer.toString(value)
 }
 
-frame GraphOfЭволюция {
+frame График_эволюции {
 	def init(){
 		background = new Background(A + 2 * рамка, B + 2 * рамка, RaoColor.WHITE)
 	}
