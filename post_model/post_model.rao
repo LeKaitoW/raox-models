@@ -324,6 +324,13 @@ frame Ramochka {
         drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
         drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
         
+        
+         	var dL = 40;
+     	for (var j = 0; j < post.queLength; j++)
+    	{
+     	drawImage("picpic/people.bmp", 610+dL*j, 445);
+          	
+      	}
 
         //������ ��������
         	//��� ���� �1
@@ -350,11 +357,7 @@ frame Ramochka {
     		drawImage("picpic/dopwork.png", 245, 85);
     	}
 
-	//	val dy = Math.abs(8 - currentTime % 8) as int;
-	//val dx = Math.abs(8 - currentTime % 16) as int;
-//	drawRectangle(870, 400+ dy, 10, 10, RaoColor.GREEN, RaoColor.BLACK);
-		
-		//drawLine(255 + dx, 170 + dy, 290, 40 + dy, RaoColor.BLACK);
+
 		
 		
     }

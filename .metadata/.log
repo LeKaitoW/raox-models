@@ -1,0 +1,2252 @@
+!SESSION 2016-12-10 00:23:24.356 -----------------------------------------------
+eclipse.buildId=4.6.0.I20160606-1100
+java.version=1.8.0_101
+java.vendor=Oracle Corporation
+BootLoader constants: OS=win32, ARCH=x86_64, WS=win32, NL=ru_RU
+Framework arguments:  -perspective ru.bmstu.rk9.rao.ui.perspective -product org.eclipse.epp.package.dsl.product
+Command-line arguments:  -os win32 -ws win32 -arch x86_64 -perspective ru.bmstu.rk9.rao.ui.perspective -product org.eclipse.epp.package.dsl.product
+
+!ENTRY org.eclipse.egit.ui 2 0 2016-12-10 00:24:30.471
+!MESSAGE Warning: The environment variable HOME is not set. The following directory will be used to store the Git
+user global configuration and to define the default location to store repositories: 'C:\Users\User'. If this is
+not correct please set the HOME environment variable and restart Eclipse. Otherwise Git for Windows and
+EGit might behave differently since they see different configuration options.
+This warning can be switched off on the Team > Git > Confirmations and Warnings preference page.
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:03.488
+!MESSAGE org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator  - Error calling inferrer
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.naming.RaoNaming.getProjectName(RaoNaming.java:19)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer._infer(RaoJvmModelInferrer.java:63)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer.infer(RaoJvmModelInferrer.java:210)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator.installDerivedState(JvmModelAssociator.java:382)
+	at org.eclipse.xtext.resource.DerivedStateAwareResource.installDerivedState(DerivedStateAwareResource.java:242)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getContents(BatchLinkableResource.java:148)
+	at org.eclipse.xtext.xbase.typesystem.internal.LogicalContainerAwareBatchTypeResolver.getEntryPoints(LogicalContainerAwareBatchTypeResolver.java:44)
+	at org.eclipse.xtext.xbase.typesystem.internal.DefaultBatchTypeResolver.getTypeResolver(DefaultBatchTypeResolver.java:84)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:49)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver.doResolveTypes(CachingBatchTypeResolver.java:46)
+	at org.eclipse.xtext.xbase.typesystem.internal.AbstractBatchTypeResolver.resolveTypes(AbstractBatchTypeResolver.java:69)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:60)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:41)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:117)
+	at org.eclipse.emf.ecore.resource.impl.ResourceSetImpl.getEObject(ResourceSetImpl.java:223)
+	at org.eclipse.emf.ecore.util.EcoreUtil.resolve(EcoreUtil.java:199)
+	at org.eclipse.emf.ecore.util.EcoreUtil.resolve(EcoreUtil.java:259)
+	at org.eclipse.emf.ecore.impl.BasicEObjectImpl.eResolveProxy(BasicEObjectImpl.java:1477)
+	at org.eclipse.xtext.xbase.impl.XAbstractFeatureCallImplCustom.getFeature(XAbstractFeatureCallImplCustom.java:48)
+	at org.eclipse.xtext.xbase.util.FeatureCallAsTypeLiteralHelper.getRootTypeLiteral(FeatureCallAsTypeLiteralHelper.java:128)
+	at org.eclipse.xtext.xbase.resource.XbaseLocationInFileProvider.getSignificantTextRegion(XbaseLocationInFileProvider.java:54)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmLocationInFileProvider.getSignificantTextRegion(JvmLocationInFileProvider.java:43)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider.computeObjectFolding(DefaultFoldingRegionProvider.java:150)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider.computeObjectFolding(DefaultFoldingRegionProvider.java:141)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider.computeObjectFolding(DefaultFoldingRegionProvider.java:125)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider.doGetFoldingRegions(DefaultFoldingRegionProvider.java:99)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider$1.exec(DefaultFoldingRegionProvider.java:81)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider$1.exec(DefaultFoldingRegionProvider.java:1)
+	at org.eclipse.xtext.util.concurrent.CancelableUnitOfWork.exec(CancelableUnitOfWork.java:26)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.internalReadOnly(XtextDocument.java:520)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.readOnly(XtextDocument.java:492)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.readOnly(XtextDocument.java:133)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingRegionProvider.getFoldingRegions(DefaultFoldingRegionProvider.java:73)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingStructureProvider.calculateProjectionAnnotationModel(DefaultFoldingStructureProvider.java:126)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingStructureProvider.initialize(DefaultFoldingStructureProvider.java:61)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingStructureProvider.handleProjectionEnabled(DefaultFoldingStructureProvider.java:105)
+	at org.eclipse.xtext.ui.editor.folding.DefaultFoldingStructureProvider$ProjectionChangeListener.projectionEnabled(DefaultFoldingStructureProvider.java:200)
+	at org.eclipse.jface.text.source.projection.ProjectionViewer.fireProjectionEnabled(ProjectionViewer.java:472)
+	at org.eclipse.jface.text.source.projection.ProjectionViewer.enableProjection(ProjectionViewer.java:520)
+	at org.eclipse.xtext.ui.editor.XtextEditor.installFoldingSupport(XtextEditor.java:529)
+	at org.eclipse.xtext.xbase.ui.editor.XbaseEditor.installFoldingSupport(XbaseEditor.java:409)
+	at org.eclipse.xtext.ui.editor.XtextEditor.createPartControl(XtextEditor.java:508)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityPart.createPartControl(CompatibilityPart.java:151)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityEditor.createPartControl(CompatibilityEditor.java:99)
+	at org.eclipse.ui.internal.e4.compatibility.CompatibilityPart.create(CompatibilityPart.java:341)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.e4.core.internal.di.MethodRequestor.execute(MethodRequestor.java:54)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.processAnnotated(InjectorImpl.java:966)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.processAnnotated(InjectorImpl.java:931)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.inject(InjectorImpl.java:151)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.internalMake(InjectorImpl.java:375)
+	at org.eclipse.e4.core.internal.di.InjectorImpl.make(InjectorImpl.java:294)
+	at org.eclipse.e4.core.contexts.ContextInjectionFactory.make(ContextInjectionFactory.java:162)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.createFromBundle(ReflectionContributionFactory.java:105)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.doCreate(ReflectionContributionFactory.java:74)
+	at org.eclipse.e4.ui.internal.workbench.ReflectionContributionFactory.create(ReflectionContributionFactory.java:56)
+	at org.eclipse.e4.ui.workbench.renderers.swt.ContributedPartRenderer.createWidget(ContributedPartRenderer.java:129)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createWidget(PartRenderingEngine.java:975)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.safeCreateGui(PartRenderingEngine.java:651)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.safeCreateGui(PartRenderingEngine.java:757)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.access$0(PartRenderingEngine.java:728)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$2.run(PartRenderingEngine.java:722)
+	at org.eclipse.core.runtime.SafeRunner.run(SafeRunner.java:42)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.createGui(PartRenderingEngine.java:706)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl$1.handleEvent(PartServiceImpl.java:104)
+	at org.eclipse.e4.ui.services.internal.events.UIEventHandler$1.run(UIEventHandler.java:40)
+	at org.eclipse.swt.widgets.Synchronizer.syncExec(Synchronizer.java:233)
+	at org.eclipse.ui.internal.UISynchronizer.syncExec(UISynchronizer.java:145)
+	at org.eclipse.swt.widgets.Display.syncExec(Display.java:4813)
+	at org.eclipse.e4.ui.internal.workbench.swt.E4Application$1.syncExec(E4Application.java:211)
+	at org.eclipse.e4.ui.services.internal.events.UIEventHandler.handleEvent(UIEventHandler.java:36)
+	at org.eclipse.equinox.internal.event.EventHandlerWrapper.handleEvent(EventHandlerWrapper.java:201)
+	at org.eclipse.equinox.internal.event.EventHandlerTracker.dispatchEvent(EventHandlerTracker.java:197)
+	at org.eclipse.equinox.internal.event.EventHandlerTracker.dispatchEvent(EventHandlerTracker.java:1)
+	at org.eclipse.osgi.framework.eventmgr.EventManager.dispatchEvent(EventManager.java:230)
+	at org.eclipse.osgi.framework.eventmgr.ListenerQueue.dispatchEventSynchronous(ListenerQueue.java:148)
+	at org.eclipse.equinox.internal.event.EventAdminImpl.dispatchEvent(EventAdminImpl.java:135)
+	at org.eclipse.equinox.internal.event.EventAdminImpl.sendEvent(EventAdminImpl.java:78)
+	at org.eclipse.equinox.internal.event.EventComponent.sendEvent(EventComponent.java:39)
+	at org.eclipse.e4.ui.services.internal.events.EventBroker.send(EventBroker.java:94)
+	at org.eclipse.e4.ui.internal.workbench.UIEventPublisher.notifyChanged(UIEventPublisher.java:60)
+	at org.eclipse.emf.common.notify.impl.BasicNotifierImpl.eNotify(BasicNotifierImpl.java:374)
+	at org.eclipse.e4.ui.model.application.ui.impl.ElementContainerImpl.setSelectedElement(ElementContainerImpl.java:173)
+	at org.eclipse.e4.ui.internal.workbench.ModelServiceImpl.showElementInWindow(ModelServiceImpl.java:617)
+	at org.eclipse.e4.ui.internal.workbench.ModelServiceImpl.bringToTop(ModelServiceImpl.java:581)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl.delegateBringToTop(PartServiceImpl.java:770)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl.bringToTop(PartServiceImpl.java:401)
+	at org.eclipse.e4.ui.internal.workbench.PartServiceImpl.showPart(PartServiceImpl.java:1214)
+	at org.eclipse.ui.internal.WorkbenchPage.busyOpenEditor(WorkbenchPage.java:3261)
+	at org.eclipse.ui.internal.WorkbenchPage.access$25(WorkbenchPage.java:3176)
+	at org.eclipse.ui.internal.WorkbenchPage$10.run(WorkbenchPage.java:3158)
+	at org.eclipse.swt.custom.BusyIndicator.showWhile(BusyIndicator.java:70)
+	at org.eclipse.ui.internal.WorkbenchPage.openEditor(WorkbenchPage.java:3153)
+	at org.eclipse.ui.internal.WorkbenchPage.openEditor(WorkbenchPage.java:3117)
+	at org.eclipse.ui.internal.WorkbenchPage.openEditor(WorkbenchPage.java:3098)
+	at org.eclipse.ui.ide.IDE.openEditorOnFileStore(IDE.java:1397)
+	at org.eclipse.ui.internal.ide.actions.OpenLocalFileAction.run(OpenLocalFileAction.java:97)
+	at org.eclipse.ui.internal.ide.actions.OpenLocalFileAction.run(OpenLocalFileAction.java:70)
+	at org.eclipse.ui.internal.PluginAction.runWithEvent(PluginAction.java:247)
+	at org.eclipse.ui.internal.WWinPluginAction.runWithEvent(WWinPluginAction.java:228)
+	at org.eclipse.jface.action.ActionContributionItem.handleWidgetSelection(ActionContributionItem.java:565)
+	at org.eclipse.jface.action.ActionContributionItem.lambda$4(ActionContributionItem.java:397)
+	at org.eclipse.swt.widgets.EventTable.sendEvent(EventTable.java:84)
+	at org.eclipse.swt.widgets.Display.sendEvent(Display.java:4410)
+	at org.eclipse.swt.widgets.Widget.sendEvent(Widget.java:1079)
+	at org.eclipse.swt.widgets.Display.runDeferredEvents(Display.java:4228)
+	at org.eclipse.swt.widgets.Display.readAndDispatch(Display.java:3816)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine$4.run(PartRenderingEngine.java:1121)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:336)
+	at org.eclipse.e4.ui.internal.workbench.swt.PartRenderingEngine.run(PartRenderingEngine.java:1022)
+	at org.eclipse.e4.ui.internal.workbench.E4Workbench.createAndRunUI(E4Workbench.java:150)
+	at org.eclipse.ui.internal.Workbench$5.run(Workbench.java:687)
+	at org.eclipse.core.databinding.observable.Realm.runWithDefault(Realm.java:336)
+	at org.eclipse.ui.internal.Workbench.createAndRunWorkbench(Workbench.java:604)
+	at org.eclipse.ui.PlatformUI.createAndRunWorkbench(PlatformUI.java:148)
+	at org.eclipse.ui.internal.ide.application.IDEApplication.start(IDEApplication.java:138)
+	at org.eclipse.equinox.internal.app.EclipseAppHandle.run(EclipseAppHandle.java:196)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.runApplication(EclipseAppLauncher.java:134)
+	at org.eclipse.core.runtime.internal.adaptor.EclipseAppLauncher.start(EclipseAppLauncher.java:104)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:388)
+	at org.eclipse.core.runtime.adaptor.EclipseStarter.run(EclipseStarter.java:243)
+	at sun.reflect.NativeMethodAccessorImpl.invoke0(Native Method)
+	at sun.reflect.NativeMethodAccessorImpl.invoke(Unknown Source)
+	at sun.reflect.DelegatingMethodAccessorImpl.invoke(Unknown Source)
+	at java.lang.reflect.Method.invoke(Unknown Source)
+	at org.eclipse.equinox.launcher.Main.invokeFramework(Main.java:673)
+	at org.eclipse.equinox.launcher.Main.basicRun(Main.java:610)
+	at org.eclipse.equinox.launcher.Main.run(Main.java:1519)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:03.883
+!MESSAGE org.eclipse.xtext.xbase.resource.BatchLinkableResource  - resolution of uriFragment '|1' failed.
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.linkBatched(BatchLinkableResource.java:195)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler.beforeRefresh(HighlightingReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2$1.exec(HighlightingReconciler.java:340)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2$1.exec(HighlightingReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.CancelableUnitOfWork.exec(CancelableUnitOfWork.java:26)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.internalReadOnly(XtextDocument.java:520)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.readOnly(XtextDocument.java:492)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.readOnly(XtextDocument.java:133)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2.run(HighlightingReconciler.java:336)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.eclipse.core.jobs 4 2 2016-12-10 00:25:03.899
+!MESSAGE An internal error occurred during: "calculating highlighting".
+!STACK 0
+org.eclipse.emf.common.util.WrappedException: java.lang.NullPointerException
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:131)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.linkBatched(BatchLinkableResource.java:195)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler.beforeRefresh(HighlightingReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2$1.exec(HighlightingReconciler.java:340)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2$1.exec(HighlightingReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.CancelableUnitOfWork.exec(CancelableUnitOfWork.java:26)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.internalReadOnly(XtextDocument.java:520)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.readOnly(XtextDocument.java:492)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.readOnly(XtextDocument.java:133)
+	at org.eclipse.xtext.ui.editor.syntaxcoloring.HighlightingReconciler$2.run(HighlightingReconciler.java:336)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+Caused by: java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	... 15 more
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:04.587
+!MESSAGE org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator  - Error calling inferrer
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.naming.RaoNaming.getProjectName(RaoNaming.java:19)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer._infer(RaoJvmModelInferrer.java:63)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer.infer(RaoJvmModelInferrer.java:210)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator.installDerivedState(JvmModelAssociator.java:382)
+	at org.eclipse.xtext.resource.DerivedStateAwareResource.installDerivedState(DerivedStateAwareResource.java:242)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getContents(BatchLinkableResource.java:148)
+	at org.eclipse.xtext.xbase.typesystem.internal.LogicalContainerAwareBatchTypeResolver.getEntryPoints(LogicalContainerAwareBatchTypeResolver.java:44)
+	at org.eclipse.xtext.xbase.typesystem.internal.DefaultBatchTypeResolver.getTypeResolver(DefaultBatchTypeResolver.java:84)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:49)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver.doResolveTypes(CachingBatchTypeResolver.java:46)
+	at org.eclipse.xtext.xbase.typesystem.internal.AbstractBatchTypeResolver.resolveTypes(AbstractBatchTypeResolver.java:69)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:71)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:165)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.eclipse.jface 2 0 2016-12-10 00:25:05.161
+!MESSAGE Keybinding conflicts occurred.  They may interfere with normal accelerator operation.
+!SUBENTRY 1 org.eclipse.jface 2 0 2016-12-10 00:25:05.161
+!MESSAGE A conflict occurred for ALT+CTRL+H:
+Binding(ALT+CTRL+H,
+	ParameterizedCommand(Command(org.eclipse.jdt.ui.edit.text.java.open.call.hierarchy,Open Call Hierarchy,
+		Open a call hierarchy on the selected element,
+		Category(org.eclipse.ui.category.navigate,Navigate,null,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@7a6ef10b,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.ui.contexts.window,,,system)
+Binding(ALT+CTRL+H,
+	ParameterizedCommand(Command(org.eclipse.xtext.xbase.ui.hierarchy.OpenCallHierarchy,Open Call Hierarchy,
+		Open a call hierarchy on the selected element,
+		Category(org.eclipse.core.commands.categories.autogenerated,Uncategorized,Commands that were either auto-generated or have no category,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@5cbdc23b,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.xtext.ui.XtextEditorScope,,,system)
+Binding(ALT+CTRL+H,
+	ParameterizedCommand(Command(org.eclipse.xtext.ui.editor.OpenCallHierarchy,Open Call Hierarchy,
+		Open call hierarchy for the selected element,
+		Category(org.eclipse.ui.category.navigate,Navigate,null,true),
+		org.eclipse.ui.internal.WorkbenchHandlerServiceHandler@c35b83c,
+		,,true),null),
+	org.eclipse.ui.defaultAcceleratorConfiguration,
+	org.eclipse.xtext.ui.XtextEditorScope,,,system)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:05.215
+!MESSAGE org.eclipse.xtext.xbase.resource.BatchLinkableResource  - resolution of uriFragment '|1' failed.
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:05.228
+!MESSAGE org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy  - Error post-processing resource with content:
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close, in_postwork}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {enter, start_service}
+
+constant send_letter_time = 4.0;
+constant receive_letter_time = 12.0;
+constant send_delivery_time = 15.0;
+constant receive_delivery_time = 10.0;
+
+type PostDepartment {
+	int queLength;
+	double serviceDurAll;
+}
+
+type Client {	
+	int id;
+	TypeService service;
+	ClientState state;
+	double enterTime;
+}
+
+type Window {
+	WindowState windowState;
+	OperatorState operatorState;
+	int servedPeopleAll;	
+	TypeService[] service;
+	SheduleDay[] shedule;
+	double postTime;
+	double queueTimeAll;
+}
+
+type SheduleDay {
+	int timeStart = 8;
+	int timeEnd = 20;
+}
+
+resource fullDay = new SheduleDay(8, 19);
+resource close = new SheduleDay(0, 0);
+resource firstHalf = new SheduleDay(8, 14);
+resource secondHalf = new SheduleDay(14, 19);
+ 
+sequence clientEnterInterval = new Uniform(123456789, 10, 50);
+sequence serviceDuration = new Uniform(123456789, 10, 50);
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
+
+resource post = PostDepartment.create(0, 0);
+
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
+); 
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0, 0
+);
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0, 0
+);
+
+event ClientEnterEvent() {
+	var id = Client.all.size;
+	post.queLength = post.queLength + 1;
+	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);	
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + 60);
+	var windows = Window.accessible;
+	
+	for (var j =0 ; j < windows.length ; j++) {
+		var window = windows.get(j);
+		
+		if ( isWindowOpen(window) ) {			
+			window.windowState = WindowState.open;
+		}
+		else if(window.windowState == WindowState.open){
+			window.windowState = WindowState.in_postwork;
+			window.operatorState = OperatorState.busy;
+			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
+		}
+	}
+}
+
+event CloseWindowEvent(Window win) {
+	win.windowState = WindowState.close;	
+	win.operatorState = OperatorState.free;
+	win.postTime = 0;	
+}
+ 
+event EndOfDayEvent() {
+	var clients = Client.accessible;
+	
+
+	for (var i = 0 ; i < clients.length ; i++) {
+		var client = clients.get(i);		
+		if ( client.state == ClientState.enter ) {
+			client.erase();
+			post.queLength = post.queLength - 1;			
+		}	
+	}
+	EndOfDayEvent.plan(currentTime + 12 * 60);
+}
+
+operation ExampleClientService() {
+	relevant _post = post.onlyif[ queLength > 0 ]	
+	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
+//	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+//	
+	def duration() {
+		return getDuration(_client);
+	}
+	
+	def begin() {
+		_post.queLength = _post.queLength - 1;
+		_client.state = ClientState.start_service;
+		_window.operatorState = OperatorState.busy	
+		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
+	}
+	
+	def end() {		 
+		_post.serviceDurAll =  _post.serviceDurAll + getDuration(_client);				 
+		_window.operatorState = OperatorState.free;					
+		_window.servedPeopleAll = _window.servedPeopleAll + 1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;	
+		_client.erase();
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ExampleClientService.create());
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	EveryHourEvent.plan(currentTime);	
+	EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
+}
+
+def terminateCondition() {
+	return currentTime >= 7 * 12 * 60;
+}
+
+boolean isWindowOpen(Window window) {	
+	var currentDay = (currentTime / 60 / 12 % 7) as int;	
+	var currentHour = currentTime / 60 % 12 + 8;	
+	var start = window.shedule.get(currentDay).timeStart
+	var end = window.shedule.get(currentDay).timeEnd
+
+	return currentHour >=start && currentHour <= end;
+}
+
+double getDuration(Client client) {
+	switch(client.service) {
+		case TypeService.send_letter: {
+			return send_letter_time
+		}
+		case TypeService.receive_letter: {
+			return receive_letter_time;
+		}
+		case TypeService.send_delivery: {
+			return send_delivery_time
+		}
+		case TypeService.receive_delivery: {
+			return receive_delivery_time
+		}
+		default: {
+			return serviceDuration.next();
+		}
+	}		
+}
+
+dataSource TimeInQueue<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+    	return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll)/allServed;
+        
+    }
+}
+
+dataSource TimeDuration<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return post.serviceDurAll/allServed;
+    }
+}
+
+dataSource TimeStaingInSystem<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurAll)/allServed;
+    }
+}
+
+result operator_busyness1 = new Result([window1.operatorState]);
+result operator_busyness2 = new Result([window2.operatorState]);
+result operator_busyness3 = new Result([window3.operatorState]);
+result window_state1 = new Result([window1.windowState]);
+result window_state2 = new Result([window2.windowState]);
+result window_state3 = new Result([window3.windowState]);
+result queue_time_all = new Result(new TimeDuration())
+result service_duration= new Result(new TimeDuration());
+result staing_in_system = new Result(new TimeStaingInSystem());
+result queue_length = new Result([post.queLength]);
+result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) /( 7 )], new LastValueStatistics());						
+
+//______________________________________________________________________________
+//Animation from Katerina =)
+
+frame Ramochka {
+    def init() {
+        background = new Background(1240, 518, RaoColor.WHITE); 
+    }
+    def draw() {
+    	
+    	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	
+    	
+    	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	drawImage("picpic/fon.bmp", 0, 0); 	
+    	
+
+		switch (window1.windowState) 
+		{
+            case (window1.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 245, 85);
+            }
+            
+            case (window1.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+            case (window1.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 245, 250);
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+		}
+		
+		switch (window2.windowState) 
+		{
+            case (window2.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 575, 85);
+            }
+            
+            case (window2.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+            
+            case (window2.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 575, 250);
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+		
+		}
+		
+			switch (window3.windowState) 
+		{
+            case (window3.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 915, 85);
+            }
+            
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+            
+            case (window3.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 915, 250);
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+		}
+		//пїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅ "пїЅпїЅпїЅпїЅпїЅ"
+
+        if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window2.operatorState == OperatorState.busy)||(window2.windowState == WindowState.close))
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window3.operatorState == OperatorState.busy)||(window3.windowState == WindowState.close))
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+		var currentHour = (currentTime / 60 % 12 + 8) as int;
+		var currentMinute = (currentTime % 60) as int;
+        drawText(String.valueOf(currentHour), 340, 37);				//пїЅпїЅпїЅпїЅ
+        drawText(String.valueOf(currentMinute), 400, 37);			//пїЅпїЅпїЅпїЅпїЅпїЅ
+        
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
+        drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
+        
+
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ1
+        drawText("Service", 365, 165);
+        drawText("1. Send letter", 345, 180);
+        drawText("2. Receive letter", 345, 195);
+        
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ2
+        drawText("Service", 695, 165);
+        drawText("1. Send letter", 675, 180);
+        drawText("2. Receive letter", 675, 195);
+
+       		 //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ3
+        drawText("Service", 1035, 165);
+        drawText("1. Send delivery", 1015, 180);
+        drawText("2. Receive delivery", 1015, 195);     
+        
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        if (window1.windowState == WindowState.in_postwork)
+        	//&&(window2.windowState == WindowState.in_postwork)&&(window3.windowState == WindowState.in_postwork)
+        
+    	{ 
+    		drawImage("picpic/dopwork.png", 245, 85);
+    	}
+
+	//	val dy = Math.abs(8 - currentTime % 8) as int;
+	//val dx = Math.abs(8 - currentTime % 16) as int;
+//	drawRectangle(870, 400+ dy, 10, 10, RaoColor.GREEN, RaoColor.BLACK);
+		
+		//drawLine(255 + dx, 170 + dy, 290, 40 + dy, RaoColor.BLACK);
+		
+		
+    }
+}
+
+!STACK 0
+org.eclipse.emf.common.util.WrappedException: java.lang.NullPointerException
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:131)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+Caused by: java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	... 18 more
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:05.740
+!MESSAGE org.eclipse.xtext.ui.editor.model.XtextDocument  - Error in IXtextModelListener
+
+!STACK 0
+ru.bmstu.rk9.rao.ui.serialization.SerializationException: Model name "null" not found
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfig.findModel(SerializationConfig.java:195)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.updateInput(SerializationConfigView.java:430)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.access$9(SerializationConfigView.java:427)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView$8.modelChanged(SerializationConfigView.java:407)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.notifyModelListeners(XtextDocument.java:217)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:444)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:22.470
+!MESSAGE org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator  - Error calling inferrer
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.naming.RaoNaming.getProjectName(RaoNaming.java:19)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer._infer(RaoJvmModelInferrer.java:63)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer.infer(RaoJvmModelInferrer.java:210)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator.installDerivedState(JvmModelAssociator.java:382)
+	at org.eclipse.xtext.resource.DerivedStateAwareResource.installDerivedState(DerivedStateAwareResource.java:242)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getContents(BatchLinkableResource.java:148)
+	at org.eclipse.xtext.xbase.typesystem.internal.LogicalContainerAwareBatchTypeResolver.getEntryPoints(LogicalContainerAwareBatchTypeResolver.java:44)
+	at org.eclipse.xtext.xbase.typesystem.internal.DefaultBatchTypeResolver.getTypeResolver(DefaultBatchTypeResolver.java:84)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:49)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver.doResolveTypes(CachingBatchTypeResolver.java:46)
+	at org.eclipse.xtext.xbase.typesystem.internal.AbstractBatchTypeResolver.resolveTypes(AbstractBatchTypeResolver.java:69)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:71)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:165)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:22.497
+!MESSAGE org.eclipse.xtext.xbase.resource.BatchLinkableResource  - resolution of uriFragment '|1' failed.
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:22.506
+!MESSAGE org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy  - Error post-processing resource with content:
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close, in_postwork}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {enter, start_service}
+
+constant send_letter_time = 4.0;
+constant receive_letter_time = 12.0;
+constant send_delivery_time = 15.0;
+constant receive_delivery_time = 10.0;
+
+type PostDepartment {
+	int queLength;
+	double serviceDurAll;
+}
+
+type Client {	
+	int id;
+	TypeService service;
+	ClientState state;
+	double enterTime;
+}
+
+type Window {
+	WindowState windowState;
+	OperatorState operatorState;
+	int servedPeopleAll;	
+	TypeService[] service;
+	SheduleDay[] shedule;
+	double postTime;
+	double queueTimeAll;
+}
+
+type SheduleDay {
+	int timeStart = 8;
+	int timeEnd = 20;
+}
+
+resource fullDay = new SheduleDay(8, 19);
+resource close = new SheduleDay(0, 0);
+resource firstHalf = new SheduleDay(8, 14);
+resource secondHalf = new SheduleDay(14, 19);
+ 
+sequence clientEnterInterval = new Uniform(123456789, 10, 50);
+sequence serviceDuration = new Uniform(123456789, 10, 50);
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
+
+resource post = PostDepartment.create(0, 0);
+
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
+); 
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0, 0
+);
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0, 0
+);
+
+event ClientEnterEvent() {
+	var id = Client.all.size;
+	post.queLength = post.queLength + 1;
+	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);	
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + 60);
+	var windows = Window.accessible;
+	
+	for (var j =0 ; j < windows.length ; j++) {
+		var window = windows.get(j);
+		
+		if ( isWindowOpen(window) ) {			
+			window.windowState = WindowState.open;
+		}
+		else if(window.windowState == WindowState.open){
+			window.windowState = WindowState.in_postwork;
+			window.operatorState = OperatorState.busy;
+			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
+		}
+	}
+}
+
+event CloseWindowEvent(Window win) {
+	win.windowState = WindowState.close;	
+	win.operatorState = OperatorState.free;
+	win.postTime = 0;	
+}
+ 
+event EndOfDayEvent() {
+	var clients = Client.accessible;
+	
+
+	for (var i = 0 ; i < clients.length ; i++) {
+		var client = clients.get(i);		
+		if ( client.state == ClientState.enter ) {
+			client.erase();
+			post.queLength = post.queLength - 1;			
+		}	
+	}
+	EndOfDayEvent.plan(currentTime + 12 * 60);
+}
+
+operation ExampleClientService() {
+	relevant _post = post.onlyif[ queLength > 0 ]	
+	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
+//	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+//	
+	def duration() {
+		return getDuration(_client);
+	}
+	
+	def begin() {
+		_post.queLength = _post.queLength - 1;
+		_client.state = ClientState.start_service;
+		_window.operatorState = OperatorState.busy	
+		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
+	}
+	
+	def end() {		 
+		_post.serviceDurAll =  _post.serviceDurAll + getDuration(_client);				 
+		_window.operatorState = OperatorState.free;					
+		_window.servedPeopleAll = _window.servedPeopleAll + 1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;	
+		_client.erase();
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ExampleClientService.create());
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	EveryHourEvent.plan(currentTime);	
+	EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
+}
+
+def terminateCondition() {
+	return currentTime >= 7 * 12 * 60;
+}
+
+boolean isWindowOpen(Window window) {	
+	var currentDay = (currentTime / 60 / 12 % 7) as int;	
+	var currentHour = currentTime / 60 % 12 + 8;	
+	var start = window.shedule.get(currentDay).timeStart
+	var end = window.shedule.get(currentDay).timeEnd
+
+	return currentHour >=start && currentHour <= end;
+}
+
+double getDuration(Client client) {
+	switch(client.service) {
+		case TypeService.send_letter: {
+			return send_letter_time
+		}
+		case TypeService.receive_letter: {
+			return receive_letter_time;
+		}
+		case TypeService.send_delivery: {
+			return send_delivery_time
+		}
+		case TypeService.receive_delivery: {
+			return receive_delivery_time
+		}
+		default: {
+			return serviceDuration.next();
+		}
+	}		
+}
+
+dataSource TimeInQueue<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+    	return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll)/allServed;
+        
+    }
+}
+
+dataSource TimeDuration<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return post.serviceDurAll/allServed;
+    }
+}
+
+dataSource TimeStaingInSystem<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurAll)/allServed;
+    }
+}
+
+result operator_busyness1 = new Result([window1.operatorState]);
+result operator_busyness2 = new Result([window2.operatorState]);
+result operator_busyness3 = new Result([window3.operatorState]);
+result window_state1 = new Result([window1.windowState]);
+result window_state2 = new Result([window2.windowState]);
+result window_state3 = new Result([window3.windowState]);
+result queue_time_all = new Result(new TimeDuration())
+result service_duration= new Result(new TimeDuration());
+result staing_in_system = new Result(new TimeStaingInSystem());
+result queue_length = new Result([post.queLength]);
+result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) /( 7 )], new LastValueStatistics());						
+
+//______________________________________________________________________________
+//Animation from Katerina =)
+
+frame Ramochka {
+    def init() {
+        background = new Background(1240, 518, RaoColor.WHITE); 
+    }
+    def draw() {
+    	
+    	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	
+    	
+    	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	drawImage("picpic/fon.bmp", 0, 0); 	
+    	
+
+		switch (window1.windowState) 
+		{
+            case (window1.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 245, 85);
+            }
+            
+            case (window1.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+            case (window1.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 245, 250);
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+		}
+		
+		switch (window2.windowState) 
+		{
+            case (window2.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 575, 85);
+            }
+            
+            case (window2.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+            
+            case (window2.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 575, 250);
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+		
+		}
+		
+			switch (window3.windowState) 
+		{
+            case (window3.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 915, 85);
+            }
+            
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+            
+            case (window3.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 915, 250);
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+		}
+		//пїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅ "пїЅпїЅпїЅпїЅпїЅ"
+
+        if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window2.operatorState == OperatorState.busy)||(window2.windowState == WindowState.close))
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window3.operatorState == OperatorState.busy)||(window3.windowState == WindowState.close))
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+		var currentHour = (currentTime / 60 % 12 + 8) as int;
+		var currentMinute = (currentTime % 60) as int;
+        drawText(String.valueOf(currentHour), 340, 37);				//пїЅпїЅпїЅпїЅ
+        drawText(String.valueOf(currentMinute), 400, 37);			//пїЅпїЅпїЅпїЅпїЅпїЅ
+        
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
+        drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
+        
+
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ1
+        drawText("Service", 365, 165);
+        drawText("1. Send letter", 345, 180);
+        drawText("2. Receive letter", 345, 195);
+        
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ2
+        drawText("Service", 695, 165);
+        drawText("1. Send letter", 675, 180);
+        drawText("2. Receive letter", 675, 195);
+
+       		 //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ3
+        drawText("Service", 1035, 165);
+        drawText("1. Send delivery", 1015, 180);
+        drawText("2. Receive delivery", 1015, 195);     
+        
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        if (window1.windowState == WindowState.in_postwork)
+        	//&&(window2.windowState == WindowState.in_postwork)&&(window3.windowState == WindowState.in_postwork)
+        
+    	{ 
+    		drawImage("picpic/dopwork.png", 245, 85);
+    	}
+
+
+		
+		
+    }
+}
+
+!STACK 0
+org.eclipse.emf.common.util.WrappedException: java.lang.NullPointerException
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:131)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+Caused by: java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	... 18 more
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:22.609
+!MESSAGE org.eclipse.xtext.ui.editor.model.XtextDocument  - Error in IXtextModelListener
+
+!STACK 0
+ru.bmstu.rk9.rao.ui.serialization.SerializationException: Model name "null" not found
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfig.findModel(SerializationConfig.java:195)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.updateInput(SerializationConfigView.java:430)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.access$9(SerializationConfigView.java:427)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView$8.modelChanged(SerializationConfigView.java:407)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.notifyModelListeners(XtextDocument.java:217)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:444)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:32.933
+!MESSAGE org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator  - Error calling inferrer
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.naming.RaoNaming.getProjectName(RaoNaming.java:19)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer._infer(RaoJvmModelInferrer.java:63)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer.infer(RaoJvmModelInferrer.java:210)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator.installDerivedState(JvmModelAssociator.java:382)
+	at org.eclipse.xtext.resource.DerivedStateAwareResource.installDerivedState(DerivedStateAwareResource.java:242)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getContents(BatchLinkableResource.java:148)
+	at org.eclipse.xtext.xbase.typesystem.internal.LogicalContainerAwareBatchTypeResolver.getEntryPoints(LogicalContainerAwareBatchTypeResolver.java:44)
+	at org.eclipse.xtext.xbase.typesystem.internal.DefaultBatchTypeResolver.getTypeResolver(DefaultBatchTypeResolver.java:84)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:49)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver.doResolveTypes(CachingBatchTypeResolver.java:46)
+	at org.eclipse.xtext.xbase.typesystem.internal.AbstractBatchTypeResolver.resolveTypes(AbstractBatchTypeResolver.java:69)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:71)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:165)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:32.980
+!MESSAGE org.eclipse.xtext.xbase.resource.BatchLinkableResource  - resolution of uriFragment '|1' failed.
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:32.985
+!MESSAGE org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy  - Error post-processing resource with content:
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close, in_postwork}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {enter, start_service}
+
+constant send_letter_time = 4.0;
+constant receive_letter_time = 12.0;
+constant send_delivery_time = 15.0;
+constant receive_delivery_time = 10.0;
+
+type PostDepartment {
+	int queLength;
+	double serviceDurAll;
+}
+
+type Client {	
+	int id;
+	TypeService service;
+	ClientState state;
+	double enterTime;
+}
+
+type Window {
+	WindowState windowState;
+	OperatorState operatorState;
+	int servedPeopleAll;	
+	TypeService[] service;
+	SheduleDay[] shedule;
+	double postTime;
+	double queueTimeAll;
+}
+
+type SheduleDay {
+	int timeStart = 8;
+	int timeEnd = 20;
+}
+
+resource fullDay = new SheduleDay(8, 19);
+resource close = new SheduleDay(0, 0);
+resource firstHalf = new SheduleDay(8, 14);
+resource secondHalf = new SheduleDay(14, 19);
+ 
+sequence clientEnterInterval = new Uniform(123456789, 10, 50);
+sequence serviceDuration = new Uniform(123456789, 10, 50);
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
+
+resource post = PostDepartment.create(0, 0);
+
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
+); 
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0, 0
+);
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0, 0
+);
+
+event ClientEnterEvent() {
+	var id = Client.all.size;
+	post.queLength = post.queLength + 1;
+	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);	
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + 60);
+	var windows = Window.accessible;
+	
+	for (var j =0 ; j < windows.length ; j++) {
+		var window = windows.get(j);
+		
+		if ( isWindowOpen(window) ) {			
+			window.windowState = WindowState.open;
+		}
+		else if(window.windowState == WindowState.open){
+			window.windowState = WindowState.in_postwork;
+			window.operatorState = OperatorState.busy;
+			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
+		}
+	}
+}
+
+event CloseWindowEvent(Window win) {
+	win.windowState = WindowState.close;	
+	win.operatorState = OperatorState.free;
+	win.postTime = 0;	
+}
+ 
+event EndOfDayEvent() {
+	var clients = Client.accessible;
+	
+
+	for (var i = 0 ; i < clients.length ; i++) {
+		var client = clients.get(i);		
+		if ( client.state == ClientState.enter ) {
+			client.erase();
+			post.queLength = post.queLength - 1;			
+		}	
+	}
+	EndOfDayEvent.plan(currentTime + 12 * 60);
+}
+
+operation ExampleClientService() {
+	relevant _post = post.onlyif[ queLength > 0 ]	
+	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
+//	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+//	
+	def duration() {
+		return getDuration(_client);
+	}
+	
+	def begin() {
+		_post.queLength = _post.queLength - 1;
+		_client.state = ClientState.start_service;
+		_window.operatorState = OperatorState.busy	
+		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
+	}
+	
+	def end() {		 
+		_post.serviceDurAll =  _post.serviceDurAll + getDuration(_client);				 
+		_window.operatorState = OperatorState.free;					
+		_window.servedPeopleAll = _window.servedPeopleAll + 1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;	
+		_client.erase();
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ExampleClientService.create());
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	EveryHourEvent.plan(currentTime);	
+	EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
+}
+
+def terminateCondition() {
+	return currentTime >= 7 * 12 * 60;
+}
+
+boolean isWindowOpen(Window window) {	
+	var currentDay = (currentTime / 60 / 12 % 7) as int;	
+	var currentHour = currentTime / 60 % 12 + 8;	
+	var start = window.shedule.get(currentDay).timeStart
+	var end = window.shedule.get(currentDay).timeEnd
+
+	return currentHour >=start && currentHour <= end;
+}
+
+double getDuration(Client client) {
+	switch(client.service) {
+		case TypeService.send_letter: {
+			return send_letter_time
+		}
+		case TypeService.receive_letter: {
+			return receive_letter_time;
+		}
+		case TypeService.send_delivery: {
+			return send_delivery_time
+		}
+		case TypeService.receive_delivery: {
+			return receive_delivery_time
+		}
+		default: {
+			return serviceDuration.next();
+		}
+	}		
+}
+
+dataSource TimeInQueue<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+    	return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll)/allServed;
+        
+    }
+}
+
+dataSource TimeDuration<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return post.serviceDurAll/allServed;
+    }
+}
+
+dataSource TimeStaingInSystem<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurAll)/allServed;
+    }
+}
+
+result operator_busyness1 = new Result([window1.operatorState]);
+result operator_busyness2 = new Result([window2.operatorState]);
+result operator_busyness3 = new Result([window3.operatorState]);
+result window_state1 = new Result([window1.windowState]);
+result window_state2 = new Result([window2.windowState]);
+result window_state3 = new Result([window3.windowState]);
+result queue_time_all = new Result(new TimeDuration())
+result service_duration= new Result(new TimeDuration());
+result staing_in_system = new Result(new TimeStaingInSystem());
+result queue_length = new Result([post.queLength]);
+result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) /( 7 )], new LastValueStatistics());						
+
+//______________________________________________________________________________
+//Animation from Katerina =)
+
+frame Ramochka {
+    def init() {
+        background = new Background(1240, 518, RaoColor.WHITE); 
+    }
+    def draw() {
+    	
+    	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	
+    	
+    	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	drawImage("picpic/fon.bmp", 0, 0); 	
+    	
+
+		switch (window1.windowState) 
+		{
+            case (window1.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 245, 85);
+            }
+            
+            case (window1.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+            case (window1.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 245, 250);
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+		}
+		
+		switch (window2.windowState) 
+		{
+            case (window2.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 575, 85);
+            }
+            
+            case (window2.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+            
+            case (window2.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 575, 250);
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+		
+		}
+		
+			switch (window3.windowState) 
+		{
+            case (window3.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 915, 85);
+            }
+            
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+            
+            case (window3.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 915, 250);
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+		}
+		//пїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅ "пїЅпїЅпїЅпїЅпїЅ"
+
+        if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window2.operatorState == OperatorState.busy)||(window2.windowState == WindowState.close))
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window3.operatorState == OperatorState.busy)||(window3.windowState == WindowState.close))
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+		var currentHour = (currentTime / 60 % 12 + 8) as int;
+		var currentMinute = (currentTime % 60) as int;
+        drawText(String.valueOf(currentHour), 340, 37);				//пїЅпїЅпїЅпїЅ
+        drawText(String.valueOf(currentMinute), 400, 37);			//пїЅпїЅпїЅпїЅпїЅпїЅ
+        
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
+        drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
+        
+        
+        
+
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ1
+        drawText("Service", 365, 165);
+        drawText("1. Send letter", 345, 180);
+        drawText("2. Receive letter", 345, 195);
+        
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ2
+        drawText("Service", 695, 165);
+        drawText("1. Send letter", 675, 180);
+        drawText("2. Receive letter", 675, 195);
+
+       		 //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ3
+        drawText("Service", 1035, 165);
+        drawText("1. Send delivery", 1015, 180);
+        drawText("2. Receive delivery", 1015, 195);     
+        
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        if (window1.windowState == WindowState.in_postwork)
+        	//&&(window2.windowState == WindowState.in_postwork)&&(window3.windowState == WindowState.in_postwork)
+        
+    	{ 
+    		drawImage("picpic/dopwork.png", 245, 85);
+    	}
+
+
+		
+		
+    }
+}
+
+!STACK 0
+org.eclipse.emf.common.util.WrappedException: java.lang.NullPointerException
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:131)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+Caused by: java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	... 18 more
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:33.124
+!MESSAGE org.eclipse.xtext.ui.editor.model.XtextDocument  - Error in IXtextModelListener
+
+!STACK 0
+ru.bmstu.rk9.rao.ui.serialization.SerializationException: Model name "null" not found
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfig.findModel(SerializationConfig.java:195)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.updateInput(SerializationConfigView.java:430)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.access$9(SerializationConfigView.java:427)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView$8.modelChanged(SerializationConfigView.java:407)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.notifyModelListeners(XtextDocument.java:217)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:444)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:43.872
+!MESSAGE org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator  - Error calling inferrer
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.naming.RaoNaming.getProjectName(RaoNaming.java:19)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer._infer(RaoJvmModelInferrer.java:63)
+	at ru.bmstu.rk9.rao.jvmmodel.RaoJvmModelInferrer.infer(RaoJvmModelInferrer.java:210)
+	at org.eclipse.xtext.xbase.jvmmodel.JvmModelAssociator.installDerivedState(JvmModelAssociator.java:382)
+	at org.eclipse.xtext.resource.DerivedStateAwareResource.installDerivedState(DerivedStateAwareResource.java:242)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getContents(BatchLinkableResource.java:148)
+	at org.eclipse.xtext.xbase.typesystem.internal.LogicalContainerAwareBatchTypeResolver.getEntryPoints(LogicalContainerAwareBatchTypeResolver.java:44)
+	at org.eclipse.xtext.xbase.typesystem.internal.DefaultBatchTypeResolver.getTypeResolver(DefaultBatchTypeResolver.java:84)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:49)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver$1.get(CachingBatchTypeResolver.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.typesystem.internal.CachingBatchTypeResolver.doResolveTypes(CachingBatchTypeResolver.java:46)
+	at org.eclipse.xtext.xbase.typesystem.internal.AbstractBatchTypeResolver.resolveTypes(AbstractBatchTypeResolver.java:69)
+	at org.eclipse.xtext.xbase.resource.BatchLinkingService.resolveBatched(BatchLinkingService.java:71)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:165)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:43.892
+!MESSAGE org.eclipse.xtext.xbase.resource.BatchLinkableResource  - resolution of uriFragment '|1' failed.
+
+!STACK 0
+java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:43.896
+!MESSAGE org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy  - Error post-processing resource with content:
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close, in_postwork}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {enter, start_service}
+
+constant send_letter_time = 4.0;
+constant receive_letter_time = 12.0;
+constant send_delivery_time = 15.0;
+constant receive_delivery_time = 10.0;
+
+type PostDepartment {
+	int queLength;
+	double serviceDurAll;
+}
+
+type Client {	
+	int id;
+	TypeService service;
+	ClientState state;
+	double enterTime;
+}
+
+type Window {
+	WindowState windowState;
+	OperatorState operatorState;
+	int servedPeopleAll;	
+	TypeService[] service;
+	SheduleDay[] shedule;
+	double postTime;
+	double queueTimeAll;
+}
+
+type SheduleDay {
+	int timeStart = 8;
+	int timeEnd = 20;
+}
+
+resource fullDay = new SheduleDay(8, 19);
+resource close = new SheduleDay(0, 0);
+resource firstHalf = new SheduleDay(8, 14);
+resource secondHalf = new SheduleDay(14, 19);
+ 
+sequence clientEnterInterval = new Uniform(123456789, 10, 50);
+sequence serviceDuration = new Uniform(123456789, 10, 50);
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0, TypeService.receive_delivery -> 3.0]);
+
+resource post = PostDepartment.create(0, 0);
+
+resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
+); 
+resource window2 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close), 0, 0
+);
+resource window3 = Window.create(WindowState.close, OperatorState.free, 0, 
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close), 0, 0
+);
+
+event ClientEnterEvent() {
+	var id = Client.all.size;
+	post.queLength = post.queLength + 1;
+	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);	
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + 60);
+	var windows = Window.accessible;
+	
+	for (var j =0 ; j < windows.length ; j++) {
+		var window = windows.get(j);
+		
+		if ( isWindowOpen(window) ) {			
+			window.windowState = WindowState.open;
+		}
+		else if(window.windowState == WindowState.open){
+			window.windowState = WindowState.in_postwork;
+			window.operatorState = OperatorState.busy;
+			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
+		}
+	}
+}
+
+event CloseWindowEvent(Window win) {
+	win.windowState = WindowState.close;	
+	win.operatorState = OperatorState.free;
+	win.postTime = 0;	
+}
+ 
+event EndOfDayEvent() {
+	var clients = Client.accessible;
+	
+
+	for (var i = 0 ; i < clients.length ; i++) {
+		var client = clients.get(i);		
+		if ( client.state == ClientState.enter ) {
+			client.erase();
+			post.queLength = post.queLength - 1;			
+		}	
+	}
+	EndOfDayEvent.plan(currentTime + 12 * 60);
+}
+
+operation ExampleClientService() {
+	relevant _post = post.onlyif[ queLength > 0 ]	
+	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
+//	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+//	
+	def duration() {
+		return getDuration(_client);
+	}
+	
+	def begin() {
+		_post.queLength = _post.queLength - 1;
+		_client.state = ClientState.start_service;
+		_window.operatorState = OperatorState.busy	
+		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
+	}
+	
+	def end() {		 
+		_post.serviceDurAll =  _post.serviceDurAll + getDuration(_client);				 
+		_window.operatorState = OperatorState.free;					
+		_window.servedPeopleAll = _window.servedPeopleAll + 1;
+		_window.postTime = _window.postTime + getDuration(_client) * 0.2;	
+		_client.erase();
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ExampleClientService.create());
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+	EveryHourEvent.plan(currentTime);	
+	EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
+}
+
+def terminateCondition() {
+	return currentTime >= 7 * 12 * 60;
+}
+
+boolean isWindowOpen(Window window) {	
+	var currentDay = (currentTime / 60 / 12 % 7) as int;	
+	var currentHour = currentTime / 60 % 12 + 8;	
+	var start = window.shedule.get(currentDay).timeStart
+	var end = window.shedule.get(currentDay).timeEnd
+
+	return currentHour >=start && currentHour <= end;
+}
+
+double getDuration(Client client) {
+	switch(client.service) {
+		case TypeService.send_letter: {
+			return send_letter_time
+		}
+		case TypeService.receive_letter: {
+			return receive_letter_time;
+		}
+		case TypeService.send_delivery: {
+			return send_delivery_time
+		}
+		case TypeService.receive_delivery: {
+			return receive_delivery_time
+		}
+		default: {
+			return serviceDuration.next();
+		}
+	}		
+}
+
+dataSource TimeInQueue<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+    	return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll)/allServed;
+        
+    }
+}
+
+dataSource TimeDuration<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return post.serviceDurAll/allServed;
+    }
+}
+
+dataSource TimeStaingInSystem<Double>() {
+    def evaluate() {
+    	var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+        return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurAll)/allServed;
+    }
+}
+
+result operator_busyness1 = new Result([window1.operatorState]);
+result operator_busyness2 = new Result([window2.operatorState]);
+result operator_busyness3 = new Result([window3.operatorState]);
+result window_state1 = new Result([window1.windowState]);
+result window_state2 = new Result([window2.windowState]);
+result window_state3 = new Result([window3.windowState]);
+result queue_time_all = new Result(new TimeDuration())
+result service_duration= new Result(new TimeDuration());
+result staing_in_system = new Result(new TimeStaingInSystem());
+result queue_length = new Result([post.queLength]);
+result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) /( 7 )], new LastValueStatistics());						
+
+//______________________________________________________________________________
+//Animation from Katerina =)
+
+frame Ramochka {
+    def init() {
+        background = new Background(1240, 518, RaoColor.WHITE); 
+    }
+    def draw() {
+    	
+    	//пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	
+    	
+    	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+    	drawImage("picpic/fon.bmp", 0, 0); 	
+    	
+
+		switch (window1.windowState) 
+		{
+            case (window1.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 245, 85);
+            }
+            
+            case (window1.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+            case (window1.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 245, 250);
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+		}
+		
+		switch (window2.windowState) 
+		{
+            case (window2.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 575, 85);
+            }
+            
+            case (window2.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+            
+            case (window2.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 575, 250);
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+		
+		}
+		
+			switch (window3.windowState) 
+		{
+            case (window3.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 915, 85);
+            }
+            
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+            
+            case (window3.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 915, 250);
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+		}
+		//пїЅпїЅпїЅпїЅпїЅпїЅ "пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ" пїЅ "пїЅпїЅпїЅпїЅпїЅ"
+
+        if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(195, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window2.operatorState == OperatorState.busy)||(window2.windowState == WindowState.close))
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(530, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 538, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        if ((window3.operatorState == OperatorState.busy)||(window3.windowState == WindowState.close))
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+        	drawText("BUSY", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        else
+        {
+        	drawRectangle(870, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+        	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+        }
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅ
+  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
+		var currentHour = (currentTime / 60 % 12 + 8) as int;
+		var currentMinute = (currentTime % 60) as int;
+        drawText(String.valueOf(currentHour), 340, 37);				//пїЅпїЅпїЅпїЅ
+        drawText(String.valueOf(currentMinute), 400, 37);			//пїЅпїЅпїЅпїЅпїЅпїЅ
+        
+        //пїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
+        drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
+        
+        
+         	var dL = 40;
+     	for (var j = 0; j < post.queLength; j++)
+    	{
+     	drawImage("picpic/people.bmp", 610+dL*j, 445);
+          	
+      	}
+
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ1
+        drawText("Service", 365, 165);
+        drawText("1. Send letter", 345, 180);
+        drawText("2. Receive letter", 345, 195);
+        
+        	//пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ2
+        drawText("Service", 695, 165);
+        drawText("1. Send letter", 675, 180);
+        drawText("2. Receive letter", 675, 195);
+
+       		 //пїЅпїЅпїЅ пїЅпїЅпїЅпїЅ пїЅ3
+        drawText("Service", 1035, 165);
+        drawText("1. Send delivery", 1015, 180);
+        drawText("2. Receive delivery", 1015, 195);     
+        
+        
+        //пїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅпїЅ пїЅпїЅпїЅпїЅ
+        if (window1.windowState == WindowState.in_postwork)
+        	//&&(window2.windowState == WindowState.in_postwork)&&(window3.windowState == WindowState.in_postwork)
+        
+    	{ 
+    		drawImage("picpic/dopwork.png", 245, 85);
+    	}
+
+
+		
+		
+    }
+}
+
+!STACK 0
+org.eclipse.emf.common.util.WrappedException: java.lang.NullPointerException
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:131)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.doResolveLazyCrossReference(LazyLinkingResource.java:189)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReference(LazyLinkingResource.java:148)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.resolveLazyCrossReferences(LazyLinkingResource.java:134)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.resolveLazyCrossReferences(BatchLinkableResource.java:168)
+	at org.eclipse.xtext.EcoreUtil2.resolveLazyCrossReferences(EcoreUtil2.java:498)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.postParse(XtextDocumentReconcileStrategy.java:175)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.doReconcile(XtextDocumentReconcileStrategy.java:153)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextDocumentReconcileStrategy.reconcile(XtextDocumentReconcileStrategy.java:67)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.doRun(XtextReconciler.java:442)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.access$3(XtextReconciler.java:422)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:363)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler$1.process(XtextReconciler.java:1)
+	at org.eclipse.xtext.util.concurrent.IUnitOfWork$Void.exec(IUnitOfWork.java:37)
+	at org.eclipse.xtext.resource.OutdatedStateManager.exec(OutdatedStateManager.java:98)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:428)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
+Caused by: java.lang.NullPointerException
+	at ru.bmstu.rk9.rao.RaoXImportSectionNamespaceScopeProvider.internalGetImportedNamespaceResolvers(RaoXImportSectionNamespaceScopeProvider.java:41)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:199)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider$1.get(XImportSectionNamespaceScopeProvider.java:1)
+	at org.eclipse.xtext.util.OnChangeEvictingCache.get(OnChangeEvictingCache.java:77)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getImportedNamespaceResolvers(XImportSectionNamespaceScopeProvider.java:196)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getLocalElementsScope(XImportSectionNamespaceScopeProvider.java:115)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:104)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.internalGetScope(XImportSectionNamespaceScopeProvider.java:102)
+	at org.eclipse.xtext.xbase.scoping.XImportSectionNamespaceScopeProvider.getScope(XImportSectionNamespaceScopeProvider.java:83)
+	at org.eclipse.xtext.xbase.scoping.batch.TypeScopes.createTypeScope(TypeScopes.java:59)
+	at org.eclipse.xtext.xbase.scoping.batch.XbaseBatchScopeProvider.getScope(XbaseBatchScopeProvider.java:105)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getScope(DefaultLinkingService.java:59)
+	at org.eclipse.xtext.linking.impl.DefaultLinkingService.getLinkedObjects(DefaultLinkingService.java:119)
+	at org.eclipse.xtext.linking.lazy.LazyLinkingResource.getEObject(LazyLinkingResource.java:247)
+	at org.eclipse.xtext.xbase.resource.BatchLinkableResource.getEObject(BatchLinkableResource.java:119)
+	... 18 more
+
+!ENTRY org.apache.log4j 4 0 2016-12-10 00:25:44.029
+!MESSAGE org.eclipse.xtext.ui.editor.model.XtextDocument  - Error in IXtextModelListener
+
+!STACK 0
+ru.bmstu.rk9.rao.ui.serialization.SerializationException: Model name "null" not found
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfig.findModel(SerializationConfig.java:195)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.updateInput(SerializationConfigView.java:430)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView.access$9(SerializationConfigView.java:427)
+	at ru.bmstu.rk9.rao.ui.serialization.SerializationConfigView$8.modelChanged(SerializationConfigView.java:407)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.notifyModelListeners(XtextDocument.java:217)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument$XtextDocumentLocker.modify(XtextDocument.java:444)
+	at org.eclipse.xtext.ui.editor.model.XtextDocument.internalModify(XtextDocument.java:162)
+	at org.eclipse.xtext.ui.editor.reconciler.XtextReconciler.run(XtextReconciler.java:360)
+	at org.eclipse.core.internal.jobs.Worker.run(Worker.java:55)
