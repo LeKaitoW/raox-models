@@ -1,7 +1,7 @@
 Модель порта
 ============
 
-![screenshot](screen.png?raw=true)
+![screenshot](screenshots/port.png?raw=true)
 
 Описание функционирования модели
 --------------------------------
