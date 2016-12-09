@@ -12,7 +12,7 @@ constant receive_delivery_time = 10.0;
 
 type PostDepartment {
 	int queLength;
-	double serviceDurAll;		
+	double serviceDurAll;
 }
 
 type Client {	
@@ -228,33 +228,58 @@ frame Ramochka {
     	//��� ��������
     	drawImage("picpic/fon.bmp", 0, 0); 	
     	
-    	//�������� "�������" � "�������"
-    	if (window1.windowState == WindowState.open)
-    	{ 
-    		drawImage("picpic/open.bmp", 245, 85);     
-        }
-        if (window1.windowState == WindowState.close)
-        {
-        	drawImage("picpic/close.bmp", 245, 180);
-        }
-		   	if (window2.windowState == WindowState.open)
-    	{ 
-    		drawImage("picpic/open.bmp", 575, 85);     
-        }
-         if (window2.windowState == WindowState.close)
-        {
-        	drawImage("picpic/close.bmp", 575, 180);
-        }
-        if (window3.windowState == WindowState.open)
-    	{ 
-    		drawImage("picpic/open.bmp", 915, 85);     
-        }
-        if (window3.windowState == WindowState.close)
-        {
-        	drawImage("picpic/close.bmp", 915, 180);
-        }
-        
-        //������ "��������" � "�����"
+
+		switch (window1.windowState) 
+		{
+            case (window1.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 245, 85);
+            }
+            
+            case (window1.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+            case (window1.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 245, 250);
+         	drawImage("picpic/close.bmp", 245, 180);
+            }
+            
+		}
+		
+		switch (window2.windowState) 
+		{
+            case (window2.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 575, 85);
+            }
+            
+            case (window2.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+            
+            case (window2.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 575, 250);
+         	drawImage("picpic/close.bmp", 575, 180);
+            }
+		
+		}
+		
+			switch (window3.windowState) 
+		{
+            case (window3.windowState == WindowState.open):{           
+         	drawImage("picpic/open.bmp", 915, 85);
+            }
+            
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+            
+            case (window3.windowState == WindowState.in_postwork):{           
+         	drawImage("picpic/dopwork.bmp", 915, 250);
+         	drawImage("picpic/close.bmp", 915, 180);
+            }
+		}
+		//������ "��������" � "�����"
+
         if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
         {
         	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
@@ -288,9 +313,8 @@ frame Ramochka {
         	drawText("FREE", 878, 203, RaoColor.BLACK, 25, Alignment.LEFT);
         }
         
-
-        //Текущее время  
-
+        //������� �����
+  //      var currentDay =  (currentTime / 60 / 12 % 7) as int;	
 		var currentHour = (currentTime / 60 % 12 + 8) as int;
 		var currentMinute = (currentTime % 60) as int;
         drawText(String.valueOf(currentHour), 340, 37);				//����
@@ -300,24 +324,17 @@ frame Ramochka {
         drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
         drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
         
-	//	if (servedPeople == WindowState.open)
-    //	{ 
-    //		drawImage("picpic/open.bmp", 245, 85);     
-     //   }
 
         //������ ��������
         	//��� ���� �1
         drawText("Service", 365, 165);
         drawText("1. Send letter", 345, 180);
         drawText("2. Receive letter", 345, 195);
-        drawText("3. Magazine subscription", 345, 210);
-        drawText("4. Lottery", 345, 225);
         
         	//��� ���� �2
         drawText("Service", 695, 165);
         drawText("1. Send letter", 675, 180);
-        drawText("2. �ublicservices", 675, 195);
-        drawText("3. �ayments", 675, 210);
+        drawText("2. Receive letter", 675, 195);
 
        		 //��� ���� �3
         drawText("Service", 1035, 165);
@@ -338,8 +355,6 @@ frame Ramochka {
 //	drawRectangle(870, 400+ dy, 10, 10, RaoColor.GREEN, RaoColor.BLACK);
 		
 		//drawLine(255 + dx, 170 + dy, 290, 40 + dy, RaoColor.BLACK);
-		
-		//drawText("FREE", 750, 203 + dy); 
 		
 		
     }
