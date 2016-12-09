@@ -49,7 +49,7 @@ sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 
 resource post = PostDepartment.create(0, 0);
 
-resource window1 = Window.create(WindowState.close, OperatorState.free, 0, 
+resource window1 = Window.create(WindowState.in_postwork, OperatorState.free, 0, 
 	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
 	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf), 0, 0
 ); 
@@ -83,12 +83,16 @@ event EveryHourEvent() {
 		else if(window.windowState == WindowState.open){
 			window.windowState = WindowState.in_postwork;
 			window.operatorState = OperatorState.busy;
+			log(currentTime);
+			log('in_post');
+			
 			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
 		}
 	}
 }
 
 event CloseWindowEvent(Window win) {
+	log(win.windowState); 
 	win.windowState = WindowState.close;	
 	win.operatorState = OperatorState.free;
 	win.postTime = 0;	
@@ -110,11 +114,11 @@ event EndOfDayEvent() {
 
 operation ExampleClientService() {
 	relevant _post = post.onlyif[ queLength > 0 ]	
-	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
-	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
-			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
-//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
-//	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
+//	relevant _client = Client.all.filter[ state == ClientState.enter ].any;
+//	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free
+//			&&  service.contains(_client.service) ].minBySafe[ servedPeopleAll ];
+	relevant _window = Window.all.filter[ windowState == WindowState.open && operatorState == OperatorState.free].minBySafe[ servedPeopleAll ];
+	relevant _client = Client.all.filter[ state == ClientState.enter && _window.service.contains(service) ].minBySafe[ id ];				
 //	
 	def duration() {
 		return getDuration(_client);
@@ -123,7 +127,7 @@ operation ExampleClientService() {
 	def begin() {
 		_post.queLength = _post.queLength - 1;
 		_client.state = ClientState.start_service;
-		_window.operatorState = OperatorState.busy	
+		_window.operatorState = OperatorState.busy;	
 		_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);	
 	}
 	
@@ -153,8 +157,8 @@ def terminateCondition() {
 boolean isWindowOpen(Window window) {	
 	var currentDay = (currentTime / 60 / 12 % 7) as int;	
 	var currentHour = currentTime / 60 % 12 + 8;	
-	var start = window.shedule.get(currentDay).timeStart
-	var end = window.shedule.get(currentDay).timeEnd
+	var start = window.shedule.get(currentDay).timeStart;
+	var end = window.shedule.get(currentDay).timeEnd;
 
 	return currentHour >=start && currentHour <= end;
 }
@@ -162,16 +166,16 @@ boolean isWindowOpen(Window window) {
 double getDuration(Client client) {
 	switch(client.service) {
 		case TypeService.send_letter: {
-			return send_letter_time
+			return send_letter_time;
 		}
 		case TypeService.receive_letter: {
 			return receive_letter_time;
 		}
 		case TypeService.send_delivery: {
-			return send_delivery_time
+			return send_delivery_time;
 		}
 		case TypeService.receive_delivery: {
-			return receive_delivery_time
+			return receive_delivery_time;
 		}
 		default: {
 			return serviceDuration.next();
@@ -218,7 +222,7 @@ result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll
 
 frame Ramochka {
     def init() {
-        background = new Background(1240, 518, RaoColor.WHITE); 
+        background = new Background(1240, 518, RaoColor.WHITE);         
     }
     def draw() {
     	
@@ -226,8 +230,7 @@ frame Ramochka {
     	
     	
     	//��� ��������
-    	drawImage("picpic/fon.bmp", 0, 0); 	
-    	
+    	drawImage("picpic/fon.bmp", 0, 0); 	    	
 
 		switch (window1.windowState) 
 		{
@@ -241,6 +244,7 @@ frame Ramochka {
             
             case (window1.windowState == WindowState.in_postwork):{           
          	drawImage("picpic/dopwork.bmp", 245, 250);
+         	log('iiim1');
          	drawImage("picpic/close.bmp", 245, 180);
             }
             
@@ -248,18 +252,22 @@ frame Ramochka {
 		
 		switch (window2.windowState) 
 		{
-            case (window2.windowState == WindowState.open):{           
-         	drawImage("picpic/open.bmp", 575, 85);
+            case WindowState.open: {           
+         		drawImage("picpic/open.bmp", 575, 85);
             }
             
-            case (window2.windowState == WindowState.close):{           
-         	drawImage("picpic/close.bmp", 575, 180);
+            case WindowState.close:{           
+         		drawImage("picpic/close.bmp", 575, 180);
             }
             
-            case (window2.windowState == WindowState.in_postwork):{           
-         	drawImage("picpic/dopwork.bmp", 575, 250);
-         	drawImage("picpic/close.bmp", 575, 180);
-            }
+            case WindowState.in_postwork:{           
+		     	drawImage("picpic/dopwork.bmp", 575, 250);
+		     	log('iiim2');
+		     	drawImage("picpic/close.bmp", 575, 180);
+	        }
+	        default: {
+	        	log(')))');
+	        }	        	       
 		
 		}
 		
@@ -267,21 +275,24 @@ frame Ramochka {
 		{
             case (window3.windowState == WindowState.open):{           
          	drawImage("picpic/open.bmp", 915, 85);
+         		
             }
-            
-            case (window3.windowState == WindowState.close):{           
-         	drawImage("picpic/close.bmp", 915, 180);
-            }
-            
             case (window3.windowState == WindowState.in_postwork):{           
          	drawImage("picpic/dopwork.bmp", 915, 250);
+         	log('iiim3');
          	drawImage("picpic/close.bmp", 915, 180);
             }
+            case (window3.windowState == WindowState.close):{           
+         	drawImage("picpic/close.bmp", 915, 180);
+         	//log('close');
+            }
+            
+
 		}
 		//������ "��������" � "�����"
 
         if ((window1.operatorState == OperatorState.busy)||(window1.windowState == WindowState.close))
-        {
+        {        	
         	drawRectangle(195, 200, 40, 20, RaoColor.RED, RaoColor.RED);
         	drawText("BUSY", 203, 203, RaoColor.BLACK, 25, Alignment.LEFT);
         }
