@@ -49,15 +49,15 @@ type Штормы {
 resource порт = Порт.create(0, 0)
 resource шторм = Штормы.create(Состояние_шторма.Спокоен)
 
-sequence интервал_прихода1 = new Values(#[10])
-sequence интервал_прихода2 = new Values(#[15])
-sequence интервал_прихода3 = new Values(#[20])
+sequence интервал_прихода1 = new Exponential(1200, 0.15)
+sequence интервал_прихода2 = new Exponential(1201, 0.08)
+sequence интервал_прихода3 = new Exponential(1202, 0.04)
 sequence длительность_буксирования = new Values(#[5])
-sequence длительность_заполнения1 = new Values(#[31])
-sequence длительность_заполнения2 = new Values(#[32])
-sequence длительность_заполнения3 = new Values(#[33])
-sequence периодичность_шторма = new Values(#[90])
-sequence длительность_шторма = new Values(#[20])
+sequence длительность_заполнения1 = new Normal(1203, 9, 3)
+sequence длительность_заполнения2 = new Normal(1204, 16, 4)
+sequence длительность_заполнения3 = new Normal(1205, 23, 6)
+sequence периодичность_шторма = new Exponential(1206, 0.001)
+sequence длительность_шторма = new Normal(1207, 20, 10)
 
 event Событие_прихода_танкера1() {
 	Танкеры.create(Тип_танкера.Тип1, Состояние_танкера.Пришел, currentTime, порт.номер_крайнего_танкера + 1)
@@ -256,7 +256,6 @@ result Всего_заполнено_причалом_3 = new Result([
 result Пропускная_способность = new Result([Буксиры.all.any.количество_обслуженных / currentTime * 60])
 result Длительность_работы = new Result([currentTime / 60])
 
-/* Анимация */
 event Timer() {
 	for (Буксиры буксир : Буксиры.all) {
 		val шаг_хода_буксира = (((граница_причалов - 1.5 * буксир.размер) - (граница_очереди + 1.5 * буксир.размер)) /
