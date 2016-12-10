@@ -106,7 +106,7 @@ frame Анимация_сети_Петри {
 		background = new Background(685, 450, RaoColor.WHITE)
 	}
 	def draw() {
-		drawImage("img/petri.png", 0, 0)
+		drawImage("img/petri_net.png", 0, 0)
 		drawText("P1", 15, 100, RaoColor.BLACK)
 		drawText("P2", 140, 100, RaoColor.BLACK)
 		drawText("P3", 265, 100, RaoColor.BLACK)
