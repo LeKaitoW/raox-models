@@ -7,7 +7,7 @@
 ![screenshot](screenshots/explonation_gene.png?raw=true)
 
 Скрещивание представляет из себя обмен двух особей участком гена.
-Границы для обмена выбираются случайно.
+Границы для обмена выбираются случайно. В данном примере границы равны 1 и 3.
 
 ![screenshot](screenshots/explonation_crosbreeding.png?raw=true)
 
