@@ -1,0 +1,86 @@
+constant A = 600
+constant B = 400
+constant рамка = 25
+constant шаг_отрисовки_графика = 1
+constant отступ_текста = 2
+
+enum отрисовка {Y, N}
+
+void Сброс_флага_отрисовки(){
+	for (город : travelling_salesman_problem.Города.all.filter[флаг_отрисовки == отрисовка.Y]) {
+		город.флаг_отрисовки = отрисовка.N
+	} 
+}
+
+int Значение_шага_отрисовки(int value){
+	if (value < 10) {
+		return 1
+	}
+	return value / 10
+}
+
+frame График_эволюции {
+	def init(){
+		background = new Background(A + 2 * рамка, B + 2 * рамка, RaoColor.WHITE)
+	}
+
+	def draw(){
+		var верхняя_точка_графика = travelling_salesman_problem.массив_лучших.длины_маршрутов.get(0)
+		var шаг_отрисовки = Значение_шага_отрисовки(travelling_salesman_problem.массив_лучших.длины_маршрутов.size())
+		val протяжённость_маршрута_по_методу_жадного_алгоритма = travelling_salesman_problem.
+			маршрут_методом_жадного_алгоритма.длина_маршрута
+		drawLine(рамка, рамка, рамка, B + рамка, RaoColor.BLACK)
+		drawLine(рамка, B + рамка, A + рамка, B + рамка, RaoColor.BLACK)
+		drawLine(рамка,
+			рамка + B - (протяжённость_маршрута_по_методу_жадного_алгоритма * B / верхняя_точка_графика) as int,
+			рамка + A,
+			рамка + B - (протяжённость_маршрута_по_методу_жадного_алгоритма * B / верхняя_точка_графика) as int,
+			RaoColor.GREEN)
+		drawText(travelling_salesman_problem.toString(протяжённость_маршрута_по_методу_жадного_алгоритма as int),
+			рамка + отступ_текста,
+			рамка + B - (протяжённость_маршрута_по_методу_жадного_алгоритма * B / верхняя_точка_графика) as int +
+				отступ_текста)
+				if (travelling_salesman_problem.массив_лучших.длины_маршрутов.size() >= 2 * шаг_отрисовки) {
+					for (var i = 0; i <
+						travelling_salesman_problem.массив_лучших.длины_маршрутов.size() - шаг_отрисовки; i +=
+						шаг_отрисовки) {
+						drawText(
+							travelling_salesman_problem.toString(
+								travelling_salesman_problem.intValue(
+									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i))),
+							рамка + A * (i) / (travelling_salesman_problem.массив_лучших.длины_маршрутов.size()) +
+								отступ_текста,
+							рамка + B -
+								(travelling_salesman_problem.intValue(
+									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
+									верхняя_точка_графика) as int + отступ_текста)
+						drawCircle(рамка + A * i / (travelling_salesman_problem.массив_лучших.длины_маршрутов.size()),
+							рамка + B -
+								(travelling_salesman_problem.intValue(
+									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
+									верхняя_точка_графика) as int, 3)
+						drawText(travelling_salesman_problem.toString(i),
+							рамка + (A * i / travelling_salesman_problem.массив_лучших.длины_маршрутов.size()) +
+								отступ_текста, рамка + B + отступ_текста)
+						drawCircle(рамка + (A * i / travelling_salesman_problem.массив_лучших.длины_маршрутов.size()),
+							рамка + B, 3)
+					}
+				}
+				if (travelling_salesman_problem.массив_лучших.длины_маршрутов.size() >= 2 * шаг_отрисовки_графика) {
+					for (var i = 0; i <
+						travelling_salesman_problem.массив_лучших.длины_маршрутов.size() - шаг_отрисовки_графика; i +=
+						шаг_отрисовки_графика) {
+						drawLine(рамка + (A * i / travelling_salesman_problem.массив_лучших.длины_маршрутов.size()),
+							рамка + B -
+								(travelling_salesman_problem.intValue(
+									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
+									верхняя_точка_графика) as int, рамка + (A * (i + шаг_отрисовки_графика) /
+								travelling_salesman_problem.массив_лучших.длины_маршрутов.size()), рамка + B -
+								(travelling_salesman_problem.intValue(
+									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i +
+										шаг_отрисовки_графика)) * B / верхняя_точка_графика) as int, RaoColor.RED)
+					}
+				}
+			}
+		}
+		

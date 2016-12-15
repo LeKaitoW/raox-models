@@ -11,16 +11,16 @@ frame Маршрут_лучшей_особи {
 
 	def draw(){
 		for (город : travelling_salesman_problem.Города.all.filter [
-			флаг_отрисовки == frame_graph_of_evolution.отрисовка.N
+			флаг_отрисовки == frame_a_graph_of_evolution.отрисовка.N
 		]) {
 			drawCircle((рамка + город.x * A / travelling_salesman_problem.ширина_поля) as int,
 				(рамка + город.y * B / travelling_salesman_problem.высота_поля) as int, 3)
 			drawText(travelling_salesman_problem.toString(город.номер),
 				рамка + (город.x * A / travelling_salesman_problem.ширина_поля) as int + отступ_текста,
 				рамка + (город.y * B / travelling_salesman_problem.высота_поля + отступ_текста) as int)
-			город.флаг_отрисовки = frame_graph_of_evolution.отрисовка.Y
+			город.флаг_отрисовки = frame_a_graph_of_evolution.отрисовка.Y
 		}
-		frame_graph_of_evolution.Сброс_флага_отрисовки()
+		frame_a_graph_of_evolution.Сброс_флага_отрисовки()
 		val travelling_salesman_problem.Особи особь = travelling_salesman_problem.Особи.accessible.minBySafe [
 			длина_маршрута
 		]
