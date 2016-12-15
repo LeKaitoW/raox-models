@@ -1,24 +1,23 @@
 import java.util.Arrays
 
 enum OperatorState {free, busy}
-enum WindowState {open, close, in_postwork}
+enum WindowState {open, close, post_processing}
 enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
-enum ClientState {enter, start_service}
+enum ClientState {queue, service}
 
 constant send_letter_time = 4.0;
 constant receive_letter_time = 12.0;
 constant send_delivery_time = 15.0;
 constant receive_delivery_time = 10.0;
 
-type PostDepartment {
-	int queLength;
-	double serviceDurAll;
+type PostOffice {
+	int currentQueueLength;
+	double serviceDurationAll;
 }
 
 type Client {
-	int id;
 	TypeService service;
-	ClientState state;
+	ClientState clientState;
 	double enterTime;
 }
 
@@ -42,13 +41,13 @@ resource close = new SheduleDay(0, 0);
 resource firstHalf = new SheduleDay(8, 14);
 resource secondHalf = new SheduleDay(14, 19);
 
-sequence clientEnterInterval = new Uniform(123456789, 10, 50);
+sequence clientEnterInterval = new Exponential(123456789, 1 / 30.0);
 sequence serviceDuration = new Uniform(123456789, 10, 50);
 sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0,
 		TypeService.receive_delivery -> 3.0]);
 
-resource post = PostDepartment.create(0, 0);
+resource post = PostOffice.create(0, 0);
 
 resource window1 = Window.create(
 	WindowState.close,
@@ -79,11 +78,9 @@ resource window3 = Window.create(
 );
 
 event ClientEnterEvent() {
-	var id = Client.all.size;
-	post.queLength = post.queLength + 1;
-	Client.create(id, randomTypeService.next(), ClientState.enter, currentTime);
+	post.currentQueueLength = post.currentQueueLength + 1;
+	Client.create(randomTypeService.next(), ClientState.queue, currentTime);
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
-
 }
 
 event EveryHourEvent() {
@@ -96,17 +93,17 @@ event EveryHourEvent() {
 		if (isWindowOpen(window)) {
 			window.windowState = WindowState.open;
 		} else if (window.windowState == WindowState.open) {
-			window.windowState = WindowState.in_postwork;
+			window.windowState = WindowState.post_processing;
 			window.operatorState = OperatorState.busy;
 			CloseWindowEvent.plan(currentTime + (window.postTime as int), window);
 		}
 	}
 }
 
-event CloseWindowEvent(Window win) {
-	win.windowState = WindowState.close;
-	win.operatorState = OperatorState.free;
-	win.postTime = 0;
+event CloseWindowEvent(Window window) {
+	window.windowState = WindowState.close;
+	window.operatorState = OperatorState.free;
+	window.postTime = 0;
 }
 
 event EndOfDayEvent() {
@@ -114,182 +111,183 @@ event EndOfDayEvent() {
 
 	for (var i = 0; i < clients.length; i++) {
 		var client = clients.get(i);
-		if (client.state == ClientState.enter) {
+		if (client.clientState == ClientState.queue) {
 			client.erase();
-			post.queLength = post.queLength - 1;
+			post.currentQueueLength = post.currentQueueLength - 1;
 		}
 	}
 	EndOfDayEvent.plan(currentTime + 12 * 60);
 }
 
 operation ExampleClientService() {
-	relevant _post = post.onlyif[queLength > 0]
+	relevant _post = post.onlyif[currentQueueLength > 0]
 	relevant _window = Window.all.filter[windowState == WindowState.open && operatorState == OperatorState.free].
 		minBySafe[servedPeopleAll];
-		relevant _client = Client.all.filter[state == ClientState.enter && _window.service.contains(service)].minBySafe [
-			id
-		];
+		relevant _client = Client.all.filter[clientState == ClientState.queue && _window.service.contains(service)].
+			minBySafe [
+				enterTime
+			];
 
-		def duration() {
-			return getDuration(_client);
-		}
-
-		def begin() {
-			_post.queLength = _post.queLength - 1;
-			_client.state = ClientState.start_service;
-			_window.operatorState = OperatorState.busy;
-			_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);
-		}
-
-		def end() {
-			_post.serviceDurAll = _post.serviceDurAll + getDuration(_client);
-			_window.operatorState = OperatorState.free;
-			_window.servedPeopleAll = _window.servedPeopleAll + 1;
-			_window.postTime = _window.postTime + getDuration(_client) * 0.2;
-			_client.erase();
-		}
-	}
-
-	logic Model {
-		activity clientService = new Activity(ExampleClientService.create());
-	}
-
-	def init() {
-		ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
-		EveryHourEvent.plan(currentTime);
-		EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
-	}
-
-	def terminateCondition() {
-		return currentTime >= 7 * 12 * 60;
-	}
-
-	boolean isWindowOpen(Window window) {
-		var currentDay = (currentTime / 60 / 12 % 7) as int;
-		var currentHour = currentTime / 60 % 12 + 8;
-		var start = window.shedule.get(currentDay).timeStart;
-		var end = window.shedule.get(currentDay).timeEnd;
-
-		return currentHour >= start && currentHour <= end;
-	}
-
-	double getDuration(Client client) {
-		switch (client.service) {
-			case TypeService.send_letter: {
-				return send_letter_time;
+			def duration() {
+				return getDuration(_client);
 			}
-			case TypeService.receive_letter: {
-				return receive_letter_time;
+
+			def begin() {
+				_post.currentQueueLength = _post.currentQueueLength - 1;
+				_client.clientState = ClientState.service;
+				_window.operatorState = OperatorState.busy;
+				_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime);
 			}
-			case TypeService.send_delivery: {
-				return send_delivery_time;
-			}
-			case TypeService.receive_delivery: {
-				return receive_delivery_time;
-			}
-			default: {
-				return serviceDuration.next();
+
+			def end() {
+				_post.serviceDurationAll = _post.serviceDurationAll + getDuration(_client);
+				_window.operatorState = OperatorState.free;
+				_window.servedPeopleAll = _window.servedPeopleAll + 1;
+				_window.postTime = _window.postTime + getDuration(_client) * 0.2;
+				_client.erase();
 			}
 		}
-	}
 
-	dataSource TimeInQueue<Double>() {
-		def evaluate() {
-			var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
-			return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll) / allServed;
-
+		logic Model {
+			activity clientService = new Activity(ExampleClientService.create());
 		}
-	}
 
-	dataSource TimeDuration<Double>() {
-		def evaluate() {
-			var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
-			return post.serviceDurAll / allServed;
-		}
-	}
-
-	dataSource TimeStaingInSystem<Double>() {
-		def evaluate() {
-			var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
-			return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurAll) /
-				allServed;
-		}
-	}
-
-	result operator_busyness1 = new Result([window1.operatorState]);
-	result operator_busyness2 = new Result([window2.operatorState]);
-	result operator_busyness3 = new Result([window3.operatorState]);
-	result window_state1 = new Result([window1.windowState]);
-	result window_state2 = new Result([window2.windowState]);
-	result window_state3 = new Result([window3.windowState]);
-	result queue_time_all = new Result(new TimeDuration())
-	result service_duration= new Result(new TimeDuration());
-	result staing_in_system = new Result(
-		new TimeStaingInSystem());
-	result queue_length = new Result([post.queLength]);
-	result capacity = new Result([(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / ( 7 )],
-		new LastValueStatistics());
-
-	frame Ramochka {
 		def init() {
-			background = new Background(1240, 518, RaoColor.WHITE);
+			ClientEnterEvent.plan(currentTime + clientEnterInterval.next());
+			EveryHourEvent.plan(currentTime);
+			EndOfDayEvent.plan(currentTime + 12 * 60 - 2);
 		}
-		def draw() {
 
-			drawImage("picpic/fon.bmp", 0, 0);
+		def terminateCondition() {
+			return currentTime >= 7 * 12 * 60;
+		}
 
-			var windows = Window.accessible;
+		boolean isWindowOpen(Window window) {
+			var currentDay = (currentTime / 60 / 12 % 7) as int;
+			var currentHour = currentTime / 60 % 12 + 8;
+			var startHour = window.shedule.get(currentDay).timeStart;
+			var endHour = window.shedule.get(currentDay).timeEnd;
 
-			var dl_1 = 335;
+			return startHour <= currentHour && currentHour <= endHour
+		}
 
-			for (var j = 0; j < windows.length; j++) {
-				var window = windows.get(j);
-
-				switch (window.windowState) {
-					case WindowState.open: {
-						drawImage("picpic/open.bmp", 245 + dl_1 * j, 85);
-					}
-					case WindowState.close: {
-						drawImage("picpic/close.bmp", 245 + dl_1 * j, 180);
-					}
-					case WindowState.in_postwork: {
-						drawImage("picpic/dopwork.bmp", 245 + dl_1 * j, 250);
-						drawImage("picpic/close.bmp", 245 + dl_1 * j, 180);
-					}
+		double getDuration(Client client) {
+			switch (client.service) {
+				case TypeService.send_letter: {
+					return send_letter_time;
 				}
-				if ((window.operatorState == OperatorState.busy) || (window.windowState == WindowState.close)) {
-					drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.RED, RaoColor.RED);
-					drawText("BUSY", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT);
-				} else {
-					drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
-					drawText("FREE", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+				case TypeService.receive_letter: {
+					return receive_letter_time;
+				}
+				case TypeService.send_delivery: {
+					return send_delivery_time;
+				}
+				case TypeService.receive_delivery: {
+					return receive_delivery_time;
+				}
+				default: {
+					return serviceDuration.next();
 				}
 			}
+		}
 
-			var currentHour = (currentTime / 60 % 12 + 8) as int;
-			var currentMinute = (currentTime % 60) as int;
-			drawText(String.valueOf(currentHour), 340, 37);
-			drawText(String.valueOf(currentMinute), 400, 37);
+		dataSource TimeInQueue<Double>() {
+			def evaluate() {
+				var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+				return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll) / allServed;
 
-			drawText("Service", 365, 165);
-			drawText("1. Send letter", 345, 180);
-			drawText("2. Receive letter", 345, 195);
-
-			drawText("Service", 695, 165);
-			drawText("1. Send letter", 675, 180);
-			drawText("2. Receive letter", 675, 195);
-
-			drawText("Service", 1035, 165);
-			drawText("1. Send delivery", 1015, 180);
-			drawText("2. Receive delivery", 1015, 195);
-
-			drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
-			drawText(Integer.toString(post.queLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
-
-			var dl_2 = 40;
-			for (var j = 0; j < post.queLength; j++) {
-				drawImage("picpic/people.bmp", 610 + dl_2 * j, 445);
 			}
 		}
-	}
-	
+
+		dataSource TimeDuration<Double>() {
+			def evaluate() {
+				var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+				return post.serviceDurationAll / allServed;
+			}
+		}
+
+		dataSource TimeStaingInSystem<Double>() {
+			def evaluate() {
+				var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll;
+				return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.serviceDurationAll) /
+					allServed;
+			}
+		}
+
+		result operator_busyness1 = new Result([window1.operatorState]);
+		result operator_busyness2 = new Result([window2.operatorState]);
+		result operator_busyness3 = new Result([window3.operatorState]);
+		result window_state1 = new Result([window1.windowState]);
+		result window_state2 = new Result([window2.windowState]);
+		result window_state3 = new Result([window3.windowState]);
+		result queue_time_all = new Result(new TimeDuration())
+		result service_duration= new Result(new TimeDuration());
+		result staing_in_system = new Result(new TimeStaingInSystem());
+		result queue_length = new Result([post.currentQueueLength]);
+		result capacity = new Result([
+			(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / ( 7 )
+		], new LastValueStatistics());
+
+		frame Ramochka {
+			def init() {
+				background = new Background(1240, 518, RaoColor.WHITE);
+			}
+			def draw() {
+
+				drawImage("picpic/fon.bmp", 0, 0);
+
+				var windows = Window.accessible;
+
+				var dl_1 = 335;
+
+				for (var j = 0; j < windows.length; j++) {
+					var window = windows.get(j);
+
+					switch (window.windowState) {
+						case WindowState.open: {
+							drawImage("picpic/open.bmp", 245 + dl_1 * j, 85);
+						}
+						case WindowState.close: {
+							drawImage("picpic/close.bmp", 245 + dl_1 * j, 180);
+						}
+						case WindowState.post_processing: {
+							drawImage("picpic/dopwork.bmp", 245 + dl_1 * j, 250);
+							drawImage("picpic/close.bmp", 245 + dl_1 * j, 180);
+						}
+					}
+					if ((window.operatorState == OperatorState.busy) || (window.windowState == WindowState.close)) {
+						drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.RED, RaoColor.RED);
+						drawText("BUSY", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+					} else {
+						drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN);
+						drawText("FREE", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT);
+					}
+				}
+
+				var currentHour = (currentTime / 60 % 12 + 8) as int;
+				var currentMinute = (currentTime % 60) as int;
+				drawText(String.valueOf(currentHour), 340, 37);
+				drawText(String.valueOf(currentMinute), 400, 37);
+
+				drawText("Service", 365, 165);
+				drawText("1. Send letter", 345, 180);
+				drawText("2. Receive letter", 345, 195);
+
+				drawText("Service", 695, 165);
+				drawText("1. Send letter", 675, 180);
+				drawText("2. Receive letter", 675, 195);
+
+				drawText("Service", 1035, 165);
+				drawText("1. Send delivery", 1015, 180);
+				drawText("2. Receive delivery", 1015, 195);
+
+				drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT);
+				drawText(Integer.toString(post.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER);
+
+				var dl_2 = 40;
+				for (var j = 0; j < post.currentQueueLength; j++) {
+					drawImage("picpic/people.bmp", 610 + dl_2 * j, 445);
+				}
+			}
+		}
+		
