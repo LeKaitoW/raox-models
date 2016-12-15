@@ -27,7 +27,7 @@ type Window {
 	int servedPeopleAll
 	TypeService[] service
 	SheduleDay[] shedule
-	double postTime
+	double postProcessingTime
 	double queueTimeAll
 }
 
@@ -92,7 +92,7 @@ event EveryHourEvent() {
 		} else if (window.windowState == WindowState.open) {
 			window.windowState = WindowState.post_processing
 			window.operatorState = OperatorState.busy
-			CloseWindowEvent.plan(currentTime + (window.postTime as int), window)
+			CloseWindowEvent.plan(currentTime + window.postProcessingTime, window)
 		}
 	}
 }
@@ -100,7 +100,7 @@ event EveryHourEvent() {
 event CloseWindowEvent(Window window) {
 	window.windowState = WindowState.close
 	window.operatorState = OperatorState.free
-	window.postTime = 0
+	window.postProcessingTime = 0
 }
 
 event EndOfDayEvent() {
@@ -114,29 +114,29 @@ event EndOfDayEvent() {
 }
 
 operation ExampleClientService() {
-	relevant _post = post.onlyif[currentQueueLength > 0]
-	relevant _window = Window.all.filter[windowState == WindowState.open && operatorState == OperatorState.free].
+	relevant post_ = post.onlyif[currentQueueLength > 0]
+	relevant window_ = Window.all.filter[windowState == WindowState.open && operatorState == OperatorState.free].
 	minBySafe[servedPeopleAll]
-	relevant _client = Client.all.filter[clientState == ClientState.queue && _window.service.contains(service)].
+	relevant client_ = Client.all.filter[clientState == ClientState.queue && window_.service.contains(service)].
 	minBySafe [enterTime]
 
 		def duration() {
-			return getDuration(_client)
+			return getDuration(client_)
 		}
 
 		def begin() {
-			_post.currentQueueLength = _post.currentQueueLength - 1
-			_client.clientState = ClientState.service
-			_window.operatorState = OperatorState.busy
-			_window.queueTimeAll = _window.queueTimeAll + (currentTime - _client.enterTime)
+			post_.currentQueueLength = post_.currentQueueLength - 1
+			client_.clientState = ClientState.service
+			window_.operatorState = OperatorState.busy
+			window_.queueTimeAll = window_.queueTimeAll + (currentTime - client_.enterTime)
 		}
 
 		def end() {
-			_post.totalServicesDurations = _post.totalServicesDurations + getDuration(_client)
-			_window.operatorState = OperatorState.free
-			_window.servedPeopleAll = _window.servedPeopleAll + 1
-			_window.postTime = _window.postTime + getDuration(_client) * 0.2
-			_client.erase()
+			post_.totalServicesDurations = post_.totalServicesDurations + getDuration(client_)
+			window_.operatorState = OperatorState.free
+			window_.servedPeopleAll = window_.servedPeopleAll + 1
+			window_.postProcessingTime = window_.postProcessingTime + getDuration(client_) * 0.2
+			client_.erase()
 		}
 }
 
