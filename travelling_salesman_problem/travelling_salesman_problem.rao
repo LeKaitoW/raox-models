@@ -1,4 +1,5 @@
 import java.util.ArrayList
+import java.util.List
 
 constant количество_городов = 15
 constant ширина_поля = 50
@@ -17,8 +18,8 @@ enum скрещивание {Y, N}
 enum отбор {Y, N}
 
 type Особи {
-	ArrayList<Double> пары_меняющихся_узлов
-	ArrayList<Города> маршрут
+	List<Double> пары_меняющихся_узлов
+	List<Города> маршрут
 	double длина_маршрута
 	double поколение
 	мутация флаг_мутации
@@ -57,7 +58,7 @@ String toString (int value){
 }
 
 type Маршрут {
-	ArrayList<Города> маршрут
+	List<Города> маршрут
 	double длина_маршрута
 }
 
@@ -100,7 +101,7 @@ void Создание_популяции(){
 }
 
 type Массив_длин_маршрутов {
-	ArrayList<Double> длины_маршрутов
+	List<Double> длины_маршрутов
 }
 
 resource массив_лучших = Массив_длин_маршрутов.create(new ArrayList<Double>())
@@ -163,7 +164,7 @@ void Скрещивание() {
 			особь_потомок_2.пары_меняющихся_узлов.add(ген)
 		}
 
-		var ArrayList<Double> temp = new ArrayList<Double>()
+		var List<Double> temp = new ArrayList<Double>()
 
 		for (ген : особь_предок_2.пары_меняющихся_узлов) {
 			temp.add(ген)
@@ -223,8 +224,8 @@ void Сброс_флагов_особей(){
 	}
 }
 
-ArrayList<Города> Преобразовать_в_маршрут(ArrayList<Double> пары_меняющихся_узлов){
-	var ArrayList<Города> маршрут = new ArrayList<Города>()
+List<Города> Преобразовать_в_маршрут(List<Double> пары_меняющихся_узлов){
+	var List<Города> маршрут = new ArrayList<Города>()
 
 	for (избранный : Города.all.filter[флаг_выбора == выбор.N]) {
 		маршрут.add(избранный)
@@ -238,7 +239,7 @@ ArrayList<Города> Преобразовать_в_маршрут(ArrayList<D
 	return маршрут
 }
 
-ArrayList<Города> Поменять_местами_элементы_в_массиве(ArrayList<Города> маршрут, int p1, int p2){
+List<Города> Поменять_местами_элементы_в_массиве(List<Города> маршрут, int p1, int p2){
 	var Города temp = маршрут.get(p1)
 	маршрут.set(p1, маршрут.get(p2))
 	маршрут.set(p2, temp)
@@ -257,7 +258,7 @@ double Расстояние_между_точками(double x1, double y1, doub
 	return Math.sqrt(y_diff * y_diff + x_diff * x_diff)
 }
 
-double Подсчёт_длины_маршрута(ArrayList<Города> маршрут) {
+double Подсчёт_длины_маршрута(List<Города> маршрут) {
 	if (маршрут.size() <= 1)
 		return 0
 	var Города исходный = маршрут.get(0)
