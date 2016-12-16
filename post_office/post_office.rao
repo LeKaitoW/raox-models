@@ -116,30 +116,29 @@ event EndOfDayEvent() {
 	EndOfDayEvent.plan(currentTime + 12 * 60)
 }
 
-operation ExampleClientService() {
-	relevant post_ = post.onlyif[currentQueueLength > 0]
-	relevant window_ = Window.all.filter[windowState == WindowState.open && operatorState == OperatorState.free].
-	minBySafe[servedPeopleAll]
-	relevant client_ = Client.all.filter[clientState == ClientState.queue && window_.service.contains(service)].
-	minBySafe [enterTime]
+operation ExampleClientService() {	
+	relevants window, client = combination(		 
+        Window.accessible.filter[windowState == WindowState.open && operatorState == OperatorState.free],
+        Client.accessible.filter[clientState == ClientState.queue]
+    ).filter[window.service.contains(client.service)].minBySafe[window.servedPeopleAll + client.enterTime] of types Window, Client	
 
 		def duration() {
-			return client_.duration
+			return client.duration
 		}
 
 		def begin() {
-			post_.currentQueueLength = post_.currentQueueLength - 1
-			client_.clientState = ClientState.service
-			window_.operatorState = OperatorState.busy
-			window_.queueTimeAll = window_.queueTimeAll + (currentTime - client_.enterTime)
+			post.currentQueueLength = post.currentQueueLength - 1
+			client.clientState = ClientState.service
+			window.operatorState = OperatorState.busy
+			window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
 		}
 
 		def end() {
-			post_.totalServicesDurations = post_.totalServicesDurations + client_.duration
-			window_.operatorState = OperatorState.free
-			window_.servedPeopleAll = window_.servedPeopleAll + 1
-			window_.postProcessingTime = window_.postProcessingTime + client_.duration * 0.2
-			client_.erase()
+			post.totalServicesDurations = post.totalServicesDurations + client.duration
+			window.operatorState = OperatorState.free
+			window.servedPeopleAll = window.servedPeopleAll + 1
+			window.postProcessingTime = window.postProcessingTime + client.duration * 0.2
+			client.erase()
 		}
 }
 
@@ -250,7 +249,7 @@ frame Ramochka {
 					drawImage("picpic/close.bmp", 245 + dl_1 * j, 180)
 				}
 			}
-			if ((window.operatorState == OperatorState.busy) || (window.windowState == WindowState.close)) {
+			if (window.operatorState == OperatorState.busy || window.windowState == WindowState.close) {
 				drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.RED, RaoColor.RED)
 				drawText("BUSY", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
 			} else {
