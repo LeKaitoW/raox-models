@@ -51,7 +51,7 @@ resource close = new SheduleDay(0, 0)
 resource firstHalf = new SheduleDay(8, 14)
 resource secondHalf = new SheduleDay(14, 19)
 
-resource post = PostOffice.create(0, 0)
+resource postOffice = PostOffice.create(0, 0)
 
 resource window1 = Window.create(
 	WindowState.close,
@@ -85,7 +85,7 @@ event ClientEnterEvent() {
 	var service = randomTypeService.next()
 	var duration = getDuration(service)
 
-	post.currentQueueLength = post.currentQueueLength + 1
+	postOffice.currentQueueLength = postOffice.currentQueueLength + 1
 	Client.create(service, ClientState.queue, currentTime, duration)
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
 }
@@ -114,7 +114,7 @@ event EndOfDayEvent() {
 	for (client : Client.accessible) {
 		if (client.clientState == ClientState.queue) {
 			client.erase()
-			post.currentQueueLength = post.currentQueueLength - 1
+			postOffice.currentQueueLength = postOffice.currentQueueLength - 1
 		}
 	}
 	EndOfDayEvent.plan(currentTime + Hours * Minutes)
@@ -132,14 +132,14 @@ operation ExampleClientService() {
 	}
 
 	def begin() {
-		post.currentQueueLength = post.currentQueueLength - 1
+		postOffice.currentQueueLength = postOffice.currentQueueLength - 1
 		client.clientState = ClientState.service
 		window.operatorState = OperatorState.busy
 		window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
 	}
 
 	def end() {
-		post.totalServicesDurations = post.totalServicesDurations + client.duration
+		postOffice.totalServicesDurations = postOffice.totalServicesDurations + client.duration
 		window.operatorState = OperatorState.free
 		window.servedPeopleAll = window.servedPeopleAll + 1
 		window.postProcessingTime = window.postProcessingTime + client.duration * 0.2
@@ -202,14 +202,14 @@ dataSource TimeInQueue<Double>() {
 dataSource TimeDuration<Double>() {
 	def evaluate() {
 		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
-		return post.totalServicesDurations / allServed
+		return postOffice.totalServicesDurations / allServed
 	}
 }
 
 dataSource TimeStaingInSystem<Double>() {
 	def evaluate() {
 		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
-		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.totalServicesDurations) /
+		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + postOffice.totalServicesDurations) /
 			allServed
 	}
 }
@@ -223,7 +223,7 @@ result window_state3 = new Result([window3.windowState])
 result queue_time_all = new Result(new TimeDuration())
 result service_duration= new Result(new TimeDuration())
 result staing_in_system = new Result(new TimeStaingInSystem())
-result queue_length = new Result([post.currentQueueLength])
+result queue_length = new Result([postOffice.currentQueueLength])
 result capacity = new Result([
 	(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / (Days)
 ], new LastValueStatistics())
@@ -238,7 +238,7 @@ frame FrameAnimation {
 
 		val step_draw = 335
 		var window_number = 0
-		for (window : Window.accessible) {
+		for (window : Window.all) {
 			drawText("Service", 365 + step_draw * window_number, 165)
 			val row_heigth = 15
 			var service_num = 1
@@ -280,7 +280,7 @@ frame FrameAnimation {
 		val step_show_people = 40
 		val max_show_people = 10
 
-		for (var j = 0; j < Math.min(post.currentQueueLength, max_show_people); j++) {
+		for (var j = 0; j < Math.min(postOffice.currentQueueLength, max_show_people); j++) {
 			drawImage("images/people.png", 610 + step_show_people * j, 460)
 		}
 
@@ -288,7 +288,7 @@ frame FrameAnimation {
 		drawText(String.valueOf(currentMinute), 400, 37)
 
 		drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT)
-		drawText(Integer.toString(post.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER)
+		drawText(Integer.toString(postOffice.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER)
 
 	}
 
