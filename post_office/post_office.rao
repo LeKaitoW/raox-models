@@ -38,7 +38,7 @@ sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
 	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0,
 		TypeService.receive_delivery -> 3.0])
 sequence sendLetterDuration = new Uniform(123456789, 4, 8)
-sequence receiveLetterDuration = new Uniform(123456789, 10, 14)		
+sequence receiveLetterDuration = new Uniform(123456789, 10, 14)
 sequence sendDeliveryDuration = new Uniform(123456789, 13, 17)
 sequence receiveDeliveryDuration = new Uniform(123456789, 8, 10)
 
@@ -80,8 +80,8 @@ resource window3 = Window.create(
 event ClientEnterEvent() {
 	var service = randomTypeService.next()
 	var duration = getDuration(service)
-	
-	post.currentQueueLength = post.currentQueueLength + 1	 
+
+	post.currentQueueLength = post.currentQueueLength + 1
 	Client.create(service, ClientState.queue, currentTime, duration)
 	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
 }
@@ -116,30 +116,31 @@ event EndOfDayEvent() {
 	EndOfDayEvent.plan(currentTime + 12 * 60)
 }
 
-operation ExampleClientService() {	
-	relevants window, client = combination(		 
-        Window.accessible.filter[windowState == WindowState.open && operatorState == OperatorState.free],
-        Client.accessible.filter[clientState == ClientState.queue]
-    ).filter[window.service.contains(client.service)].minBySafe[window.servedPeopleAll + client.enterTime] of types Window, Client	
+operation ExampleClientService() {
+	relevants window, client = combination(
+		Window.accessible.filter[windowState == WindowState.open && operatorState == OperatorState.free],
+		Client.accessible.filter[clientState == ClientState.queue]
+	).filter[window.service.contains(client.service)].
+		minBySafe[window.servedPeopleAll + client.enterTime] of types Window, Client
 
-		def duration() {
-			return client.duration
-		}
+	def duration() {
+		return client.duration
+	}
 
-		def begin() {
-			post.currentQueueLength = post.currentQueueLength - 1
-			client.clientState = ClientState.service
-			window.operatorState = OperatorState.busy
-			window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
-		}
+	def begin() {
+		post.currentQueueLength = post.currentQueueLength - 1
+		client.clientState = ClientState.service
+		window.operatorState = OperatorState.busy
+		window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
+	}
 
-		def end() {
-			post.totalServicesDurations = post.totalServicesDurations + client.duration
-			window.operatorState = OperatorState.free
-			window.servedPeopleAll = window.servedPeopleAll + 1
-			window.postProcessingTime = window.postProcessingTime + client.duration * 0.2
-			client.erase()
-		}
+	def end() {
+		post.totalServicesDurations = post.totalServicesDurations + client.duration
+		window.operatorState = OperatorState.free
+		window.servedPeopleAll = window.servedPeopleAll + 1
+		window.postProcessingTime = window.postProcessingTime + client.duration * 0.2
+		client.erase()
+	}
 }
 
 logic Model {
@@ -203,8 +204,8 @@ dataSource TimeDuration<Double>() {
 dataSource TimeStaingInSystem<Double>() {
 	def evaluate() {
 		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
-		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll +
-			post.totalServicesDurations) / allServed
+		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + post.totalServicesDurations) /
+			allServed
 	}
 }
 
@@ -224,50 +225,49 @@ result capacity = new Result([
 
 frame Ramochka {
 	def init() {
-		background = new Background(1240, 518, new RaoColor(191, 232 , 242))
+		background = new Background(1240, 518, new RaoColor(191, 232, 242))
 	}
 	def draw() {
 
 		drawImage("images/background.png", 0, 0)
 
-		val windows = Window.accessible
-
 		val step_draw = 335
+		var window_number = 0
+		for (window : Window.accessible) {
+			drawText("Service", 365 + step_draw * window_number, 165)
+			val row_heigth = 15
+			var service_num = 1
 
-		for (var j = 0; j < windows.length; j++)
-		{
-		val window = windows.get(j)
-			
-		drawText("Service", 365 + step_draw * j , 165)
-		val row_heigth = 15
-		var service_num = 1
-		
-		for (service:  window.service) 
-		{
-		drawText(service_num + ". " + service , 345 + step_draw * j , 180 + row_heigth * service_num )
-		service_num ++
-		}
-			
+			for (service : window.service) {
+				drawText(service_num + ". " + service, 345 + step_draw * window_number,
+					180 + row_heigth * service_num)
+				service_num = service_num + 1
+			}
 
+			val color = new RaoColor(191, 232, 242)
 			switch (window.windowState) {
 				case WindowState.open: {
-					drawImage("images/open.png", 245 + step_draw * j, 85)
+					drawImage("images/open.png", 245 + step_draw * window_number, 85)
 				}
 				case WindowState.close: {
-					drawImage("images/close.png", 245 + step_draw * j, 180)
+					drawRectangle(245 + step_draw * window_number, 180, 100, 100, color, color)
+					drawImage("images/close.png", 245 + step_draw * window_number, 180)
 				}
 				case WindowState.post_processing: {
-					drawImage("images/additional_processing.png", 245 + step_draw * j, 250)
-					drawImage("images/close.png", 245 + step_draw * j, 180)
+					drawRectangle(245 + step_draw * window_number, 180, 100, 100, color, color)
+					drawImage("images/post_processing.png", 245 + step_draw * window_number, 250)
+					drawImage("images/close.png", 245 + step_draw * window_number, 180)
 				}
 			}
 			if (window.operatorState == OperatorState.busy || window.windowState == WindowState.close) {
-				drawRectangle(197 + step_draw * j, 200, 40, 20, RaoColor.RED, RaoColor.RED)
-				drawText("BUSY", 200 + step_draw * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+				drawRectangle(197 + step_draw * window_number, 200, 40, 20, RaoColor.RED, RaoColor.RED)
+				drawText("BUSY", 200 + step_draw * window_number, 203, RaoColor.BLACK, 25, Alignment.LEFT)
 			} else {
-				drawRectangle(197 + step_draw * j, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN)
-				drawText("FREE", 200 + step_draw * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+				drawRectangle(197 + step_draw * window_number, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN)
+				drawText("FREE", 200 + step_draw * window_number, 203, RaoColor.BLACK, 25, Alignment.LEFT)
 			}
+
+			window_number = window_number + 1
 		}
 
 		val currentHour = (currentTime / 60 % 12 + 8) as int
@@ -280,13 +280,12 @@ frame Ramochka {
 
 		val step_show_people = 40
 		val max_show_people = 10
-		for (var j = 0 ; j < Math.min(post.currentQueueLength, max_show_people); j++) 
-		{
-				drawImage("images/people.png", 610 + step_show_people * j, 460)
+		for (var j = 0; j < Math.min(post.currentQueueLength, max_show_people); j++) {
+			drawImage("images/people.png", 610 + step_show_people * j, 460)
 		}
-				
+
 	}
-	
-	}
-	
+
+}
+
 	
