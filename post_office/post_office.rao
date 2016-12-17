@@ -1,0 +1,297 @@
+import java.util.Arrays
+
+enum OperatorState {free, busy}
+enum WindowState {open, close, post_processing}
+enum TypeService {send_letter, receive_letter, send_delivery, receive_delivery}
+enum ClientState {queue, service}
+
+type PostOffice {
+	int currentQueueLength
+	double totalServicesDurations
+}
+
+type Client {
+	TypeService service
+	ClientState clientState
+	double enterTime
+	double duration
+}
+
+type Window {
+	WindowState windowState
+	OperatorState operatorState
+	int servedPeopleAll
+	TypeService[] service
+	SheduleDay[] shedule
+	double postProcessingTime
+	double queueTimeAll
+}
+
+type SheduleDay {
+	int timeStart = 8
+	int timeEnd = 20
+}
+
+constant Days = 30
+constant Hours = 12
+constant Minutes = 60
+
+sequence clientEnterInterval = new Exponential(123456789, 1 / 30.0)
+sequence serviceDuration = new Uniform(123456789, 10, 30)
+sequence randomTypeService = new DiscreteHistogram<TypeService>(123456789,
+	#[TypeService.send_letter -> 5.0, TypeService.receive_letter -> 1.0, TypeService.send_delivery -> 2.0,
+		TypeService.receive_delivery -> 3.0])
+sequence sendLetterDuration = new Uniform(123456789, 4, 8)
+sequence receiveLetterDuration = new Uniform(123456789, 10, 14)
+sequence sendDeliveryDuration = new Uniform(123456789, 13, 17)
+sequence receiveDeliveryDuration = new Uniform(123456789, 8, 10)
+
+resource fullDay = new SheduleDay(8, 19)
+resource close = new SheduleDay(0, 0)
+resource firstHalf = new SheduleDay(8, 14)
+resource secondHalf = new SheduleDay(14, 19)
+
+resource postOffice = PostOffice.create(0, 0)
+
+resource window1 = Window.create(
+	WindowState.close,
+	OperatorState.free,
+	0,
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(close, firstHalf, close, fullDay, secondHalf, close, firstHalf),
+	0,
+	0
+)
+resource window2 = Window.create(
+	WindowState.close,
+	OperatorState.free,
+	0,
+	Arrays.asList(TypeService.send_letter, TypeService.receive_letter),
+	Arrays.asList(fullDay, firstHalf, close, close, firstHalf, firstHalf, close),
+	0,
+	0
+)
+resource window3 = Window.create(
+	WindowState.close,
+	OperatorState.free,
+	0,
+	Arrays.asList(TypeService.send_delivery, TypeService.receive_delivery),
+	Arrays.asList(secondHalf, firstHalf, fullDay, close, firstHalf, firstHalf, close),
+	0,
+	0
+)
+
+event ClientEnterEvent() {
+	var service = randomTypeService.next()
+	var duration = getDuration(service)
+
+	postOffice.currentQueueLength = postOffice.currentQueueLength + 1
+	Client.create(service, ClientState.queue, currentTime, duration)
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
+}
+
+event EveryHourEvent() {
+	EveryHourEvent.plan(currentTime + Minutes)
+
+	for (window : Window.all) {
+		if (isWindowOpen(window)) {
+			window.windowState = WindowState.open
+		} else if (window.windowState == WindowState.open) {
+			window.windowState = WindowState.post_processing
+			window.operatorState = OperatorState.busy
+			CloseWindowEvent.plan(currentTime + window.postProcessingTime, window)
+		}
+	}
+}
+
+event CloseWindowEvent(Window window) {
+	window.windowState = WindowState.close
+	window.operatorState = OperatorState.free
+	window.postProcessingTime = 0
+}
+
+event EndOfDayEvent() {
+	for (client : Client.accessible) {
+		if (client.clientState == ClientState.queue) {
+			client.erase()
+			postOffice.currentQueueLength = postOffice.currentQueueLength - 1
+		}
+	}
+	EndOfDayEvent.plan(currentTime + Hours * Minutes)
+}
+
+operation ClientService() {
+	relevants window, client = combination(
+		Window.accessible.filter[windowState == WindowState.open && operatorState == OperatorState.free],
+		Client.accessible.filter[clientState == ClientState.queue]
+	).filter[window.service.contains(client.service)].
+		minBySafe[window.servedPeopleAll + client.enterTime] of types Window, Client
+
+	def duration() {
+		return client.duration
+	}
+
+	def begin() {
+		postOffice.currentQueueLength = postOffice.currentQueueLength - 1
+		client.clientState = ClientState.service
+		window.operatorState = OperatorState.busy
+		window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
+	}
+
+	def end() {
+		postOffice.totalServicesDurations = postOffice.totalServicesDurations + client.duration
+		window.operatorState = OperatorState.free
+		window.servedPeopleAll = window.servedPeopleAll + 1
+		window.postProcessingTime = window.postProcessingTime + client.duration * 0.2
+		client.erase()
+	}
+}
+
+logic Model {
+	activity clientService = new Activity(ClientService.create())
+}
+
+def init() {
+	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
+	EveryHourEvent.plan(currentTime)
+	EndOfDayEvent.plan(currentTime + Hours * Minutes - 2)
+}
+
+def terminateCondition() {
+	return currentTime >= Days * Hours * Minutes
+}
+
+boolean isWindowOpen(Window window) {
+	var daysInWeek = 7
+	var currentDay = (currentTime / Minutes / Hours % Days) as int
+	var currentHour = currentTime / Minutes % Hours + 8
+	var startHour = window.shedule.get(currentDay % daysInWeek).timeStart
+	var endHour = window.shedule.get(currentDay % daysInWeek).timeEnd
+
+	return startHour <= currentHour && currentHour <= endHour
+}
+
+double getDuration(TypeService service) {
+	switch (service) {
+		case TypeService.send_letter: {
+			return sendLetterDuration.next()
+		}
+		case TypeService.receive_letter: {
+			return receiveLetterDuration.next()
+		}
+		case TypeService.send_delivery: {
+			return sendDeliveryDuration.next()
+		}
+		case TypeService.receive_delivery: {
+			return receiveDeliveryDuration.next()
+		}
+		default: {
+			return serviceDuration.next()
+		}
+	}
+}
+
+dataSource TimeInQueue<Double>() {
+	def evaluate() {
+		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
+		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll) / allServed
+
+	}
+}
+
+dataSource TimeDuration<Double>() {
+	def evaluate() {
+		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
+		return postOffice.totalServicesDurations / allServed
+	}
+}
+
+dataSource TimeStaingInSystem<Double>() {
+	def evaluate() {
+		var allServed = window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll
+		return (window1.queueTimeAll + window2.queueTimeAll + window3.queueTimeAll + postOffice.totalServicesDurations) /
+			allServed
+	}
+}
+
+result operator_busyness1 = new Result([window1.operatorState])
+result operator_busyness2 = new Result([window2.operatorState])
+result operator_busyness3 = new Result([window3.operatorState])
+result window_state1 = new Result([window1.windowState])
+result window_state2 = new Result([window2.windowState])
+result window_state3 = new Result([window3.windowState])
+result queue_time_all = new Result(new TimeDuration())
+result service_duration= new Result(new TimeDuration())
+result staing_in_system = new Result(new TimeStaingInSystem())
+result queue_length = new Result([postOffice.currentQueueLength])
+result capacity = new Result([
+	(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / (Days)
+], new LastValueStatistics())
+
+frame FrameAnimation {
+	def init() {
+		background = new Background(1240, 518, new RaoColor(191, 232, 242))
+	}
+	def draw() {
+
+		drawImage("images/background.png", 0, 0)
+
+		val step_draw = 335
+		var window_number = 0
+		for (window : Window.all) {
+			drawText("Service", 365 + step_draw * window_number, 165)
+			val row_heigth = 15
+			var service_num = 1
+
+			for (service : window.service) {
+				drawText(service_num + ". " + service, 345 + step_draw * window_number,
+					180 + row_heigth * service_num)
+				service_num = service_num + 1
+			}
+
+			val color = new RaoColor(191, 232, 242)
+			switch (window.windowState) {
+				case WindowState.open: {
+					drawImage("images/open.png", 245 + step_draw * window_number, 85)
+				}
+				case WindowState.close: {
+					drawRectangle(245 + step_draw * window_number, 180, 100, 100, color, color)
+					drawImage("images/close.png", 245 + step_draw * window_number, 180)
+				}
+				case WindowState.post_processing: {
+					drawRectangle(245 + step_draw * window_number, 180, 100, 100, color, color)
+					drawImage("images/post_processing.png", 245 + step_draw * window_number, 250)
+					drawImage("images/close.png", 245 + step_draw * window_number, 180)
+				}
+			}
+			if (window.operatorState == OperatorState.busy || window.windowState == WindowState.close) {
+				drawRectangle(197 + step_draw * window_number, 200, 40, 20, RaoColor.RED, RaoColor.RED)
+				drawText("BUSY", 200 + step_draw * window_number, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+			} else {
+				drawRectangle(197 + step_draw * window_number, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN)
+				drawText("FREE", 200 + step_draw * window_number, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+			}
+
+			window_number = window_number + 1
+		}
+
+		val currentHour = (currentTime / Minutes % Hours + 8) as int
+		val currentMinute = (currentTime % Minutes) as int
+		val step_show_people = 40
+		val max_show_people = 10
+
+		for (var j = 0; j < Math.min(postOffice.currentQueueLength, max_show_people); j++) {
+			drawImage("images/people.png", 610 + step_show_people * j, 460)
+		}
+
+		drawText(String.valueOf(currentHour), 340, 37)
+		drawText(String.valueOf(currentMinute), 400, 37)
+
+		drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT)
+		drawText(Integer.toString(postOffice.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER)
+
+	}
+
+}
+
+	
