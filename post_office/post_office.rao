@@ -120,7 +120,7 @@ event EndOfDayEvent() {
 	EndOfDayEvent.plan(currentTime + Hours * Minutes)
 }
 
-operation ExampleClientService() {
+operation ClientService() {
 	relevants window, client = combination(
 		Window.accessible.filter[windowState == WindowState.open && operatorState == OperatorState.free],
 		Client.accessible.filter[clientState == ClientState.queue]
@@ -148,7 +148,7 @@ operation ExampleClientService() {
 }
 
 logic Model {
-	activity clientService = new Activity(ExampleClientService.create())
+	activity clientService = new Activity(ClientService.create())
 }
 
 def init() {
