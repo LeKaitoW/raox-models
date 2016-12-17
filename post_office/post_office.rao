@@ -228,7 +228,7 @@ result capacity = new Result([
 	(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / (Days)
 ], new LastValueStatistics())
 
-frame Ramochka {
+frame FrameAnimation {
 	def init() {
 		background = new Background(1240, 518, new RaoColor(191, 232, 242))
 	}
