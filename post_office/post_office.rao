@@ -224,63 +224,69 @@ result capacity = new Result([
 
 frame Ramochka {
 	def init() {
-		background = new Background(1240, 518, RaoColor.WHITE)
+		background = new Background(1240, 518, new RaoColor(191, 232 , 242))
 	}
 	def draw() {
 
-		drawImage("picpic/fon.bmp", 0, 0)
+		drawImage("images/background.png", 0, 0)
 
-		var windows = Window.accessible
+		val windows = Window.accessible
 
-		var dl_1 = 335
+		val step_draw = 335
 
-		for (var j = 0; j < windows.length; j++) {
-			var window = windows.get(j)
+		for (var j = 0; j < windows.length; j++)
+		{
+		val window = windows.get(j)
+			
+		drawText("Service", 365 + step_draw * j , 165)
+		val row_heigth = 15
+		var service_num = 1
+		
+		for (service:  window.service) 
+		{
+		drawText(service_num + ". " + service , 345 + step_draw * j , 180 + row_heigth * service_num )
+		service_num ++
+		}
+			
 
 			switch (window.windowState) {
 				case WindowState.open: {
-					drawImage("picpic/open.bmp", 245 + dl_1 * j, 85)
+					drawImage("images/open.png", 245 + step_draw * j, 85)
 				}
 				case WindowState.close: {
-					drawImage("picpic/close.bmp", 245 + dl_1 * j, 180)
+					drawImage("images/close.png", 245 + step_draw * j, 180)
 				}
 				case WindowState.post_processing: {
-					drawImage("picpic/dopwork.bmp", 245 + dl_1 * j, 250)
-					drawImage("picpic/close.bmp", 245 + dl_1 * j, 180)
+					drawImage("images/additional_processing.png", 245 + step_draw * j, 250)
+					drawImage("images/close.png", 245 + step_draw * j, 180)
 				}
 			}
 			if (window.operatorState == OperatorState.busy || window.windowState == WindowState.close) {
-				drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.RED, RaoColor.RED)
-				drawText("BUSY", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+				drawRectangle(197 + step_draw * j, 200, 40, 20, RaoColor.RED, RaoColor.RED)
+				drawText("BUSY", 200 + step_draw * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
 			} else {
-				drawRectangle(197 + dl_1 * j, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN)
-				drawText("FREE", 200 + dl_1 * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
+				drawRectangle(197 + step_draw * j, 200, 40, 20, RaoColor.GREEN, RaoColor.GREEN)
+				drawText("FREE", 200 + step_draw * j, 203, RaoColor.BLACK, 25, Alignment.LEFT)
 			}
 		}
 
-		var currentHour = (currentTime / 60 % 12 + 8) as int
-		var currentMinute = (currentTime % 60) as int
+		val currentHour = (currentTime / 60 % 12 + 8) as int
+		val currentMinute = (currentTime % 60) as int
 		drawText(String.valueOf(currentHour), 340, 37)
 		drawText(String.valueOf(currentMinute), 400, 37)
-
-		drawText("Service", 365, 165)
-		drawText("1. Send letter", 345, 180)
-		drawText("2. Receive letter", 345, 195)
-
-		drawText("Service", 695, 165)
-		drawText("1. Send letter", 675, 180)
-		drawText("2. Receive letter", 675, 195)
-
-		drawText("Service", 1035, 165)
-		drawText("1. Send delivery", 1015, 180)
-		drawText("2. Receive delivery", 1015, 195)
 
 		drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT)
 		drawText(Integer.toString(post.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER)
 
-		var dl_2 = 40
-		for (var j = 0; j < post.currentQueueLength; j++) {
-			drawImage("picpic/people.bmp", 610 + dl_2 * j, 445)
+		val step_show_people = 40
+		val max_show_people = 10
+		for (var j = 0 ; j < Math.min(post.currentQueueLength, max_show_people); j++) 
+		{
+				drawImage("images/people.png", 610 + step_show_people * j, 460)
 		}
+				
 	}
-}
+	
+	}
+	
+	
