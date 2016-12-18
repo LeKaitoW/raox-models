@@ -4,12 +4,10 @@ constant рамка = 25
 constant шаг_отрисовки_графика = 1
 constant отступ_текста = 2
 
-enum отрисовка {Y, N}
-
 void Сброс_флага_отрисовки(){
-	for (город : travelling_salesman_problem.Города.all.filter[флаг_отрисовки == отрисовка.Y]) {
-		город.флаг_отрисовки = отрисовка.N
-	} 
+	for (город : travelling_salesman_problem.Города.all.filter[флаг_отрисовки == true]) {
+		город.флаг_отрисовки = false
+	}
 }
 
 int Значение_шага_отрисовки(int value){
@@ -83,3 +81,4 @@ frame График_эволюции {
 				}
 			}
 		}
+		
