@@ -143,14 +143,14 @@ void мутация() {
 }
 
 void скрещивание() {
-	for (var i = 0; i < Math.floor(количество_особей_на_скрещивание / 2) && Особи.accessible.filter [
+	for (var i = 0; i < Math.floor(количество_особей_на_скрещивание / 2) && Особи.all.filter [
 		флаг_мутации == false && флаг_скрещивания == false
 	].size() > 2; i++) {
-		var Особи особь_предок_1 = Особи.accessible.filter [
+		var Особи особь_предок_1 = Особи.all.filter [
 			флаг_мутации == false && флаг_скрещивания == false
 		].maxBySafe[длина_маршрута]
 		особь_предок_1.флаг_скрещивания = true
-		var Особи особь_предок_2 = Особи.accessible.filter [
+		var Особи особь_предок_2 = Особи.all.filter [
 			флаг_мутации == false && флаг_скрещивания == false
 		].maxBySafe[длина_маршрута]
 		особь_предок_2.флаг_скрещивания = true
@@ -195,10 +195,10 @@ void скрещивание() {
 }
 
 void отбор() {
-	for (; Особи.all.size() > размер_популяции && Особи.accessible.filter[флаг_отбора == false].size() > 2;) {
-		var Особи особь_1 = Особи.accessible.filter[флаг_отбора == false].any
+	for (; Особи.all.size() > размер_популяции && Особи.all.filter[флаг_отбора == false].size() > 2;) {
+		var Особи особь_1 = Особи.all.filter[флаг_отбора == false].any
 		особь_1.флаг_отбора = true
-		var Особи особь_2 = Особи.accessible.filter[флаг_отбора == false].any
+		var Особи особь_2 = Особи.all.filter[флаг_отбора == false].any
 		особь_2.флаг_отбора = true
 		if (особь_1.длина_маршрута > особь_2.длина_маршрута) {
 			особь_1.erase()
@@ -206,7 +206,7 @@ void отбор() {
 			особь_2.erase()
 		}
 
-		if (Особи.accessible.filter[флаг_отбора == false].size() < 2) {
+		if (Особи.all.filter[флаг_отбора == false].size() < 2) {
 			for (; Особи.all.size() > размер_популяции;) {
 				var особь = Особи.all.maxBySafe[длина_маршрута]
 				особь.erase()
@@ -276,7 +276,7 @@ double подсчёт_длины_маршрута(ArrayList<Города> мар
 }
 
 Double кратчайший_путь(){
-	return Особи.accessible.minBySafe[длина_маршрута].длина_маршрута
+	return Особи.all.minBySafe[длина_маршрута].длина_маршрута
 }
 
 result пробег = new Result([кратчайший_путь()])

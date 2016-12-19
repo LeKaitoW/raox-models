@@ -21,7 +21,7 @@ frame Маршрут_лучшей_особи {
 			город.флаг_отрисовки = true
 		}
 		frame_a_graph_of_evolution.Сброс_флага_отрисовки()
-		val travelling_salesman_problem.Особи особь = travelling_salesman_problem.Особи.accessible.minBySafe [
+		val travelling_salesman_problem.Особи особь = travelling_salesman_problem.Особи.all.minBySafe [
 			длина_маршрута
 		]
 		if (особь.маршрут.size() <= 1) {
