@@ -44,17 +44,17 @@ frame График_эволюции {
 						шаг_отрисовки) {
 						drawText(
 							travelling_salesman_problem.toString(
-								travelling_salesman_problem.intValue(
+								travelling_salesman_problem.toInteger(
 									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i))),
 							рамка + A * (i) / (travelling_salesman_problem.массив_лучших.длины_маршрутов.size()) +
 								отступ_текста,
 							рамка + B -
-								(travelling_salesman_problem.intValue(
+								(travelling_salesman_problem.toInteger(
 									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
 									верхняя_точка_графика) as int + отступ_текста)
 						drawCircle(рамка + A * i / (travelling_salesman_problem.массив_лучших.длины_маршрутов.size()),
 							рамка + B -
-								(travelling_salesman_problem.intValue(
+								(travelling_salesman_problem.toInteger(
 									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
 									верхняя_точка_графика) as int, 3)
 						drawText(travelling_salesman_problem.toString(i),
@@ -70,11 +70,11 @@ frame График_эволюции {
 						шаг_отрисовки_графика) {
 						drawLine(рамка + (A * i / travelling_salesman_problem.массив_лучших.длины_маршрутов.size()),
 							рамка + B -
-								(travelling_salesman_problem.intValue(
+								(travelling_salesman_problem.toInteger(
 									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i)) * B /
 									верхняя_точка_графика) as int, рамка + (A * (i + шаг_отрисовки_графика) /
 								travelling_salesman_problem.массив_лучших.длины_маршрутов.size()), рамка + B -
-								(travelling_salesman_problem.intValue(
+								(travelling_salesman_problem.toInteger(
 									travelling_salesman_problem.массив_лучших.длины_маршрутов.get(i +
 										шаг_отрисовки_графика)) * B / верхняя_точка_графика) as int, RaoColor.RED)
 					}
