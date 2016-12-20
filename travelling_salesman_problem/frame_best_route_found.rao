@@ -1,0 +1,45 @@
+constant A = 600
+constant B = 400
+constant рамка = 25
+constant шаг_отрисовки_графика = 1
+constant отступ_текста = 2
+
+frame Маршрут_лучшей_особи {
+	def init(){
+		background = new Background(A + 2 * рамка, B + 2 * рамка, RaoColor.WHITE)
+	}
+
+	def draw(){
+		for (город : travelling_salesman_problem.Города.all.filter [
+			флаг_отрисовки == false
+		]) {
+			drawCircle((рамка + город.x * A / travelling_salesman_problem.ширина_поля) as int,
+				(рамка + город.y * B / travelling_salesman_problem.высота_поля) as int, 3)
+			drawText(travelling_salesman_problem.toString(город.номер),
+				рамка + (город.x * A / travelling_salesman_problem.ширина_поля) as int + отступ_текста,
+				рамка + (город.y * B / travelling_salesman_problem.высота_поля + отступ_текста) as int)
+			город.флаг_отрисовки = true
+		}
+		frame_a_graph_of_evolution.Сброс_флага_отрисовки()
+		val travelling_salesman_problem.Особи особь = travelling_salesman_problem.Особи.all.minBySafe [
+			длина_маршрута
+		]
+		if (особь.маршрут.size() <= 1) {
+			return
+		}
+		for (var i = 0; i < особь.маршрут.size() - 1; i++) {
+			val current = особь.маршрут.get(i)
+			val next = особь.маршрут.get(i + 1)
+			drawLine((рамка + current.x * A / travelling_salesman_problem.ширина_поля) as int,
+				(рамка + current.y * B / travelling_salesman_problem.высота_поля) as int,
+				(рамка + next.x * A / travelling_salesman_problem.ширина_поля) as int,
+				(рамка + next.y * B / travelling_salesman_problem.высота_поля) as int, RaoColor.RED)
+		}
+		val current = особь.маршрут.get(особь.маршрут.size() - 1)
+		val next = особь.маршрут.get(0)
+		drawLine((рамка + current.x * A / travelling_salesman_problem.ширина_поля) as int,
+			(рамка + current.y * B / travelling_salesman_problem.высота_поля) as int,
+			(рамка + next.x * A / travelling_salesman_problem.ширина_поля) as int,
+			(рамка + next.y * B / travelling_salesman_problem.высота_поля) as int, RaoColor.RED)
+	}
+}
