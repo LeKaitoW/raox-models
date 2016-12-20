@@ -250,8 +250,8 @@ ArrayList<Города> поменять_местами_элементы_в_ма
 	return маршрут
 }
 
-int toInteger(Double D){
-	return Math.floor(Double.valueOf(D)) as int
+int toInteger(Double value){
+	return value.doubleValue() as int
 }
 
 double расстояние_между_точками(double x1, double y1, double x2, double y2){
