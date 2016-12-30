@@ -1,22 +1,22 @@
 type TechSupport {
-	int callsCount;
+	int callsCount
 }
 
-resource techSupport = TechSupport.create(0);
+resource techSupport = TechSupport.create(0)
 
 event NewCall() {
-	techSupport.callsCount = techSupport.callsCount + 1;
-	NewCall.plan(currentTime + newCallInterval.next());
+	techSupport.callsCount = techSupport.callsCount + 1
+	NewCall.plan(currentTime + newCallInterval.next())
 }
 
 def init() {
-	NewCall.plan(newCallInterval.next());
+	NewCall.plan(newCallInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 480;
+	return currentTime >= 480
 }
 
-sequence newCallInterval = new Exponential(123456789, 1 / 30.0);
+sequence newCallInterval = new Exponential(123456789, 1 / 30.0)
 
-result totalCallsCount = new Result([techSupport.callsCount]);
+result totalCallsCount = Result.create([techSupport.callsCount])

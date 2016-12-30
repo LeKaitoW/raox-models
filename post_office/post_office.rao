@@ -81,17 +81,17 @@ resource window3 = Window.create(
 	0
 )
 
-event ClientEnterEvent() {
+event ClientEnter() {
 	var service = randomTypeService.next()
 	var duration = getDuration(service)
 
 	postOffice.currentQueueLength = postOffice.currentQueueLength + 1
 	Client.create(service, ClientState.queue, currentTime, duration)
-	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
+	ClientEnter.plan(currentTime + clientEnterInterval.next())
 }
 
-event EveryHourEvent() {
-	EveryHourEvent.plan(currentTime + Minutes)
+event EveryHour() {
+	EveryHour.plan(currentTime + Minutes)
 
 	for (window : Window.all) {
 		if (isWindowOpen(window)) {
@@ -99,25 +99,25 @@ event EveryHourEvent() {
 		} else if (window.windowState == WindowState.open) {
 			window.windowState = WindowState.post_processing
 			window.operatorState = OperatorState.busy
-			CloseWindowEvent.plan(currentTime + window.postProcessingTime, window)
+			CloseWindow.plan(currentTime + window.postProcessingTime, window)
 		}
 	}
 }
 
-event CloseWindowEvent(Window window) {
+event CloseWindow(Window window) {
 	window.windowState = WindowState.close
 	window.operatorState = OperatorState.free
 	window.postProcessingTime = 0
 }
 
-event EndOfDayEvent() {
+event EndOfDay() {
 	for (client : Client.accessible) {
 		if (client.clientState == ClientState.queue) {
 			client.erase()
 			postOffice.currentQueueLength = postOffice.currentQueueLength - 1
 		}
 	}
-	EndOfDayEvent.plan(currentTime + Hours * Minutes)
+	EndOfDay.plan(currentTime + Hours * Minutes)
 }
 
 operation ClientService() {
@@ -127,15 +127,15 @@ operation ClientService() {
 	).filter[window.service.contains(client.service)].
 		minBySafe[window.servedPeopleAll + client.enterTime] of types Window, Client
 
-	def duration() {
-		return client.duration
-	}
-
 	def begin() {
 		postOffice.currentQueueLength = postOffice.currentQueueLength - 1
 		client.clientState = ClientState.service
 		window.operatorState = OperatorState.busy
 		window.queueTimeAll = window.queueTimeAll + (currentTime - client.enterTime)
+	}
+
+	def duration() {
+		return client.duration
 	}
 
 	def end() {
@@ -152,9 +152,9 @@ logic Model {
 }
 
 def init() {
-	ClientEnterEvent.plan(currentTime + clientEnterInterval.next())
-	EveryHourEvent.plan(currentTime)
-	EndOfDayEvent.plan(currentTime + Hours * Minutes - 2)
+	ClientEnter.plan(currentTime + clientEnterInterval.next())
+	EveryHour.plan(currentTime)
+	EndOfDay.plan(currentTime + Hours * Minutes - 2)
 }
 
 def terminateCondition() {
@@ -214,17 +214,17 @@ dataSource TimeStaingInSystem<Double>() {
 	}
 }
 
-result operator_busyness1 = new Result([window1.operatorState])
-result operator_busyness2 = new Result([window2.operatorState])
-result operator_busyness3 = new Result([window3.operatorState])
-result window_state1 = new Result([window1.windowState])
-result window_state2 = new Result([window2.windowState])
-result window_state3 = new Result([window3.windowState])
-result queue_time_all = new Result(new TimeDuration())
-result service_duration= new Result(new TimeDuration())
-result staing_in_system = new Result(new TimeStaingInSystem())
-result queue_length = new Result([postOffice.currentQueueLength])
-result capacity = new Result([
+result operator_busyness1 = Result.create([window1.operatorState])
+result operator_busyness2 = Result.create([window2.operatorState])
+result operator_busyness3 = Result.create([window3.operatorState])
+result window_state1 = Result.create([window1.windowState])
+result window_state2 = Result.create([window2.windowState])
+result window_state3 = Result.create([window3.windowState])
+result queue_time_all = Result.create(new TimeDuration())
+result service_duration= Result.create(new TimeDuration())
+result staing_in_system = Result.create(new TimeStaingInSystem())
+result queue_length = Result.create([postOffice.currentQueueLength])
+result capacity = Result.create([
 	(window1.servedPeopleAll + window2.servedPeopleAll + window3.servedPeopleAll) / (Days)
 ], new LastValueStatistics())
 
@@ -289,9 +289,6 @@ frame FrameAnimation {
 
 		drawText("Queue length", 640, 400, RaoColor.BLACK, 60, Alignment.LEFT)
 		drawText(Integer.toString(postOffice.currentQueueLength), 670, 420, RaoColor.BLACK, 30, Alignment.CENTER)
-
 	}
-
 }
 
-	

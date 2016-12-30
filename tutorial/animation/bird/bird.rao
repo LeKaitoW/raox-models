@@ -1,30 +1,30 @@
-constant bg_forest_b_width = 1280;
-constant bg_forest_b_height = 381;
-constant bg_forest_c_height = 360;
-constant width = bg_forest_b_width;
-constant height = bg_forest_b_height;
+constant bg_forest_b_width = 1280
+constant bg_forest_b_height = 381
+constant bg_forest_c_height = 360
+constant width = bg_forest_b_width
+constant height = bg_forest_b_height
 
 type Sprite {
-	int bg_forest_b_left;
-	int bg_forest_c_left;
-	int bird_x;
-	int bird_y;
-	String bird_sprite_image;
+	int bg_forest_b_left
+	int bg_forest_c_left
+	int bird_x
+	int bird_y
+	String bird_sprite_image
 }
 
 type Mouse {
-	boolean down;
-	int x;
-	int y;
+	boolean down
+	int x
+	int y
 }
 
 sequence birdSpriteNames = new Values(
 	#["img/bird/frame-1.png", "img/bird/frame-2.png", "img/bird/frame-3.png", "img/bird/frame-4.png",
-		"img/bird/frame-5.png", "img/bird/frame-6.png", "img/bird/frame-7.png", "img/bird/frame-8.png"]);
-sequence bird_dx = new Uniform(123456789, -1, 1);
+		"img/bird/frame-5.png", "img/bird/frame-6.png", "img/bird/frame-7.png", "img/bird/frame-8.png"])
+sequence bird_dx = new Uniform(123456789, -1, 1)
 
-resource sprite = Sprite.create(0, 0, 100, 20, birdSpriteNames.next());
-resource mouse = Mouse.create(false, 0, 0);
+resource sprite = Sprite.create(0, 0, 100, 20, birdSpriteNames.next())
+resource mouse = Mouse.create(false, 0, 0)
 
 int sign(int value) {
 	if (value == 0)
@@ -53,8 +53,8 @@ event Timer() {
 		sprite.bird_y = sprite.bird_y - 1
 
 	if (mouse.down) {
-		sprite.bird_x = sprite.bird_x + sign(mouse.x - sprite.bird_x);
-		sprite.bird_y = sprite.bird_y + sign(mouse.y - sprite.bird_y);
+		sprite.bird_x = sprite.bird_x + sign(mouse.x - sprite.bird_x)
+		sprite.bird_y = sprite.bird_y + sign(mouse.y - sprite.bird_y)
 	}
 
 	if (sprite.bird_x < 0)

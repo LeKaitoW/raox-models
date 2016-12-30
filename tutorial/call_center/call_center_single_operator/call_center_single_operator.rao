@@ -1,50 +1,50 @@
 enum OperatorState {FREE, BUSY}
 
 type TechSupport {
-	OperatorState operatorState;
-	int queueLength;
-	int peopleServed;
+	OperatorState operatorState
+	int queueLength
+	int peopleServed
 }
 
-resource techSupport = TechSupport.create(OperatorState.FREE, 0, 0);
+resource techSupport = TechSupport.create(OperatorState.FREE, 0, 0)
 
 event NewCall() {
-	techSupport.queueLength = techSupport.queueLength + 1;
-	NewCall.plan(currentTime + newCallInterval.next());
+	techSupport.queueLength = techSupport.queueLength + 1
+	NewCall.plan(currentTime + newCallInterval.next())
 }
 
-operation CallProcessingPattern() {
-	relevant _techSupport = techSupport.onlyif[queueLength > 0 && operatorState == OperatorState.FREE];
+operation CallProcessing() {
+	relevant techSupport_ = techSupport.onlyif[queueLength > 0 && operatorState == OperatorState.FREE]
 
 	def begin() {
-		_techSupport.queueLength = _techSupport.queueLength - 1;
-		_techSupport.operatorState = OperatorState.BUSY;
+		techSupport_.queueLength = techSupport_.queueLength - 1
+		techSupport_.operatorState = OperatorState.BUSY
 	}
 
 	def duration() {
-		return callProcessingTime.next();
+		return callProcessingTime.next()
 	}
 
 	def end() {
-		_techSupport.peopleServed = _techSupport.peopleServed + 1;
-		_techSupport.operatorState = OperatorState.FREE;
+		techSupport_.peopleServed = techSupport_.peopleServed + 1
+		techSupport_.operatorState = OperatorState.FREE
 	}
 }
 
-sequence newCallInterval = new Exponential(123456789, 1 / 30.0);
-sequence callProcessingTime = new Uniform(123456789, 20, 40);
+sequence newCallInterval = new Exponential(123456789, 1 / 30.0)
+sequence callProcessingTime = new Uniform(123456789, 20, 40)
 
 logic Model {
-	activity callProcessing = new Activity(CallProcessingPattern.create());
+	activity callProcessing = new Activity(CallProcessing.create())
 }
 
 def init() {
-	NewCall.plan(newCallInterval.next());
+	NewCall.plan(newCallInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 480;
+	return currentTime >= 480
 }
 
-result totalPeopleServed = new Result([techSupport.peopleServed]);
-result queueLengthStatistics = new Result([techSupport.queueLength]);
+result totalPeopleServed = Result.create([techSupport.peopleServed])
+result queueLengthStatistics = Result.create([techSupport.queueLength])

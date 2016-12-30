@@ -1,46 +1,46 @@
 enum BarberState {free, busy}
 
 type BarberShop {
-	BarberState barberState = BarberState.free;
-	int queueLength = 0;
+	BarberState barberState = BarberState.free
+	int queueLength = 0
 }
 
-resource barberShop = BarberShop.create(BarberState.free, 0);
+resource barberShop = BarberShop.create(BarberState.free, 0)
 
 sequence clientInputInterval = new Values(#[14, 13, 17, 15, 16, 15, 14, 22, 19])
 
 event ClientInput() {
-	ClientInput.plan(currentTime + clientInputInterval.next());
-	barberShop.queueLength = barberShop.queueLength + 1;
+	ClientInput.plan(currentTime + clientInputInterval.next())
+	barberShop.queueLength = barberShop.queueLength + 1
 }
 
 sequence serviceDuration = new Values(#[18, 12, 14, 15, 14, 15, 13, 14, 17])
 
 operation Service() {
-	relevant barberShop_ = barberShop.onlyif[queueLength > 0 && barberState == BarberState.free];
+	relevant barberShop_ = barberShop.onlyif[queueLength > 0 && barberState == BarberState.free]
 
 	def begin() {
-		barberShop_.barberState = BarberState.busy;
-		barberShop_.queueLength = barberShop_.queueLength - 1;
+		barberShop_.barberState = BarberState.busy
+		barberShop_.queueLength = barberShop_.queueLength - 1
 	}
 
 	def duration() {
-		return serviceDuration.next();
+		return serviceDuration.next()
 	}
 
 	def end() {
-		barberShop_.barberState = BarberState.free;
+		barberShop_.barberState = BarberState.free
 	}
 }
 
 logic Model {
-	activity service = new Activity(Service.create());
+	activity service = new Activity(Service.create())
 }
 
 def init() {
-	ClientInput.plan(clientInputInterval.next());
+	ClientInput.plan(clientInputInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 480;
+	return currentTime >= 480
 }
