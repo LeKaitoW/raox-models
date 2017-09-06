@@ -1,0 +1,40 @@
+import java.util.ArrayList
+import warehouse.warehouse_model.Warehouse
+
+constant terminateTime = 600 // Время остановки
+constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа
+
+sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
+
+type OrderRequest {
+	ArrayList<warehouse.warehouse_model.Item> items
+}
+
+resource warehouse_ = Warehouse.create(new ArrayList)
+
+event OrderRequestReceived() {
+	// Создание образца запроса
+	var orderRequest_ = OrderRequest.create(new ArrayList)
+	orderRequest_.items.add(warehouse.warehouse_model.Item.create(0, 0, null))
+	// Опрос склада по запросу
+	for (warehouse.warehouse_model.Item item_ : orderRequest_.items) {
+		if (warehouse_.items.contains(item_)) {
+			// TODO Убираем деталь из склада и отправляем
+			warehouse_.items.remove(item_)
+		} else if (item_.itemType.deliveryTime < allowedDeliveryWaitPeriod) {
+			// TODO Готов ждать три дня, заказываем деталь
+		} else {
+			// TODO Не готов ждать, заказ уходит
+		}
+	}
+	OrderRequestReceived.plan(currentTime + orderRequestReceivedInterval.next())
+}
+
+def init() {
+	OrderRequestReceived.plan(orderRequestReceivedInterval.next())
+}
+
+def terminateCondition() {
+	return currentTime >= terminateTime
+}
+
