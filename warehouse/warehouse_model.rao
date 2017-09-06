@@ -1,0 +1,45 @@
+import java.util.ArrayList
+
+constant deliveryPrice = 5_000_00 // В копейках
+constant deliveryAmount = 200 // В штуках
+constant itemPrice = 1_000_00 // В копейках
+constant defaultDeliveryTime = 3 // Время ожидания в днях
+constant terminateTime = 600 // Время остановки
+sequence itemReceivedInterval = new Exponential(123456789, 1 / 30.0)
+
+type Warehouse {
+	ArrayList<Item> items
+}
+
+type ItemType {
+	int deliveryTime
+}
+
+type Item {
+	int price
+	int totalPrice
+	ItemType itemType;
+}
+
+resource warehouse = Warehouse.create(new ArrayList)
+resource itemType1 = ItemType.create(defaultDeliveryTime);
+
+event ItemReceived() {
+	var item_ = Item.create(itemPrice, 0, itemType1)
+	calculatePrice(item_)
+	warehouse.items.add(item_)
+	ItemReceived.plan(currentTime + itemReceivedInterval.next())
+}
+
+def init() {
+	ItemReceived.plan(itemReceivedInterval.next())
+}
+
+def terminateCondition() {
+	return currentTime >= terminateTime
+}
+
+void calculatePrice(Item item){
+	item.totalPrice = deliveryPrice / deliveryAmount + item.price;
+}
+
