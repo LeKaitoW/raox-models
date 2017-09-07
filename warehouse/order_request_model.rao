@@ -1,26 +1,41 @@
 import java.util.ArrayList
-import warehouse.warehouse_model.Warehouse
+import service.EmployeeService
 
 constant terminateTime = 600 // Время остановки
 constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа
-
+constant defaultDeliveryTime = 3 // Время ожидания в днях
 sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
-type OrderRequest {
-	ArrayList<warehouse.warehouse_model.Item> items
+type Warehouse {
+	ArrayList<Item> items
 }
 
-resource warehouse_ = Warehouse.create(new ArrayList)
+type ItemType {
+	int deliveryTime
+}
+
+type OrderRequest {
+	ArrayList<Item> items
+}
+
+type Item {
+	int price
+	int totalPrice
+	ItemType itemType;
+}
+
+resource warehouse = Warehouse.create(new ArrayList)
+resource itemType1 = ItemType.create(defaultDeliveryTime);
 
 event OrderRequestReceived() {
 	// Создание образца запроса
 	var orderRequest_ = OrderRequest.create(new ArrayList)
-	orderRequest_.items.add(warehouse.warehouse_model.Item.create(0, 0, null))
+	orderRequest_.items.add(Item.create(0, 0, itemType1))
 	// Опрос склада по запросу
-	for (warehouse.warehouse_model.Item item_ : orderRequest_.items) {
-		if (warehouse_.items.contains(item_)) {
+	for (Item item_ : orderRequest_.items) {
+		if (warehouse.items.contains(item_)) {
 			// TODO Убираем деталь из склада и отправляем
-			warehouse_.items.remove(item_)
+			warehouse.items.remove(item_)
 		} else if (item_.itemType.deliveryTime < allowedDeliveryWaitPeriod) {
 			// TODO Готов ждать три дня, заказываем деталь
 		} else {
@@ -31,6 +46,8 @@ event OrderRequestReceived() {
 }
 
 def init() {
+	// TODO fails with java.lang.NoClassDefFoundError: service/EmployeeService at warehouse.order_request_model$init.run(order_request_model.java:523)
+	new service.EmployeeService();
 	OrderRequestReceived.plan(orderRequestReceivedInterval.next())
 }
 
