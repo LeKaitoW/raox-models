@@ -48,7 +48,6 @@ event OrderRequestReceived() {
 
 def init() {
 	// TODO fails with java.lang.NoClassDefFoundError: service/EmployeeService at warehouse.order_request_model$init.run(order_request_model.java:523)
-	new service.EmployeeService();
 	OrderRequestReceived.plan(orderRequestReceivedInterval.next())
 }
 

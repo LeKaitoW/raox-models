@@ -1,4 +1,5 @@
 import java.util.ArrayList
+import service.PartService
 
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
@@ -32,6 +33,7 @@ event ItemReceived() {
 }
 
 def init() {
+	new PartService();
 	ItemReceived.plan(itemReceivedInterval.next())
 }
 
