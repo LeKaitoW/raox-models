@@ -1,5 +1,6 @@
 import java.util.ArrayList
 import service.PartService
+import domain.Part
 
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
@@ -7,6 +8,8 @@ constant itemPrice = 1_000_00 // В копейках
 constant defaultDeliveryTime = 3 // Время ожидания в днях
 constant terminateTime = 600 // Время остановки
 sequence itemReceivedInterval = new Exponential(123456789, 1 / 30.0)
+
+//datasource 
 
 type Warehouse {
 	ArrayList<Item> items
@@ -23,7 +26,7 @@ type Item {
 }
 
 resource warehouse = Warehouse.create(new ArrayList)
-resource itemType1 = ItemType.create(defaultDeliveryTime);
+resource itemType1 = ItemType.create(defaultDeliveryTime)
 
 event ItemReceived() {
 	var item_ = Item.create(itemPrice, 0, itemType1)
@@ -33,7 +36,10 @@ event ItemReceived() {
 }
 
 def init() {
-	new PartService();
+	var partService = new PartService()
+	for(Part part : partService.getAllParts()){
+		log(part.toString())
+	}
 	ItemReceived.plan(itemReceivedInterval.next())
 }
 
@@ -42,6 +48,6 @@ def terminateCondition() {
 }
 
 void calculatePrice(Item item){
-	item.totalPrice = deliveryPrice / deliveryAmount + item.price;
+	item.totalPrice = deliveryPrice / deliveryAmount + item.price
 }
 

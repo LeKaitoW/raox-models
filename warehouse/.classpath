@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.8"/>
 	<classpathentry kind="con" path="org.eclipse.xtend.XTEND_CONTAINER"/>
-	<classpathentry kind="lib" path="C:/Users/MMineev/src/raox/ru.bmstu.rk9.rao.lib/bin/" sourcepath="C:/Users/MMineev/src/raox/ru.bmstu.rk9.rao.lib"/>
-	<classpathentry kind="lib" path="C:/Users/MMineev/src/raox/ru.bmstu.rk9.rao.lib/thirdparty/querydsl/lib/querydsl-jpa-4.1.3-apt-hibernate-one-jar.jar"/>
+	<classpathentry kind="lib" path="C:/Users/Михаил/src/raox/ru.bmstu.rk9.rao.lib/bin/" sourcepath="C:/Users/Михаил/src/raox/ru.bmstu.rk9.rao.lib"/>
+	<classpathentry kind="lib" path="C:/Users/Михаил/src/raox/ru.bmstu.rk9.rao.lib/thirdparty/querydsl/lib/querydsl-jpa-4.1.3-apt-hibernate-one-jar.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>

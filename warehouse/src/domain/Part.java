@@ -2,11 +2,10 @@ package domain;
 
 import javax.persistence.Entity;
 import javax.persistence.Id;
-import javax.persistence.PersistenceUnit;
 import javax.persistence.Table;
 
 @Entity
-@PersistenceUnit(unitName = "corpterminal")
+//@PersistenceUnit(unitName = "corpterminal")
 @Table(name = "catalogue")
 public class Part {
 
@@ -84,5 +83,4 @@ public class Part {
 				+ ", clientprice=" + clientprice + ", purtnerprice=" + purtnerprice + ", stocked=" + stocked
 				+ ", reserved=" + reserved + ", store=" + store + ", catalogueprice=" + catalogueprice + "]";
 	}
-
 }
