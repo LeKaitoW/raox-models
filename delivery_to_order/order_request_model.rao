@@ -1,7 +1,7 @@
 import java.util.ArrayList
 
-constant terminateTime = 600 // Время остановки
-constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа
+constant terminateTime = 600 // Время остановки минуты?
+constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
 constant defaultDeliveryTime = 3 // Время ожидания в днях
 sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 

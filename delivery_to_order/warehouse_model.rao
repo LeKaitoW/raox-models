@@ -1,6 +1,32 @@
 import java.util.ArrayList
-import service.PartService
-import domain.Part
+import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+
+dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://mikhailmineev.ru:3306/corpterminal","jpademo","5xYB2e6T5Jo7ajA")
+	.addLoadedClasses(Part)
+	
+/*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
+	.addLoadedClasses(Part)*/
+
+//@Table(name = "catalogue") 
+//@Entity
+type Part{
+	//@Id
+	String id
+	String manufacturer
+	//@Column(name="name") 
+	//String name //name is reserved word
+	String path
+	int retailprice
+	int purchaseprice
+	int sellingprice
+	int clientprice
+	int purtnerprice
+	int stocked
+	int reserved
+	String store
+	double catalogueprice
+	//@OneToMany
+}
 
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
@@ -36,8 +62,13 @@ event ItemReceived() {
 }
 
 def init() {
-	var partService = new PartService()
-	for(Part part : partService.getAllParts()){
+	// JPAQuery<?> query = new JPAQuery<Void>(em);
+	var em =corpTerminal.getEntityManager();
+	var cb = em.getCriteriaBuilder();
+	var select = cb.createQuery(Part);
+	select.from(Part);
+	// select.where( cb.equal(root.get("id").get("userId"), "id");
+	for(Part part : em.createQuery(select).getResultList()){
 		log(part.toString())
 	}
 	ItemReceived.plan(itemReceivedInterval.next())
