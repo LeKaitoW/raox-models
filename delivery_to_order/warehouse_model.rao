@@ -9,7 +9,7 @@ dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://mikhailmineev.ru:3
 
 //@Table(name = "catalogue") 
 //@Entity
-type Part{
+dataentity Part{
 	//@Id
 	String id
 	String manufacturer
@@ -68,7 +68,7 @@ def init() {
 	var select = cb.createQuery(Part);
 	select.from(Part);
 	// select.where( cb.equal(root.get("id").get("userId"), "id");
-	for(Part part : em.createQuery(select).getResultList()){
+	for(part : em.createQuery(select).getResultList()){
 		log(part.toString())
 	}
 	ItemReceived.plan(itemReceivedInterval.next())
