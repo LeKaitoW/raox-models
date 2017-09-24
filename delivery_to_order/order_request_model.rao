@@ -1,56 +1,88 @@
-import java.util.ArrayList
+import com.querydsl.jpa.impl.JPAQuery
+import domain.Order
+import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+import domain.PartRequest
+import java.util.Iterator
+import domain.Part
+import domain.QOrder
 
-constant terminateTime = 600 // Время остановки минуты?
+constant terminateTime = 6000 // Время остановки минуты?
 constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
 constant defaultDeliveryTime = 3 // Время ожидания в днях
 sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
-type Warehouse {
-	ArrayList<Item> items
+enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
+
+dataprovider corpTerminal = new SqlDataProvider(
+	"com.mysql.jdbc.Driver",
+	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull",
+	"jpademo",
+	"5xYB2e6T5Jo7ajA",
+	Part,
+	Order,
+	PartRequest)
+	
+/*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
+	.addEntity("Part")*/
+
+type Orderset {
+	Iterator<Order> orders
 }
 
-type ItemType {
-	int deliveryTime
+type WPartRequest {
+	PartRequest partRequest
+	State state
 }
 
-type OrderRequest {
-	ArrayList<Item> items
-}
+resource orderset = Orderset.create(null)
 
-type Item {
-	int price
-	int totalPrice
-	ItemType itemType;
-}
-
-resource warehouse = Warehouse.create(new ArrayList)
-resource itemType1 = ItemType.create(defaultDeliveryTime)
-
-resource warehouse_ = Warehouse.create(new ArrayList)
-
-event OrderRequestReceived() {
+event OrderReceived() {
 	// Создание образца запроса
-	var orderRequest_ = OrderRequest.create(new ArrayList)
-	orderRequest_.items.add(Item.create(0, 0, itemType1))
-	// Опрос склада по запросу
-	for (Item item_ : orderRequest_.items) {
-		if (warehouse.items.contains(item_)) {
-			// TODO Убираем деталь из склада и отправляем
-			warehouse.items.remove(item_)
-		} else if (item_.itemType.deliveryTime < allowedDeliveryWaitPeriod) {
-			// TODO Готов ждать три дня, заказываем деталь
-		} else {
-			// TODO Не готов ждать, заказ уходит
-		}
+	var order = orderset.orders.next()
+	for (partRequest : order.requestedParts) {
+		WPartRequest.create(partRequest, State.REQUESTERD)
 	}
-	OrderRequestReceived.plan(currentTime + orderRequestReceivedInterval.next())
+	
+	OrderReceived.plan(currentTime + orderRequestReceivedInterval.next())
+}
+
+operation PartProcessing() {
+    relevant partRequest_ = WPartRequest.accessible.filter[state == State.REQUESTERD].any
+
+    def begin() {
+        partRequest_.state = State.IN_TRANSIT
+    }
+
+    def duration() {
+        return defaultDeliveryTime
+    }
+
+    def end() {
+        partRequest_.state = State.ARRIVED
+    }
+}
+
+logic Model {
+    activity partProcessing = new Activity(PartProcessing.create())
+    activity utilizeProcessed = new Activity(UtilizeProcessed.create())
+}
+
+rule UtilizeProcessed() {
+    relevant partRequest_ = WPartRequest.accessible.filter[state == State.ARRIVED].any
+
+    def execute() {
+        partRequest_.erase()
+    }
 }
 
 def init() {
-	OrderRequestReceived.plan(orderRequestReceivedInterval.next())
+	var query = new JPAQuery<Order>(corpTerminal.getEntityManager())
+	var order = QOrder.order
+	var orders = query.from(order).fetch().iterator()
+	orderset.orders = orders
+	OrderReceived.plan(orderRequestReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= terminateTime
+	return currentTime >= terminateTime || !orderset.orders.hasNext()
 }
-
