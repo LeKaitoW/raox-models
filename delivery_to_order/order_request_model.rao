@@ -1,4 +1,3 @@
-import com.querydsl.jpa.impl.JPAQuery
 import domain.Order
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 import domain.PartRequest
@@ -13,7 +12,7 @@ sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
 enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
 
-dataprovider corpTerminal = new SqlDataProvider(
+dataprovider data = new SqlDataProvider(
 	"com.mysql.jdbc.Driver",
 	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull",
 	"jpademo",
@@ -25,29 +24,29 @@ dataprovider corpTerminal = new SqlDataProvider(
 /*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
 	.addEntity("Part")*/
 
-type Orderset {
-	Iterator<Order> orders
+type OrderIterator {
+	Iterator<Order> iterator
 }
 
-type WPartRequest {
+type PartRequestType {
 	PartRequest partRequest
 	State state
 }
 
-resource orderset = Orderset.create(null)
+resource orderIterator = OrderIterator.create(null)
 
 event OrderReceived() {
 	// Создание образца запроса
-	var order = orderset.orders.next()
+	var order = orderIterator.iterator.next()
 	for (partRequest : order.requestedParts) {
-		WPartRequest.create(partRequest, State.REQUESTERD)
+		PartRequestType.create(partRequest, State.REQUESTERD)
 	}
 	
 	OrderReceived.plan(currentTime + orderRequestReceivedInterval.next())
 }
 
 operation PartProcessing() {
-    relevant partRequest_ = WPartRequest.accessible.filter[state == State.REQUESTERD].any
+    relevant partRequest_ = PartRequestType.accessible.filter[state == State.REQUESTERD].any
 
     def begin() {
         partRequest_.state = State.IN_TRANSIT
@@ -68,7 +67,7 @@ logic Model {
 }
 
 rule UtilizeProcessed() {
-    relevant partRequest_ = WPartRequest.accessible.filter[state == State.ARRIVED].any
+    relevant partRequest_ = PartRequestType.accessible.filter[state == State.ARRIVED].any
 
     def execute() {
         partRequest_.erase()
@@ -76,13 +75,12 @@ rule UtilizeProcessed() {
 }
 
 def init() {
-	var query = new JPAQuery<Order>(corpTerminal.getEntityManager())
+	var query = data.getQuery()
 	var order = QOrder.order
-	var orders = query.from(order).fetch().iterator()
-	orderset.orders = orders
+	orderIterator.iterator = query.from(order).fetch().iterator()
 	OrderReceived.plan(orderRequestReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= terminateTime || !orderset.orders.hasNext()
+	return currentTime >= terminateTime || !orderIterator.iterator.hasNext()
 }

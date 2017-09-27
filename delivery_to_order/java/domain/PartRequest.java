@@ -3,6 +3,7 @@ package domain;
 import java.io.Serializable;
 import java.util.Date;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.Id;
 import javax.persistence.IdClass;
@@ -12,33 +13,35 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
+@Entity
 @Table(name = "requestedpartslist")
 @IdClass(value = PartRequest.PartRequestId.class)
-@Entity
 public class PartRequest {
-	
-	@Id	
-	@ManyToOne
-	@JoinColumn(name="RequestID")
-	public Order order;
-	
-	
-	@ManyToOne
+
 	@Id
-	@JoinColumn(name="SparePartID")
+	@ManyToOne
+	@JoinColumn(name = "RequestID")
+	public Order order;
+
+	@Id
+	@ManyToOne
+	@JoinColumn(name = "SparePartID")
 	public Part part;
-	
-	public int Price;
-	
+
+	@Column(name = "Price")
+	public int price;
+
 	@Temporal(TemporalType.DATE)
-	public Date DateOfDelivery;
-	
-	public int Count;
+	@Column(name = "DateOfDelivery")
+	public Date dateOfDelivery;
+
+	@Column(name = "Count")
+	public int count;
 
 	@Override
 	public String toString() {
-		return "Delivery [Part=" + part.name + ", Price=" + Price + ", DateOfDelivery=" + DateOfDelivery + ", Count="
-				+ Count + "]";
+		return "Delivery [Part=" + part.name + ", Price=" + price + ", DateOfDelivery=" + dateOfDelivery + ", Count="
+				+ count + "]";
 	}
 
 	@SuppressWarnings("serial")

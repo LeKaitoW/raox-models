@@ -3,6 +3,7 @@ package domain;
 import java.util.Date;
 import java.util.List;
 
+import javax.persistence.Column;
 import javax.persistence.Entity;
 import javax.persistence.FetchType;
 import javax.persistence.Id;
@@ -11,33 +12,71 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-@Table(name = "sparepartsrequests")
 @Entity
+@Table(name = "sparepartsrequests")
 public class Order {
+
 	@Id
-	public int ID;
-	public String Status;
-	public String SolutionName;
+	@Column(name = "ID")
+	public int id;
+
+	@Column(name = "Status")
+	public String status;
+
+	@Column(name = "SolutionName")
+	public String solutionName;
+
 	@Temporal(TemporalType.TIMESTAMP)
-	public Date DateOfCreation;
+	@Column(name = "DateOfCreation")
+	public Date dateOfCreation;
+
 	@Temporal(TemporalType.TIMESTAMP)
-	public Date DateOfProcessing;
+	@Column(name = "DateOfProcessing")
+	public Date dateOfProcessing;
+
 	@Temporal(TemporalType.TIMESTAMP)
-	public Date DateOfRealization;
-	public int OrderNumber;
-	public int OutfitNumber;
-	public int DiagnosticOrderNumber;
-	public int DiagnosticOutfitNumber;
-	public boolean Selected;
-	public boolean MustBeOrdered;
-	public boolean Shipped;
-	public int TypeOfPrice;
-	public String ResponsibleForSelection;
-	public String ResponsibleForOrdering;
-	public String ResponsibleForShipping;
-	public String PartsRecipient;
-	public String Description;
-	
-	@OneToMany(mappedBy="order", fetch=FetchType.LAZY)
+	@Column(name = "DateOfRealization")
+	public Date dateOfRealization;
+
+	@Column(name = "OrderNumber")
+	public int orderNumber;
+
+	@Column(name = "OutfitNumber")
+	public int outfitNumber;
+
+	@Column(name = "DiagnosticOrderNumber")
+	public int diagnosticOrderNumber;
+
+	@Column(name = "DiagnosticOutfitNumber")
+	public int diagnosticOutfitNumber;
+
+	@Column(name = "Selected")
+	public boolean selected;
+
+	@Column(name = "MustBeOrdered")
+	public boolean mustBeOrdered;
+
+	@Column(name = "Shipped")
+	public boolean shipped;
+
+	@Column(name = "TypeOfPrice")
+	public int typeOfPrice;
+
+	@Column(name = "ResponsibleForSelection")
+	public String responsibleForSelection;
+
+	@Column(name = "ResponsibleForOrdering")
+	public String responsibleForOrdering;
+
+	@Column(name = "ResponsibleForShipping")
+	public String responsibleForShipping;
+
+	@Column(name = "ResponsibleForShipping")
+	public String partsRecipient;
+
+	@Column(name = "Description")
+	public String description;
+
+	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	public List<PartRequest> requestedParts;
 }

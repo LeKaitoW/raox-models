@@ -1,6 +1,5 @@
 import domain.Part
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
-import com.querydsl.jpa.impl.JPAQuery
 import domain.QPart
 import java.util.Iterator
 
@@ -30,28 +29,28 @@ type WPart {
 	int totalPrice
 }
 
-type Warehouse {
-	Iterator<Part> parts
+type PartIterator {
+	Iterator<Part> iterator
 }
 
-resource warehouse = Warehouse.create(null)
+resource partIterator = PartIterator.create(null)
 
 event ItemReceived() {
-	var part = warehouse.parts.next()
+	var part = partIterator.iterator.next()
 	var price = calculatePrice(part)
 	WPart.create(part,price)
 	ItemReceived.plan(currentTime + itemReceivedInterval.next())
 }
 
 def init() {
-	var query = new JPAQuery<Part>(corpTerminal.getEntityManager())
+	var query = corpTerminal.getQuery()
 	var part = QPart.part
-	warehouse.parts = query.from(part).fetch().iterator()
+	partIterator.iterator = query.from(part).fetch().iterator()
 	ItemReceived.plan(itemReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 6000 || !warehouse.parts.hasNext()
+	return currentTime >= 6000 || !partIterator.iterator.hasNext()
 }
 
 int calculatePrice(Part part){
