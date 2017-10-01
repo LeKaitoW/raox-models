@@ -7,56 +7,60 @@ import java.util.Iterator
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
-dataprovider data = new SqlDataProvider(
-	"com.mysql.jdbc.Driver",
-	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal",
-	"jpademo",
-	"5xYB2e6T5Jo7ajA",
-	Part,
-	Order,
-	PartRequest)
-	
-/*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
-	.addEntity("Part")*/
-
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
 constant itemPrice = 1_000_00 // В копейках
 constant defaultDeliveryTime = 3 // Время ожидания в днях
-constant terminateTime = 600 // Время остановки
+constant terminateTime = 600 // Время остановки в мс
 sequence itemReceivedInterval = new Exponential(123456789, 1 / 30.0)
+
+dataprovider data = new SqlDataProvider(
+	"com.mysql.jdbc.Driver", 
+	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal",
+	"jpademo", 
+	"5xYB2e6T5Jo7ajA", 
+	Part, Order, PartRequest)
+
+/*
+dataprovider data = new SqlDataProvider(
+	"com.mysql.jdbc.Driver",
+	"jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull", 
+	"observer", 
+	"compaq",
+	Part, Order, PartRequest)
+*/
 
 type ItemType {
 	int deliveryTime
 }
 
-type WPart {
+type PartType {
 	Part part
 	int totalPrice
 }
 
-type PartIterator {
+type Parts {
 	Iterator<Part> iterator
 }
 
-resource partIterator = PartIterator.create(null)
+resource parts = Parts.create(null)
 
 event ItemReceived() {
-	var part = partIterator.iterator.next()
-	var price = calculatePrice(part)
-	WPart.create(part,price)
+	val part = parts.iterator.next()
+	val price = calculatePrice(part)
+	PartType.create(part, price)
 	ItemReceived.plan(currentTime + itemReceivedInterval.next())
 }
 
 def init() {
-	var query = data.getQuery()
-	var part = QPart.part
-	partIterator.iterator = query.from(part).fetch().iterator()
+	val query = data.getQuery()
+	val part = QPart.part
+	parts.iterator = query.from(part).fetch().iterator()
 	ItemReceived.plan(itemReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 6000 || !partIterator.iterator.hasNext()
+	return currentTime >= 6000 || !parts.iterator.hasNext()
 }
 
 int calculatePrice(Part part){

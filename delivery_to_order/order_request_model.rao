@@ -14,19 +14,23 @@ sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
 enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
 
-constant data = new SqlDataProvider(
+dataprovider data = new SqlDataProvider(
 	"com.mysql.jdbc.Driver",
-	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull",
-	"jpademo",
+	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull", 
+	"jpademo", 
 	"5xYB2e6T5Jo7ajA",
-	Part,
-	Order,
-	PartRequest)
+	Part, Order, PartRequest)
 	
-/*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
-	.addEntity("Part")*/
+/*
+dataprovider data = new SqlDataProvider(
+	"com.mysql.jdbc.Driver",
+	"jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull", 
+	"observer", 
+	"compaq",
+	Part, Order, PartRequest)
+*/
 
-type OrderIterator {
+type Orders {
 	Iterator<Order> iterator
 }
 
@@ -35,54 +39,54 @@ type PartRequestType {
 	State state
 }
 
-resource orderIterator = OrderIterator.create(null)
+resource orders = Orders.create(null)
 
 event OrderReceived() {
 	// Создание образца запроса
-	var order = orderIterator.iterator.next()
+	val order = orders.iterator.next()
 	for (partRequest : order.requestedParts) {
 		PartRequestType.create(partRequest, State.REQUESTERD)
 	}
-	
+
 	OrderReceived.plan(currentTime + orderRequestReceivedInterval.next())
 }
 
 operation PartProcessing() {
-    relevant partRequest_ = PartRequestType.accessible.filter[state == State.REQUESTERD].any
+	relevant partRequest_ = PartRequestType.accessible.filter[state == State.REQUESTERD].any
 
-    def begin() {
-        partRequest_.state = State.IN_TRANSIT
-    }
+	def begin() {
+		partRequest_.state = State.IN_TRANSIT
+	}
 
-    def duration() {
-        return defaultDeliveryTime
-    }
+	def duration() {
+		return defaultDeliveryTime
+	}
 
-    def end() {
-        partRequest_.state = State.ARRIVED
-    }
+	def end() {
+		partRequest_.state = State.ARRIVED
+	}
 }
 
 logic Model {
-    activity partProcessing = new Activity(PartProcessing.create())
-    activity utilizeProcessed = new Activity(UtilizeProcessed.create())
+	activity partProcessing = new Activity(PartProcessing.create())
+	activity utilizeProcessed = new Activity(UtilizeProcessed.create())
 }
 
 rule UtilizeProcessed() {
-    relevant partRequest_ = PartRequestType.accessible.filter[state == State.ARRIVED].any
+	relevant partRequest_ = PartRequestType.accessible.filter[state == State.ARRIVED].any
 
-    def execute() {
-        partRequest_.erase()
-    }
+	def execute() {
+		partRequest_.erase()
+	}
 }
 
 def init() {
-	var query = data.getQuery()
-	var order = QOrder.order
-	orderIterator.iterator = query.from(order).fetch().iterator()
+	val query = data.getQuery()
+	val order = QOrder.order
+	orders.iterator = query.from(order).fetch().iterator()
 	OrderReceived.plan(orderRequestReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= terminateTime || !orderIterator.iterator.hasNext()
+	return currentTime >= terminateTime || !orders.iterator.hasNext()
 }
