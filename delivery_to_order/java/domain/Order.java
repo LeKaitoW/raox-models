@@ -71,7 +71,7 @@ public class Order {
 	@Column(name = "ResponsibleForShipping")
 	public String responsibleForShipping;
 
-	@Column(name = "ResponsibleForShipping")
+	@Column(name = "PartsRecipient")
 	public String partsRecipient;
 
 	@Column(name = "Description")

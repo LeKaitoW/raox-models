@@ -1,14 +1,20 @@
+import domain.Order
 import domain.Part
-import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+import domain.PartRequest
 import domain.QPart
+
 import java.util.Iterator
 
-dataprovider corpTerminal = new SqlDataProvider(
+import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+
+dataprovider data = new SqlDataProvider(
 	"com.mysql.jdbc.Driver",
 	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal",
 	"jpademo",
 	"5xYB2e6T5Jo7ajA",
-	Part)
+	Part,
+	Order,
+	PartRequest)
 	
 /*dataprovider corpTerminal = new SqlDataProvider("jdbc:mysql://localhost:3306/corpterminal","observer","compaq")
 	.addEntity("Part")*/
@@ -43,7 +49,7 @@ event ItemReceived() {
 }
 
 def init() {
-	var query = corpTerminal.getQuery()
+	var query = data.getQuery()
 	var part = QPart.part
 	partIterator.iterator = query.from(part).fetch().iterator()
 	ItemReceived.plan(itemReceivedInterval.next())
@@ -56,4 +62,3 @@ def terminateCondition() {
 int calculatePrice(Part part){
 	deliveryPrice / deliveryAmount + part.purchaseprice
 }
-

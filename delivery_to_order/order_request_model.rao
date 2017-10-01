@@ -1,9 +1,11 @@
 import domain.Order
-import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
-import domain.PartRequest
-import java.util.Iterator
 import domain.Part
+import domain.PartRequest
 import domain.QOrder
+
+import java.util.Iterator
+
+import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
 constant terminateTime = 6000 // Время остановки минуты?
 constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
@@ -12,7 +14,7 @@ sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
 enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
 
-dataprovider data = new SqlDataProvider(
+constant data = new SqlDataProvider(
 	"com.mysql.jdbc.Driver",
 	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull",
 	"jpademo",
