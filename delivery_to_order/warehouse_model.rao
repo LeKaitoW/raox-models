@@ -7,32 +7,24 @@ import java.util.Iterator
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
+constant driver = "com.mysql.jdbc.Driver"
+
+constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "observer"
+constant password = "compaq"
+
+//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+//constant username = "jpademo"
+//constant password = "5xYB2e6T5Jo7ajA"
+
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
 constant itemPrice = 1_000_00 // В копейках
 constant defaultDeliveryTime = 3 // Время ожидания в днях
-constant terminateTime = 600 // Время остановки в мс
+constant terminateTime = 6000 // Время остановки в мс
 sequence itemReceivedInterval = new Exponential(123456789, 1 / 30.0)
-
-dataprovider data = new SqlDataProvider(
-	"com.mysql.jdbc.Driver", 
-	"jdbc:mysql://mikhailmineev.ru:3306/corpterminal",
-	"jpademo", 
-	"5xYB2e6T5Jo7ajA", 
-	Part, Order, PartRequest)
-
-/*
-dataprovider data = new SqlDataProvider(
-	"com.mysql.jdbc.Driver",
-	"jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull", 
-	"observer", 
-	"compaq",
-	Part, Order, PartRequest)
-*/
-
-type ItemType {
-	int deliveryTime
-}
+ 
+dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
 
 type PartType {
 	Part part
