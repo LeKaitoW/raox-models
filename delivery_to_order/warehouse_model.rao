@@ -6,6 +6,9 @@ import domain.QPart
 import java.util.Iterator
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+import java.util.ArrayList
+
+/* Connection data */
 
 constant driver = "com.mysql.jdbc.Driver"
 
@@ -17,6 +20,9 @@ constant password = "compaq"
 //constant username = "jpademo"
 //constant password = "5xYB2e6T5Jo7ajA"
 
+dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
+cursor parts = new ArrayList<Part>().iterator()
+
 constant deliveryPrice = 5_000_00 // В копейках
 constant deliveryAmount = 200 // В штуках
 constant itemPrice = 1_000_00 // В копейках
@@ -24,8 +30,6 @@ constant defaultDeliveryTime = 3 // Время ожидания в днях
 constant terminateTime = 6000 // Время остановки в мс
 sequence itemReceivedInterval = new Exponential(123456789, 1 / 30.0)
  
-dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
-
 type PartType {
 	Part part
 	int totalPrice
@@ -35,10 +39,8 @@ type Parts {
 	Iterator<Part> iterator
 }
 
-resource parts = Parts.create(null)
-
 event ItemReceived() {
-	val part = parts.iterator.next()
+	val part = parts.next()
 	val price = calculatePrice(part)
 	PartType.create(part, price)
 	ItemReceived.plan(currentTime + itemReceivedInterval.next())
@@ -47,12 +49,12 @@ event ItemReceived() {
 def init() {
 	val query = data.getQuery()
 	val part = QPart.part
-	parts.iterator = query.from(part).fetch().iterator()
+	parts = query.from(part).fetch().iterator()
 	ItemReceived.plan(itemReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= 6000 || !parts.iterator.hasNext()
+	return currentTime >= 6000 || !parts.hasNext()
 }
 
 int calculatePrice(Part part){

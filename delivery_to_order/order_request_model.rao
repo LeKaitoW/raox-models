@@ -3,9 +3,10 @@ import domain.Part
 import domain.PartRequest
 import domain.QOrder
 
-import java.util.Iterator
-
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+import java.util.ArrayList
+
+/* Connection data */
 
 constant driver = "com.mysql.jdbc.Driver"
 
@@ -17,6 +18,11 @@ constant password = "compaq"
 //constant username = "jpademo"
 //constant password = "5xYB2e6T5Jo7ajA"
 
+dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
+cursor orders = new ArrayList<Part>().iterator()
+
+/* Model data */
+
 constant terminateTime = 6000 // Время остановки минуты?
 constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
 constant defaultDeliveryTime = 3 // Время ожидания в днях
@@ -24,22 +30,13 @@ sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
 
 enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
 
-dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
-
-type Orders {
-	Iterator<Order> iterator
-}
-
 type PartRequestType {
 	PartRequest partRequest
 	State state
 }
 
-resource orders = Orders.create(null)
-
 event OrderReceived() {
-	// Создание образца запроса
-	val order = orders.iterator.next()
+	val order = orders.next()
 	for (partRequest : order.requestedParts) {
 		PartRequestType.create(partRequest, State.REQUESTERD)
 	}
@@ -79,10 +76,10 @@ rule UtilizeProcessed() {
 def init() {
 	val query = data.getQuery()
 	val order = QOrder.order
-	orders.iterator = query.from(order).fetch().iterator()
+	orders = query.from(order).fetch().iterator()
 	OrderReceived.plan(orderRequestReceivedInterval.next())
 }
 
 def terminateCondition() {
-	return currentTime >= terminateTime || !orders.iterator.hasNext()
+	return currentTime >= terminateTime || !orders.hasNext()
 }
