@@ -4,82 +4,157 @@ import domain.PartRequest
 import domain.QOrder
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+
 import java.util.ArrayList
+import java.util.Iterator
+import java.util.List
 
 /* Connection data */
 
 constant driver = "com.mysql.jdbc.Driver"
 
-constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-constant username = "observer"
-constant password = "compaq"
+//constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+//constant username = "observer"
+//constant password = "compaq"
 
-//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-//constant username = "jpademo"
-//constant password = "5xYB2e6T5Jo7ajA"
+constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "jpademo"
+constant password = "5xYB2e6T5Jo7ajA"
 
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
-cursor orders = new ArrayList<Part>().iterator()
+
+type Orders {
+	Iterator<Order> iterator
+	long fails
+	long successes // TODO статистика по ресурсам 
+}
+
+resource orders = Orders.create(null, 0, 0)
 
 /* Model data */
 
-constant terminateTime = 6000 // Время остановки минуты?
-constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
-constant defaultDeliveryTime = 3 // Время ожидания в днях
-sequence orderRequestReceivedInterval = new Exponential(123456789, 1 / 30.0)
+variable iterationCount = 0;
+constant iterationsTotal = 30;
 
-enum State {REQUESTERD, IN_TRANSIT, ARRIVED}
+constant allowedDeliveryWaitPeriod = 4 // Допустимое время ожидания заказа, дни
+constant interval = 1 // Время ожидания в днях
+
+enum PartState {REQUESTED, IN_TRANSIT, ARRIVED}
+enum OrderState {REQUESTED, PROCESSING, FINISHED}
+
+type OrderType {
+	Order original
+	OrderState state
+	double creationTime
+	List<PartRequestType> requests // One to many
+}
 
 type PartRequestType {
-	PartRequest partRequest
-	State state
+	PartRequest original
+	PartState state
+	OrderType order // Many to one 
 }
+
+/* Order logic */
 
 event OrderReceived() {
-	val order = orders.next()
-	for (partRequest : order.requestedParts) {
-		PartRequestType.create(partRequest, State.REQUESTERD)
-	}
-
-	OrderReceived.plan(currentTime + orderRequestReceivedInterval.next())
+	val order = orders.iterator.next()
+	OrderType.create(order, OrderState.REQUESTED, currentTime, new ArrayList())
+	if(iterationCount < iterationsTotal)
+		OrderReceived.plan(currentTime + 10);
+	iterationCount++
 }
 
+rule OrderProcessing() {
+	relevant order_ = OrderType.accessible.filter[state == OrderState.REQUESTED].any
+
+	def execute() {
+		for (partRequest : order_.original.requestedParts) {
+			val partRequestType = PartRequestType.create(partRequest, PartState.REQUESTED, order_)
+			order_.requests.add(partRequestType)
+		}
+		order_.state = OrderState.PROCESSING
+	}
+}
+
+rule UtilizeOrder() {
+	relevant order_ = OrderType.accessible.filter[state == OrderState.FINISHED].any
+
+	def execute() {
+		order_.erase()
+		if(currentTime - order_.creationTime > allowedDeliveryWaitPeriod)
+			orders.fails = orders.fails + 1
+		else
+			orders.successes = orders.successes + 1
+		//resetTime
+		//OrderReceived.plan(0) // TODO спросить почему только в эвентах работает 
+	}
+}
+
+/* Part request logic */
+
 operation PartProcessing() {
-	relevant partRequest_ = PartRequestType.accessible.filter[state == State.REQUESTERD].any
+	relevant partRequest_ = PartRequestType.accessible.filter[state == PartState.REQUESTED].any
 
 	def begin() {
-		partRequest_.state = State.IN_TRANSIT
+		partRequest_.state = PartState.IN_TRANSIT
 	}
 
 	def duration() {
-		return defaultDeliveryTime
+		var stocked = partRequest_.original.part.stocked
+		val requested = partRequest_.original.count
+		if (stocked >= requested){
+			partRequest_.original.part.stocked -= requested
+			return 0
+		}
+		else {
+			partRequest_.original.part.stocked = 0
+			log(partRequest_.original.getDeliveryInterval())
+			return partRequest_.original.getDeliveryInterval()
+		}
 	}
 
 	def end() {
-		partRequest_.state = State.ARRIVED
+		partRequest_.state = PartState.ARRIVED
+	}
+}
+
+rule UtilizePartRequest() {
+	relevant partRequest_ = PartRequestType.accessible.filter[state == PartState.ARRIVED].any
+
+	def execute() {
+		val orderType = partRequest_.order
+		orderType.requests.remove(partRequest_)
+		partRequest_.erase()
+		if(orderType.requests.isEmpty())
+			orderType.state = OrderState.FINISHED
 	}
 }
 
 logic Model {
+	activity orderProcessing = new Activity(OrderProcessing.create())
+	activity utilizeOrder = new Activity(UtilizeOrder.create())
 	activity partProcessing = new Activity(PartProcessing.create())
-	activity utilizeProcessed = new Activity(UtilizeProcessed.create())
-}
-
-rule UtilizeProcessed() {
-	relevant partRequest_ = PartRequestType.accessible.filter[state == State.ARRIVED].any
-
-	def execute() {
-		partRequest_.erase()
-	}
+	activity utilizePartRequest = new Activity(UtilizePartRequest.create())
 }
 
 def init() {
-	val query = data.getQuery()
+	val query = data.getQuery
 	val order = QOrder.order
-	orders = query.from(order).fetch().iterator()
-	OrderReceived.plan(orderRequestReceivedInterval.next())
+	orders.iterator = query.from(order)
+	// TODO .where(order.requestedParts.any.dateOfDelivery.isNotNull) Не пашет, проверить на отдельной проге
+	.fetch.iterator
+	OrderReceived.plan(0)
 }
 
 def terminateCondition() {
-	return currentTime >= terminateTime || !orders.hasNext()
+	return iterationCount >= iterationsTotal && finished || !orders.iterator.hasNext
+	// TODO не пашет скипает на время 6000 и останавливается
 }
+
+boolean finished() {
+	return !OrderType.all.filter[state != OrderState.FINISHED].iterator.hasNext
+}
+
+result fails = Result.create([orders.fails], new LastValueStatistics())
+result successes = Result.create([orders.successes], new LastValueStatistics())

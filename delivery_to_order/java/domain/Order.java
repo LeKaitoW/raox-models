@@ -1,6 +1,7 @@
 package domain;
 
-import java.util.Date;
+import java.time.LocalDate;
+import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -28,15 +29,15 @@ public class Order {
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfCreation")
-	public Date dateOfCreation;
+	public Calendar dateOfCreation;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
-	public Date dateOfProcessing;
+	public Calendar dateOfProcessing;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfRealization")
-	public Date dateOfRealization;
+	public Calendar dateOfRealization;
 
 	@Column(name = "OrderNumber")
 	public int orderNumber;
@@ -79,4 +80,14 @@ public class Order {
 
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	public List<PartRequest> requestedParts;
+
+	public LocalDate getDateOfCreation() {
+		return LocalDate.of(dateOfCreation.get(Calendar.YEAR), dateOfCreation.get(Calendar.MONTH),
+				dateOfCreation.get(Calendar.DAY_OF_MONTH));
+	}
+
+	@Override
+	public String toString() {
+		return "Order [id=" + id + "]";
+	}
 }
