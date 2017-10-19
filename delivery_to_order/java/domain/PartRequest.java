@@ -47,7 +47,7 @@ public class PartRequest {
 	public int count;
 
 	public LocalDate getDateOfDelivery() {
-		return LocalDate.of(dateOfDelivery.get(Calendar.YEAR), dateOfDelivery.get(Calendar.MONTH),
+		return LocalDate.of(dateOfDelivery.get(Calendar.YEAR), dateOfDelivery.get(Calendar.MONTH) + 1,
 				dateOfDelivery.get(Calendar.DAY_OF_MONTH));
 	}
 

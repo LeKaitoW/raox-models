@@ -91,7 +91,7 @@ public class Order {
 	public List<PartRequest> requestedParts;
 
 	public LocalDate getDateOfCreation() {
-		return LocalDate.of(dateOfCreation.get(Calendar.YEAR), dateOfCreation.get(Calendar.MONTH),
+		return LocalDate.of(dateOfCreation.get(Calendar.YEAR), dateOfCreation.get(Calendar.MONTH) + 1,
 				dateOfCreation.get(Calendar.DAY_OF_MONTH));
 	}
 
