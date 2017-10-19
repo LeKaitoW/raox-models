@@ -1,6 +1,7 @@
 package domain;
 
 import java.time.LocalDate;
+import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 
@@ -90,9 +91,43 @@ public class Order {
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	public List<PartRequest> requestedParts;
 
+	/**
+	 * Дата поступления заказа
+	 */
 	public LocalDate getDateOfCreation() {
-		return LocalDate.of(dateOfCreation.get(Calendar.YEAR), dateOfCreation.get(Calendar.MONTH) + 1,
-				dateOfCreation.get(Calendar.DAY_OF_MONTH));
+		return toLocalDate(dateOfCreation);
+	}
+	
+	/**
+	 * Дата последнего изменения, служебный столбец для отслеживания старых или забытых заявок
+	 */
+	public LocalDate getDateOfProcessing() {
+		return toLocalDate(dateOfProcessing);
+	}
+	
+	/**
+	 * Дата отгрузки
+	 */
+	public LocalDate getDateOfRealization() {
+		return toLocalDate(dateOfRealization);
+	}
+	
+	/**
+	 * @return разница между датой создания и последнего изменения
+	 */
+	public long getModificationInterval() {
+		LocalDate start = getDateOfCreation();
+		LocalDate end = getDateOfProcessing();
+		return start.until(end, ChronoUnit.DAYS);
+	}
+	
+	public boolean hasModificationInterval() {
+		return dateOfCreation != null && dateOfProcessing != null;
+	}
+
+	private LocalDate toLocalDate(Calendar calendar) {
+		return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
+				calendar.get(Calendar.DAY_OF_MONTH));
 	}
 
 	@Override

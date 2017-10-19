@@ -27,14 +27,14 @@ type Orders {
 	Iterator<Order> iterator
 	int iterationCount
 	long fails
-	long successes // TODO статистика по ресурсам 
+	long successes
 }
 
 resource orders = Orders.create(null, 0, 0, 0)
 
 /* Model data */
 
-constant iterationsTotal = 100;
+constant iterationsTotal = 1000;
 
 constant allowedDeliveryWaitPeriod = 3 // Допустимое время ожидания заказа, дни
 
@@ -66,12 +66,9 @@ int waitPeriod() {
 
 event OrderReceived() {
 	val order = orders.iterator.next()
-	if (!order.requestedParts.isEmpty) {
-		// TODO на обсуждении, что делать с пустыми заказами
-		orders.iterationCount = orders.iterationCount + 1
-		val orderType = OrderType.create(order, OrderState.REQUESTED, OrderResult.SUCCESS, currentTime, 0, new ArrayList())
-		log("Created order " + orderType.getNumber)
-	}
+	orders.iterationCount = orders.iterationCount + 1
+	val orderType = OrderType.create(order, OrderState.REQUESTED, OrderResult.SUCCESS, currentTime, 0, new ArrayList())
+	log("Created order " + orderType.getNumber)
 	if (orders.iterationCount < iterationsTotal && orders.iterator.hasNext())
 		OrderReceived.plan(currentTime + 100);
 }
@@ -85,15 +82,13 @@ rule OrderProcessing() {
 				if (partRequest.hasDeliveryInterval) {
 					val partRequestType = PartRequestType.create(partRequest, PartState.REQUESTED, currentTime, order)
 					order.requests.add(partRequestType)
-					log("Created partRequest \"" + partRequest.part.name + "\" " + partRequest.getDeliveryInterval())
 				} else {
-					log("Ignoring partRequest \"" + partRequest.part.name + "\"")
 					order.resulted = OrderResult.FAIL
 				}
 			}
-		if (order.requests.isEmpty) { // Пустые заказы сразу завершаются
+		if (order.requests.isEmpty) { // Пустые заказы считаются неуспешными, не смогли подобрать деталь
 			order.state = OrderState.FINISHED
-			order.resulted = OrderResult.FAIL // TODO на обсуждении, что делать с пустыми заказами
+			order.resulted = OrderResult.FAIL
 			log("Processed order (no parts) " + order.getNumber)
 		} else {
 			order.state = OrderState.PROCESSING
@@ -107,8 +102,11 @@ rule UtilizeOrder() {
 
 	def execute() {
 		order.processDuration = currentTime - order.creationTime
+		if (order.resulted == OrderResult.FAIL && order.original.hasModificationInterval)
+			order.processDuration = order.original.getModificationInterval //TODO спросить, что делать, когда заказ пустой и ModificationInterval NULL
 		order.erase()
 		log("Utilized order " + order.getNumber + " Duration " + order.processDuration + " days")
+		// Статистика успехов заказов
 		if (currentTime - order.creationTime > waitPeriod || order.resulted == OrderResult.FAIL)
 			orders.fails = orders.fails + 1
 		else
@@ -130,19 +128,9 @@ operation PartProcessing() {
 	}
 
 	def duration() {
-		// Берем делать со склада
-		val stockedOld = partRequest.original.part.stocked
-		val requested = partRequest.original.count
-		if (stockedOld >= requested) {
-			partRequest.original.part.stocked -= requested
-			log("Деталей \"" + partRequest.original.part.name + "\" есть на складе " + stockedOld + " шт. Нужно " +
-				requested + " шт.")
+		if (partRequest.original.takeParts) {
 			return 0
 		} else {
-			partRequest.original.part.stocked = 0
-			log(
-				"Время доставки детали \"" + partRequest.original.part.name + "\" - " +
-					partRequest.original.getDeliveryInterval() + " дней")
 			return partRequest.original.getDeliveryInterval()
 		}
 	}
@@ -159,7 +147,6 @@ rule UtilizePartRequest() {
 		val orderType = partRequest.order
 		orderType.requests.remove(partRequest)
 		partRequest.erase()
-		log("Utilized partRequest \"" + partRequest.original.part.name + "\" ")
 		if(orderType.requests.isEmpty())
 			orderType.state = OrderState.FINISHED
 	}
@@ -178,10 +165,6 @@ def init() {
 	orders.iterator = query.from(order).fetch.iterator
 	OrderReceived.plan(currentTime)
 }
-
-/*def terminateCondition() {
-	return orders.iterationCount >= iterationsTotal && finished || !orders.iterator.hasNext
-}*/
 
 boolean finished() {
 	return !OrderType.all.filter[state != OrderState.FINISHED].iterator.hasNext
