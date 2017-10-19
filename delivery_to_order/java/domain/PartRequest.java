@@ -30,9 +30,15 @@ public class PartRequest {
 	@JoinColumn(name = "SparePartID")
 	public Part part;
 
+	/**
+	 * Цена продажи в момент формирования заказа. Учитывать не нужно
+	 */
 	@Column(name = "Price")
 	public int price;
 
+	/**
+	 * Дата доставки, если {@code NULL}, то доставки не было
+	 */
 	@Temporal(TemporalType.DATE)
 	@Column(name = "DateOfDelivery")
 	public Calendar dateOfDelivery;
@@ -48,14 +54,19 @@ public class PartRequest {
 	/**
 	 * @return длительность доставки в днях
 	 */
-	public long getDeliveryInterval() {
-		if (dateOfDelivery == null || order.dateOfCreation == null)
-			return 0;
-		// TODO На обсуждении throw new RuntimeException("Has corrupted
-		// value: " + dateOfDelivery + " - " + order.dateOfCreation);
+	public Long getDeliveryInterval() {
+		if (!hasDeliveryInterval())
+			throw new NullPointerException("Undefined creation or delivery date");
 		LocalDate start = order.getDateOfCreation();
 		LocalDate end = getDateOfDelivery();
 		return start.until(end, ChronoUnit.DAYS);
+	}
+	
+	/**
+	 * @return определена ли длительность доставки (т.е. заказ был отгружен)
+	 */
+	public boolean hasDeliveryInterval() {
+		return dateOfDelivery != null && order.dateOfCreation != null;
 	}
 
 	@Override

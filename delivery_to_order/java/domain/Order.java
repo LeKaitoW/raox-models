@@ -27,14 +27,23 @@ public class Order {
 	@Column(name = "SolutionName")
 	public String solutionName;
 
+	/**
+	 * Дата поступления заказа
+	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfCreation")
 	public Calendar dateOfCreation;
 
+	/**
+	 * Дата последнего изменения, служебный столбец для отслеживания старых или забытых заявок
+	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
 	public Calendar dateOfProcessing;
 
+	/**
+	 * Дата отгрузки, если {@code NULL}, то отгрузки не было
+	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfRealization")
 	public Calendar dateOfRealization;
