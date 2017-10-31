@@ -48,22 +48,20 @@ resource _machine1 = Machines.create(1, Position.MACHINE_1, MachineState.FREE, 2
 resource _machine2 = Machines.create(2, Position.MACHINE_2, MachineState.FREE, 28)
 resource _machine3 = Machines.create(3, Position.MACHINE_3, MachineState.FREE, 15)
 
-enum DetailState {STORED, TRANSFERING, MACHINING, MACHINING_FINISHED}
 type Details {
 	int index
 	Position position
-	DetailState state
 }
-resource _detail1 = Details.create(1, Position.STORAGE_1, DetailState.STORED)
-resource _detail2 = Details.create(2, Position.STORAGE_1, DetailState.STORED)
-resource _detail3 = Details.create(3, Position.STORAGE_1, DetailState.STORED)
-resource _detail4 = Details.create(4, Position.STORAGE_1, DetailState.STORED)
-resource _detail5 = Details.create(5, Position.STORAGE_1, DetailState.STORED)
-resource _detail6 = Details.create(6, Position.STORAGE_1, DetailState.STORED)
-resource _detail7 = Details.create(7, Position.STORAGE_1, DetailState.STORED)
-resource _detail8 = Details.create(8, Position.STORAGE_1, DetailState.STORED)
-resource _detail9 = Details.create(9, Position.STORAGE_1, DetailState.STORED)
-resource _detail10 = Details.create(10, Position.STORAGE_1, DetailState.STORED)
+resource _detail1 = Details.create(1, Position.STORAGE_1)
+resource _detail2 = Details.create(2, Position.STORAGE_1)
+resource _detail3 = Details.create(3, Position.STORAGE_1)
+resource _detail4 = Details.create(4, Position.STORAGE_1)
+resource _detail5 = Details.create(5, Position.STORAGE_1)
+resource _detail6 = Details.create(6, Position.STORAGE_1)
+resource _detail7 = Details.create(7, Position.STORAGE_1)
+resource _detail8 = Details.create(8, Position.STORAGE_1)
+resource _detail9 = Details.create(9, Position.STORAGE_1)
+resource _detail10 = Details.create(10, Position.STORAGE_1)
 
 def terminateCondition() {
 	return _storage2.currentCount == 10
@@ -80,7 +78,7 @@ operation LoadingDetail() {
 
 	def begin() {
 		_storage1.currentCount = _storage1.currentCount - 1
-		detail.state = DetailState.TRANSFERING
+
 		robot.state = RobotState.BUSY
 		truck.state = TruckState.BUSY
 
@@ -109,7 +107,7 @@ operation TransferingDetail() {
 
 	def begin() {
 		truck.state = TruckState.MOVING
-		detail.state = DetailState.TRANSFERING
+		detail.position = Position.NOWHERE
 	}
 
 	def duration() {
@@ -183,7 +181,6 @@ operation Machining() {
 
 		def begin() {
 			machine.state = MachineState.MACHINING
-			detail.state = DetailState.MACHINING
 		}
 
 		def duration() {
@@ -192,7 +189,6 @@ operation Machining() {
 
 		def end() {
 			machine.state = MachineState.FINISHED_MACHINING
-			detail.state = DetailState.MACHINING_FINISHED
 		}
 	}
 
@@ -216,7 +212,7 @@ operation Machining() {
 			machine.state = MachineState.UNLOADING
 			robot.state = RobotState.BUSY
 			truck.state = TruckState.BUSY
-			detail.state = DetailState.TRANSFERING
+			detail.position = Position.NOWHERE
 		}
 
 		def duration() {
@@ -251,7 +247,7 @@ operation Machining() {
 
 		def begin() {
 			machine.state = MachineState.UNLOADING
-			detail.state = DetailState.TRANSFERING
+			detail.position = Position.NOWHERE
 		}
 
 		def duration() {
@@ -261,7 +257,7 @@ operation Machining() {
 		def end() {
 			machine.state = MachineState.FREE
 			detail.position = Position.STORAGE_2
-			detail.state = DetailState.STORED
+
 			storage.currentCount = storage.currentCount + 1
 		}
 	}
@@ -359,6 +355,8 @@ operation Machining() {
 
 			drawText('Time:', 10, 5)
 			drawText(currentTime.toString(), 60, 5)
+			drawText('STATE', 350, 45);
+			drawText('POSITION', 600, 45);
 
 			for (machine : Machines.all) {
 				drawText('machine ' + (machine.number + 1), 10, 70 + machine.number * yOffset);
@@ -379,15 +377,14 @@ operation Machining() {
 			}
 
 			for (storage : Storages.all) {
-				drawText('Details count in storage ' + (storage.number + 1), 10,
-					220 + storage.number * yOffset)
+				drawText('Details count in storage ' + (storage.number + 1), 10, 220 + storage.number * yOffset)
 				drawText(storage.currentCount.toString(), 350, 220 + storage.number * yOffset)
 			}
 
+			drawText('POSITION', 350, 280);
 			for (detail : Details.all) {
 				drawText('detail ' + (detail.number + 1), 10, 300 + detail.number * yOffset)
 				drawText(detail.position.toString(), 350, 300 + detail.number * yOffset)
-				drawText(detail.state.toString(), 600, 300 + detail.number * yOffset)
 			}
 		}
 	}
