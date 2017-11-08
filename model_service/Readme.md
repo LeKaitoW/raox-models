@@ -4,7 +4,7 @@
 
 # 1.Модель сервисной службы
 
-![Иллюстрация к проекту](https://github.com/xxramm16916/raox-models/tree/master/model_service/screenshot/model.bmp)
+![Иллюстрация к проекту](https://github.com/xxramm16916/raox-models/tree/master/model_service/screenshot/model.png)
 
 
 Рисунок 1 – Модель сервисной службы
@@ -21,7 +21,7 @@
 
 По умолчанию в модели собираются статистики:
 
-![Иллюстрация к проекту](https://github.com/xxramm16916/raox-models/tree/master/model_service/screenshot/merkers.bmp)
+![Image alt](https://github.com/xxramm16916/raox-models/tree/master/model_service/screenshot/merkers.png)
 
 Часть из них выводится на главный экран для наглядного отображения работы системы, остальные будут использованы в дальнейшем аналитическом расчете.
 
