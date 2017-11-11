@@ -4,15 +4,12 @@ import java.util.ArrayList
 constant numberOfCities = 5
 
 
-
 type Map {
 ArrayList<ArrayList<Integer>> distance
 }
 
 resource map = Map.create(input.map())
-
-
-			
+		
 
 type Path {
 	String  path
@@ -67,4 +64,3 @@ search SolvingTSP {
     }
 
 }
-

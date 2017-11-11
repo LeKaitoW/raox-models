@@ -23,16 +23,3 @@ ArrayList<ArrayList<Integer>> map(){
 	
 	return distance
 }
-
-ArrayList<Integer> startCityList() {
-	
-	var ArrayList<Integer> cityList = new ArrayList<Integer>()
-	 
-	cityList.add(1)
-	
-	return cityList
-	
-}
-
-
-    
