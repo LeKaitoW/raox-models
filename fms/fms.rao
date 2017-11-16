@@ -11,14 +11,6 @@ enum Position {
 	MACHINE_1, MACHINE_2, MACHINE_3, STORAGE_1, STORAGE_2, TRUCK_1_FROM, TRUCK_1_TO, TRUCK_2_FROM, TRUCK_2_TO, NOWHERE
 }
 
-type Storages {
-	int index
-	int currentCount
-}
-
-resource storage1 = Storages.create(1, 10)
-resource storage2 = Storages.create(2, 0)
-
 enum TruckState {FREE, BUSY, LOADED, MOVING, ARRIVED, WAITING}
 type Trucks {
 	int index
@@ -65,7 +57,7 @@ resource detail9 = Details.create(9, Position.STORAGE_1)
 resource detail10 = Details.create(10, Position.STORAGE_1)
 
 def terminateCondition() {
-	return storage2.currentCount == 10
+	return Details.all.filter[position != Position.STORAGE_2].any == null
 }
 
 operation LoadingDetail() {
@@ -78,8 +70,6 @@ operation LoadingDetail() {
 	].any
 
 	def begin() {
-		storage1.currentCount = storage1.currentCount - 1
-
 		robot.state = RobotState.BUSY
 		truck.state = TruckState.BUSY
 
@@ -244,7 +234,6 @@ operation Machining() {
 	operation FinishingMachiningOnMachine3() {
 		relevant machine = machine3.onlyif[state == MachineState.FINISHED_MACHINING]
 		relevant detail = Details.all.filter[position == machine.position].any
-		relevant storage = storage2
 
 		def begin() {
 			machine.state = MachineState.UNLOADING
@@ -258,8 +247,6 @@ operation Machining() {
 		def end() {
 			machine.state = MachineState.FREE
 			detail.position = Position.STORAGE_2
-
-			storage.currentCount = storage.currentCount + 1
 		}
 	}
 
@@ -377,15 +364,10 @@ operation Machining() {
 				drawText(robot.position.toString(), 600, 165 + robot.number * yOffset)
 			}
 
-			for (storage : Storages.all) {
-				drawText('Details count in storage ' + (storage.number + 1), 10, 220 + storage.number * yOffset)
-				drawText(storage.currentCount.toString(), 350, 220 + storage.number * yOffset)
-			}
-
-			drawText('POSITION', 350, 280);
+			drawText('POSITION', 350, 250);
 			for (detail : Details.all) {
-				drawText('detail ' + (detail.number + 1), 10, 300 + detail.number * yOffset)
-				drawText(detail.position.toString(), 350, 300 + detail.number * yOffset)
+				drawText('detail ' + (detail.number + 1), 10, 270 + detail.number * yOffset)
+				drawText(detail.position.toString(), 350, 270 + detail.number * yOffset)
 			}
 		}
 	}
