@@ -1,10 +1,11 @@
-constant TRUCK_LOADING_DURATION = 1.5
-constant TRUCK_TRANSFER_DURATION = 2.0
-constant INSTALLING_DURATION_ON_MACHINE = 1.0
-constant MACHINE_UNLOADING_DURATION = 0.5
 constant ROBOT_RETURN_DURATION = 0.2
 
 sequence exponential = new Exponential(123456789)
+sequence truckLoadingDuration = new Exponential(123456789,1/1.5)
+sequence truckTransferDuration = new Exponential(123456789,1/2.0)
+sequence installingOnMachineDuration = new Exponential(123456789,1/1.0)
+sequence machineUnloadingDuration = new Exponential(123456789,1/0.5)
+
 
 enum Position {
 	MACHINE_1, MACHINE_2, MACHINE_3, STORAGE_1, STORAGE_2, TRUCK_1_FROM, TRUCK_1_TO, TRUCK_2_FROM, TRUCK_2_TO, NOWHERE
@@ -87,7 +88,7 @@ operation LoadingDetail() {
 	}
 
 	def duration() {
-		return exponential.next(1.0 / TRUCK_LOADING_DURATION)
+		return truckLoadingDuration.next()
 	}
 
 	def end() {
@@ -111,7 +112,7 @@ operation TransferingDetail() {
 	}
 
 	def duration() {
-		return exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
+		return truckTransferDuration.next()
 	}
 
 	def end() {
@@ -161,7 +162,7 @@ operation InstallingOnMachine() {
 	}
 
 	def duration() {
-		return exponential.next(1.0 / INSTALLING_DURATION_ON_MACHINE)
+		return installingOnMachineDuration.next()
 	}
 
 	def end() {
@@ -216,7 +217,7 @@ operation Machining() {
 		}
 
 		def duration() {
-			return exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
+			return machineUnloadingDuration.next()
 		}
 
 		def end() {
@@ -251,7 +252,7 @@ operation Machining() {
 		}
 
 		def duration() {
-			return exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
+			return machineUnloadingDuration.next()
 		}
 
 		def end() {
@@ -312,7 +313,7 @@ operation Machining() {
 		}
 
 		def duration () {
-			return exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
+			return truckTransferDuration.next()
 		}
 
 		def end() {
