@@ -4,7 +4,7 @@ constant INSTALLING_DURATION_ON_MACHINE = 1.0
 constant MACHINE_UNLOADING_DURATION = 0.5
 constant ROBOT_RETURN_DURATION = 0.2
 
-sequence _exponential = new Exponential(123456789)
+sequence exponential = new Exponential(123456789)
 
 enum Position {
 	MACHINE_1, MACHINE_2, MACHINE_3, STORAGE_1, STORAGE_2, TRUCK_1_FROM, TRUCK_1_TO, TRUCK_2_FROM, TRUCK_2_TO, NOWHERE
@@ -15,8 +15,8 @@ type Storages {
 	int currentCount
 }
 
-resource _storage1 = Storages.create(1, 10)
-resource _storage2 = Storages.create(2, 0)
+resource storage1 = Storages.create(1, 10)
+resource storage2 = Storages.create(2, 0)
 
 enum TruckState {FREE, BUSY, LOADED, MOVING, ARRIVED, WAITING}
 type Trucks {
@@ -24,8 +24,8 @@ type Trucks {
 	Position position
 	TruckState state
 }
-resource _truck1 = Trucks.create(1, Position.TRUCK_1_FROM, TruckState.FREE)
-resource _truck2 = Trucks.create(2, Position.TRUCK_2_FROM, TruckState.FREE)
+resource truck1 = Trucks.create(1, Position.TRUCK_1_FROM, TruckState.FREE)
+resource truck2 = Trucks.create(2, Position.TRUCK_2_FROM, TruckState.FREE)
 
 enum RobotState {FREE, BUSY}
 type Robots {
@@ -33,9 +33,9 @@ type Robots {
 	Position position
 	RobotState state
 }
-resource _robot1 = Robots.create(1, Position.STORAGE_1, RobotState.FREE)
-resource _robot2 = Robots.create(2, Position.TRUCK_1_TO, RobotState.FREE)
-resource _robot3 = Robots.create(3, Position.TRUCK_2_TO, RobotState.FREE)
+resource robot1 = Robots.create(1, Position.STORAGE_1, RobotState.FREE)
+resource robot2 = Robots.create(2, Position.TRUCK_1_TO, RobotState.FREE)
+resource robot3 = Robots.create(3, Position.TRUCK_2_TO, RobotState.FREE)
 
 enum MachineState {FREE, LOADING, READY_FOR_MACHINING, MACHINING, UNLOADING, FINISHED_MACHINING}
 type Machines {
@@ -44,27 +44,27 @@ type Machines {
 	MachineState state
 	double machiningDuration
 }
-resource _machine1 = Machines.create(1, Position.MACHINE_1, MachineState.FREE, 28)
-resource _machine2 = Machines.create(2, Position.MACHINE_2, MachineState.FREE, 28)
-resource _machine3 = Machines.create(3, Position.MACHINE_3, MachineState.FREE, 15)
+resource machine1 = Machines.create(1, Position.MACHINE_1, MachineState.FREE, 28)
+resource machine2 = Machines.create(2, Position.MACHINE_2, MachineState.FREE, 28)
+resource machine3 = Machines.create(3, Position.MACHINE_3, MachineState.FREE, 15)
 
 type Details {
 	int index
 	Position position
 }
-resource _detail1 = Details.create(1, Position.STORAGE_1)
-resource _detail2 = Details.create(2, Position.STORAGE_1)
-resource _detail3 = Details.create(3, Position.STORAGE_1)
-resource _detail4 = Details.create(4, Position.STORAGE_1)
-resource _detail5 = Details.create(5, Position.STORAGE_1)
-resource _detail6 = Details.create(6, Position.STORAGE_1)
-resource _detail7 = Details.create(7, Position.STORAGE_1)
-resource _detail8 = Details.create(8, Position.STORAGE_1)
-resource _detail9 = Details.create(9, Position.STORAGE_1)
-resource _detail10 = Details.create(10, Position.STORAGE_1)
+resource detail1 = Details.create(1, Position.STORAGE_1)
+resource detail2 = Details.create(2, Position.STORAGE_1)
+resource detail3 = Details.create(3, Position.STORAGE_1)
+resource detail4 = Details.create(4, Position.STORAGE_1)
+resource detail5 = Details.create(5, Position.STORAGE_1)
+resource detail6 = Details.create(6, Position.STORAGE_1)
+resource detail7 = Details.create(7, Position.STORAGE_1)
+resource detail8 = Details.create(8, Position.STORAGE_1)
+resource detail9 = Details.create(9, Position.STORAGE_1)
+resource detail10 = Details.create(10, Position.STORAGE_1)
 
 def terminateCondition() {
-	return _storage2.currentCount == 10
+	return storage2.currentCount == 10
 }
 
 operation LoadingDetail() {
@@ -77,7 +77,7 @@ operation LoadingDetail() {
 	].any
 
 	def begin() {
-		_storage1.currentCount = _storage1.currentCount - 1
+		storage1.currentCount = storage1.currentCount - 1
 
 		robot.state = RobotState.BUSY
 		truck.state = TruckState.BUSY
@@ -87,7 +87,7 @@ operation LoadingDetail() {
 	}
 
 	def duration() {
-		return _exponential.next(1.0 / TRUCK_LOADING_DURATION)
+		return exponential.next(1.0 / TRUCK_LOADING_DURATION)
 	}
 
 	def end() {
@@ -111,7 +111,7 @@ operation TransferingDetail() {
 	}
 
 	def duration() {
-		return _exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
+		return exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
 	}
 
 	def end() {
@@ -161,7 +161,7 @@ operation InstallingOnMachine() {
 	}
 
 	def duration() {
-		return _exponential.next(1.0 / INSTALLING_DURATION_ON_MACHINE)
+		return exponential.next(1.0 / INSTALLING_DURATION_ON_MACHINE)
 	}
 
 	def end() {
@@ -216,7 +216,7 @@ operation Machining() {
 		}
 
 		def duration() {
-			return _exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
+			return exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
 		}
 
 		def end() {
@@ -241,9 +241,9 @@ operation Machining() {
 	}
 
 	operation FinishingMachiningOnMachine3() {
-		relevant machine = _machine3.onlyif[state == MachineState.FINISHED_MACHINING]
+		relevant machine = machine3.onlyif[state == MachineState.FINISHED_MACHINING]
 		relevant detail = Details.all.filter[position == machine.position].any
-		relevant storage = _storage2
+		relevant storage = storage2
 
 		def begin() {
 			machine.state = MachineState.UNLOADING
@@ -251,7 +251,7 @@ operation Machining() {
 		}
 
 		def duration() {
-			return _exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
+			return exponential.next(1.0 / MACHINE_UNLOADING_DURATION)
 		}
 
 		def end() {
@@ -312,7 +312,7 @@ operation Machining() {
 		}
 
 		def duration () {
-			return _exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
+			return exponential.next(1.0 / TRUCK_TRANSFER_DURATION)
 		}
 
 		def end() {
