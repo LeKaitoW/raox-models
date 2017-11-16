@@ -36,11 +36,12 @@ public class Order {
 	public Calendar dateOfCreation;
 
 	/**
-	 * Дата последнего изменения, служебный столбец для отслеживания старых или забытых заявок
+	 * Дата последнего изменения, служебный столбец для отслеживания старых или
+	 * забытых заявок
 	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
-	public Calendar dateOfProcessing;
+	private Calendar dateOfProcessing;
 
 	/**
 	 * Дата отгрузки, если {@code NULL}, то отгрузки не было
@@ -93,41 +94,80 @@ public class Order {
 
 	/**
 	 * Дата поступления заказа
+	 * 
+	 * @return null, если поле имеет значение null
 	 */
 	public LocalDate getDateOfCreation() {
 		return toLocalDate(dateOfCreation);
 	}
-	
+
+	public long getEpochDayOfCreation() {
+		return getDateOfCreation().toEpochDay();
+	}
+
 	/**
-	 * Дата последнего изменения, служебный столбец для отслеживания старых или забытых заявок
+	 * @return можно ли вычислить интервал последнего изменения
 	 */
-	public LocalDate getDateOfProcessing() {
-		return toLocalDate(dateOfProcessing);
+	public boolean hasProcessingInterval() {
+		return dateOfProcessing != null;
 	}
 	
 	/**
+	 * Дата последнего изменения, служебный столбец для отслеживания старых или
+	 * забытых заявок
+	 * 
+	 * @return null, если поле имеет значение null
+	 */
+	private LocalDate getDateOfProcessing() {
+		return toLocalDate(dateOfProcessing);
+	}
+
+	/**
 	 * Дата отгрузки
+	 * 
+	 * @return null, если поле имеет значение null
 	 */
 	public LocalDate getDateOfRealization() {
 		return toLocalDate(dateOfRealization);
 	}
 	
 	/**
+	 * @return можно ли вычислить интервал реализации
+	 */
+	public boolean hasRealizationInterval() {
+		return dateOfRealization != null;
+	}
+	
+	/**
+	 * @return разница между датой создания и реализации
+	 */
+	public long getRealizationInterval() {
+		LocalDate start = getDateOfCreation();
+		LocalDate end = getDateOfRealization();
+		long result = start.until(end, ChronoUnit.DAYS);
+		if(result < 0) {
+			throw new IllegalStateException("getRealizationInterval " + result);
+		}
+		return result;
+	}
+
+	/**
 	 * @return разница между датой создания и последнего изменения
 	 */
 	public long getModificationInterval() {
 		LocalDate start = getDateOfCreation();
 		LocalDate end = getDateOfProcessing();
-		return start.until(end, ChronoUnit.DAYS);
-	}
-	
-	public boolean hasModificationInterval() {
-		return dateOfCreation != null && dateOfProcessing != null;
+		long result = start.until(end, ChronoUnit.DAYS);
+		if(result < 0) {
+			throw new IllegalStateException("getModificationInterval " + result);
+		}
+		return result;
 	}
 
-	private LocalDate toLocalDate(Calendar calendar) {
-		return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
-				calendar.get(Calendar.DAY_OF_MONTH));
+	public LocalDate toLocalDate(Calendar calendar) {
+		return calendar == null ? null
+				: LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
+						calendar.get(Calendar.DAY_OF_MONTH));
 	}
 
 	@Override

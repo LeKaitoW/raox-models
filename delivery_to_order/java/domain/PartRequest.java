@@ -15,8 +15,6 @@ import javax.persistence.Table;
 import javax.persistence.Temporal;
 import javax.persistence.TemporalType;
 
-import ru.bmstu.rk9.rao.lib.runtime.LoggerExtensions;
-
 @Entity
 @Table(name = "requestedpartslist")
 @IdClass(value = PartRequest.PartRequestId.class)
@@ -48,6 +46,16 @@ public class PartRequest {
 	@Column(name = "Count")
 	public int count;
 
+	/**
+	 * Дата доставки, если {@code NULL}, то доставки не было
+	 */
+	public boolean hasDateOfDelivery() {
+		return dateOfDelivery != null;
+	}
+	
+	/**
+	 * Дата доставки, если {@code NULL}, то доставки не было
+	 */
 	public LocalDate getDateOfDelivery() {
 		return toLocalDate(dateOfDelivery);
 	}
@@ -59,38 +67,15 @@ public class PartRequest {
 		LocalDate start = order.getDateOfCreation();
 		LocalDate end = getDateOfDelivery();
 		long interval = start.until(end, ChronoUnit.DAYS);
-		LoggerExtensions.log("Деталь " + part.name + " будет доставлена через " + interval + " дней"); 
-		// TODO есть детали, у которых дата доставки раньше даты создания заказа
-		return Math.abs(interval);
-	}
-	
-	/**
-	 * @return определена ли длительность доставки (т.е. заказ был отгружен)
-	 */
-	public boolean hasDeliveryInterval() {
-		return dateOfDelivery != null && order.dateOfCreation != null;
-	}
-	
-	/**
-	 * Забрать детали со склада
-	 * 
-	 * @return возможно ли забрать деталь со склада
-	 */
-	public boolean takeParts() {
-		if (part.stocked >= count) {
-			part.stocked -= count;
-			return true;
-		} else {
-			part.stocked = 0;
-			return false;
-		}
+		return interval;
 	}
 
 	private LocalDate toLocalDate(Calendar calendar) {
-		return LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
-				calendar.get(Calendar.DAY_OF_MONTH));
+		return calendar == null ? null
+				: LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
+						calendar.get(Calendar.DAY_OF_MONTH));
 	}
-	
+
 	@Override
 	public String toString() {
 		return "PartRequest [Part=" + part.name + ", DeliveryInterval=" + getDeliveryInterval() + ", Count=" + count
