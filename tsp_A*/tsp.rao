@@ -1,66 +1,58 @@
-import java.util.ArrayList
-
-
-constant numberOfCities = 5
+﻿import java.util.ArrayList
 
 
 type Map {
-ArrayList<ArrayList<Integer>> distance
+    ArrayList<ArrayList<Integer>> distance
 }
 
-resource map = Map.create(input.map())
-		
+resource map = Map.create(input.createMap())
 
 type Path {
-	String  path
-	int currentCity
+    String  path
+    int currentCity
 }
 
 resource path = Path.create("1", 1)
 
-rule GoToCity (int cityNumber, int currentCityNumber){
-	relevant path_ =  path.onlyif[currentCity == currentCityNumber]
-	
-	def execute() {
-		path_.currentCity = cityNumber
-		path.path = path.path + cityNumber.toString()
-	}
+rule GoToCity (int currentCityNumber, int cityNumber){
+    relevant path_ =  path.onlyif[currentCity == currentCityNumber]
+
+    def execute() {
+        path_.currentCity = cityNumber
+        path.path = path.path + cityNumber.toString()
+    }
 }
 
-
-int distance(int cityNumber, int currentCityNumber) {
-	return map.distance.get(currentCityNumber - 1).get(cityNumber - 1)
+int distance(int currentCityNumber, int cityNumber) {
+    return map.distance.get(currentCityNumber - 1).get(cityNumber - 1)
 }
-
-
 
 search SolvingTSP {
-    edge go_to_1_from_2 = new Edge(GoToCity.create(1, 2), distance(1, 2))
-    edge go_to_1_from_3 = new Edge(GoToCity.create(1, 3), distance(1, 3))
-    edge go_to_1_from_4 = new Edge(GoToCity.create(1, 4), distance(1, 4))
-    edge go_to_1_from_5 = new Edge(GoToCity.create(1, 5), distance(1, 5))
-    edge go_to_2_from_1 = new Edge(GoToCity.create(2, 1), distance(2, 1))
-    edge go_to_2_from_3 = new Edge(GoToCity.create(2, 3), distance(2, 3))
-    edge go_to_2_from_4 = new Edge(GoToCity.create(2, 4), distance(2, 4))
-    edge go_to_2_from_5 = new Edge(GoToCity.create(2, 5), distance(2, 5))
-    edge go_to_3_from_1 = new Edge(GoToCity.create(3, 1), distance(3, 1))
-    edge go_to_3_from_2 = new Edge(GoToCity.create(3, 2), distance(3, 2))
-    edge go_to_3_from_4 = new Edge(GoToCity.create(3, 4), distance(3, 4))
-    edge go_to_3_from_5 = new Edge(GoToCity.create(3, 5), distance(3, 5))
-    edge go_to_4_from_1 = new Edge(GoToCity.create(4, 1), distance(4, 1))
-    edge go_to_4_from_2 = new Edge(GoToCity.create(4, 2), distance(4, 2))
-    edge go_to_4_from_3 = new Edge(GoToCity.create(4, 3), distance(4, 3))
-    edge go_to_4_from_5 = new Edge(GoToCity.create(4, 5), distance(4, 5))
-    edge go_to_5_from_1 = new Edge(GoToCity.create(5, 1), distance(5, 1))
-    edge go_to_5_from_2 = new Edge(GoToCity.create(5, 2), distance(5, 2))
-    edge go_to_5_from_3 = new Edge(GoToCity.create(5, 3), distance(5, 3))
-    edge go_to_5_from_4 = new Edge(GoToCity.create(5, 4), distance(5, 4))
+    edge go_to_1_from_2 = new Edge(GoToCity.create(2, 1), distance(2, 1))
+    edge go_to_1_from_3 = new Edge(GoToCity.create(3, 1), distance(3, 1))
+    edge go_to_1_from_4 = new Edge(GoToCity.create(4, 1), distance(4, 1))
+    edge go_to_1_from_5 = new Edge(GoToCity.create(5, 1), distance(5, 1))
+    edge go_to_2_from_1 = new Edge(GoToCity.create(1, 2), distance(1, 2))
+    edge go_to_2_from_3 = new Edge(GoToCity.create(3, 2), distance(3, 2))
+    edge go_to_2_from_4 = new Edge(GoToCity.create(4, 2), distance(4, 2))
+    edge go_to_2_from_5 = new Edge(GoToCity.create(5, 2), distance(5, 2))
+    edge go_to_3_from_1 = new Edge(GoToCity.create(1, 3), distance(1, 3))
+    edge go_to_3_from_2 = new Edge(GoToCity.create(2, 3), distance(2, 3))
+    edge go_to_3_from_4 = new Edge(GoToCity.create(4, 3), distance(4, 3))
+    edge go_to_3_from_5 = new Edge(GoToCity.create(5, 3), distance(5, 3))
+    edge go_to_4_from_1 = new Edge(GoToCity.create(1, 4), distance(1, 4))
+    edge go_to_4_from_2 = new Edge(GoToCity.create(2, 4), distance(2, 4))
+    edge go_to_4_from_3 = new Edge(GoToCity.create(3, 4), distance(3, 4))
+    edge go_to_4_from_5 = new Edge(GoToCity.create(5, 4), distance(5, 4))
+    edge go_to_5_from_1 = new Edge(GoToCity.create(1, 5), distance(1, 5))
+    edge go_to_5_from_2 = new Edge(GoToCity.create(2, 5), distance(2, 5))
+    edge go_to_5_from_3 = new Edge(GoToCity.create(3, 5), distance(3, 5))
+    edge go_to_5_from_4 = new Edge(GoToCity.create(4, 5), distance(4, 5))
 
-	def init() {
-		startCondition = [Path.all.exists[currentCity == 1 && !path.contains("4")  && !path.contains("5") ]]	
+    def init() {
+        startCondition = [Path.all.exists[currentCity == 1 && !path.contains("4")  && !path.contains("5") ]]	
         terminateCondition = [Path.all.exists[currentCity == 1 && path.contains("4") && path.contains("5") ]]
         heuristic = [0.0]
         compareTops = true
     }
-
 }

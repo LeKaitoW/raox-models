@@ -1,25 +1,13 @@
-import java.util.ArrayList
+﻿import java.util.ArrayList
+import java.util.Arrays
 
-constant numberOfCities = 5
 
-sequence distanceSeq = new Values ( #[
-    0, 1, 5, 6, 7,
-    8, 0, 3, 4, 10,
-    6, 8, 0, 9, 5,
-    1, 4, 6, 0, 7,
-    5, 7, 9, 9, 0
-    ])
-    
-ArrayList<ArrayList<Integer>> map(){
-	
-	var ArrayList<ArrayList<Integer>> distance = new ArrayList<ArrayList<Integer>>(numberOfCities)
-	for (var i = 1; i <= numberOfCities; i++) {
-		var ArrayList<Integer> city = new ArrayList<Integer>(numberOfCities)
-		for (var j = 1; j <= numberOfCities; j++) {
-			city.add(distanceSeq.next)
-		}
-			distance.add(city)
-	}
-	
-	return distance
+ArrayList<ArrayList<Integer>> createMap() {
+    return new ArrayList<ArrayList<Integer>>(Arrays.asList(
+        new ArrayList<Integer>(Arrays.asList(0, 1, 5, 6, 7)),
+        new ArrayList<Integer>(Arrays.asList(8, 0, 3, 4, 10)),
+        new ArrayList<Integer>(Arrays.asList(6, 8, 0, 9, 5)),
+        new ArrayList<Integer>(Arrays.asList(1, 4, 6, 0, 7)),
+        new ArrayList<Integer>(Arrays.asList(5, 7, 9, 9, 0))
+    ))
 }
