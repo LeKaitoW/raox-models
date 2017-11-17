@@ -28,24 +28,14 @@ public class Order {
 	@Column(name = "SolutionName")
 	public String solutionName;
 
-	/**
-	 * Дата поступления заказа
-	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfCreation")
 	public Calendar dateOfCreation;
 
-	/**
-	 * Дата последнего изменения, служебный столбец для отслеживания старых или
-	 * забытых заявок
-	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
 	private Calendar dateOfProcessing;
 
-	/**
-	 * Дата отгрузки, если {@code NULL}, то отгрузки не было
-	 */
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfRealization")
 	public Calendar dateOfRealization;
@@ -92,11 +82,6 @@ public class Order {
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	public List<PartRequest> requestedParts;
 
-	/**
-	 * Дата поступления заказа
-	 * 
-	 * @return null, если поле имеет значение null
-	 */
 	public LocalDate getDateOfCreation() {
 		return toLocalDate(dateOfCreation);
 	}
@@ -105,62 +90,37 @@ public class Order {
 		return getDateOfCreation().toEpochDay();
 	}
 
-	/**
-	 * @return можно ли вычислить интервал последнего изменения
-	 */
 	public boolean hasProcessingInterval() {
 		return dateOfProcessing != null;
 	}
-	
-	/**
-	 * Дата последнего изменения, служебный столбец для отслеживания старых или
-	 * забытых заявок
-	 * 
-	 * @return null, если поле имеет значение null
-	 */
+
 	private LocalDate getDateOfProcessing() {
 		return toLocalDate(dateOfProcessing);
 	}
 
-	/**
-	 * Дата отгрузки
-	 * 
-	 * @return null, если поле имеет значение null
-	 */
 	public LocalDate getDateOfRealization() {
 		return toLocalDate(dateOfRealization);
 	}
-	
-	/**
-	 * @return можно ли вычислить интервал реализации
-	 */
+
 	public boolean hasRealizationInterval() {
 		return dateOfRealization != null;
 	}
-	
-	/**
-	 * @return разница между датой создания и реализации
-	 */
+
 	public long getRealizationInterval() {
 		LocalDate start = getDateOfCreation();
 		LocalDate end = getDateOfRealization();
 		long result = start.until(end, ChronoUnit.DAYS);
-		if(result < 0) {
+		if (result < 0)
 			throw new IllegalStateException("getRealizationInterval " + result);
-		}
 		return result;
 	}
 
-	/**
-	 * @return разница между датой создания и последнего изменения
-	 */
 	public long getModificationInterval() {
 		LocalDate start = getDateOfCreation();
 		LocalDate end = getDateOfProcessing();
 		long result = start.until(end, ChronoUnit.DAYS);
-		if(result < 0) {
+		if (result < 0)
 			throw new IllegalStateException("getModificationInterval " + result);
-		}
 		return result;
 	}
 

@@ -30,15 +30,9 @@ public class PartRequest {
 	@JoinColumn(name = "SparePartID")
 	public Part part;
 
-	/**
-	 * Цена продажи в момент формирования заказа. Учитывать не нужно
-	 */
 	@Column(name = "Price")
 	public int price;
 
-	/**
-	 * Дата доставки, если {@code NULL}, то доставки не было
-	 */
 	@Temporal(TemporalType.DATE)
 	@Column(name = "DateOfDelivery")
 	public Calendar dateOfDelivery;
@@ -46,23 +40,14 @@ public class PartRequest {
 	@Column(name = "Count")
 	public int count;
 
-	/**
-	 * Дата доставки, если {@code NULL}, то доставки не было
-	 */
 	public boolean hasDateOfDelivery() {
 		return dateOfDelivery != null;
 	}
-	
-	/**
-	 * Дата доставки, если {@code NULL}, то доставки не было
-	 */
+
 	public LocalDate getDateOfDelivery() {
 		return toLocalDate(dateOfDelivery);
 	}
 
-	/**
-	 * @return длительность доставки в днях
-	 */
 	public long getDeliveryInterval() {
 		LocalDate start = order.getDateOfCreation();
 		LocalDate end = getDateOfDelivery();

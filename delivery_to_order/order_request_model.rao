@@ -11,7 +11,6 @@ import java.util.Map
 import java.util.HashMap
 
 /* Connection data */
-
 constant driver = "com.mysql.jdbc.Driver"
 
 constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
@@ -21,7 +20,6 @@ constant password = "compaq"
 //constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
 //constant username = "jpademo"
 //constant password = "5xYB2e6T5Jo7ajA"
-
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
 
 type OrderStats {
@@ -33,7 +31,7 @@ type OrderStats {
 resource orderStats = OrderStats.create(new HashMap, 0, 0)
 
 Part tryFecthLocal(Part part){
-	if(!orderStats.localPartData.containsKey(part.id))
+	if (!orderStats.localPartData.containsKey(part.id))
 		orderStats.localPartData.put(part.id, part)
 	return orderStats.localPartData.get(part.id)
 }
@@ -50,9 +48,7 @@ boolean takeParts(PartRequest request) {
 }
 
 /* Model data */
-
 constant allowedDeliveryWaitPeriod = 3 // Допустимое время ожидания заказа, дни
-
 enum PartState {REQUESTED, IN_TRANSIT, ARRIVED}
 enum OrderResult {OK, FAIL, LATE, EMPTY}
 enum OrderState {REQUESTED, PROCESSING, FINISHED}
@@ -78,9 +74,8 @@ int waitPeriod() {
 }
 
 /* Order logic */
-
 event OrderReceived(Order order) {
-	if(order.requestedParts.isEmpty && !order.hasRealizationInterval && !order.hasProcessingInterval){
+	if (order.requestedParts.isEmpty && !order.hasRealizationInterval && !order.hasProcessingInterval) {
 		return
 	}
 	val orderType = OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
@@ -138,74 +133,77 @@ rule UtilizeOrder() {
 			"Utilized order " + order.getNumber + "\tResult:" + order.resulted + "\tDuration:" + duration +
 				"\tOrders " + orderStats.successes + ":" + orderStats.fails + " Success percentage: " + percentage +
 				"%")
-	}
-}
-
-/* Part request logic */
-
-operation PartProcessing() {
-	relevant partRequest = PartRequestType.accessible.filter[state == PartState.REQUESTED].any
-
-	def begin() {
-		partRequest.state = PartState.IN_TRANSIT
-	}
-
-	def duration() {
-		val order = partRequest.original.order
-		val part = partRequest.original.part
-		if (takeParts(partRequest.original)) {
-			log("Деталь " + part.name + " взята со склада"); 
-			return 0
-		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
-		} else if(partRequest.original.hasDateOfDelivery && partRequest.original.getDeliveryInterval > 0) {
-			log("Деталь " + part.name + " будет доставлена через " + partRequest.original.getDeliveryInterval + " дней"); 
-			return partRequest.original.getDeliveryInterval
-		// Детали с отрицательной длительностью считаем уже на складе
-		} else if(partRequest.original.hasDateOfDelivery) {
-			log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе"); 
-			return 0
-		} else if(order.hasRealizationInterval) {
-			log("Деталь " + part.name + " будет доставлена через " + order.hasRealizationInterval + " дней (по дате реализации заказа)"); 
-			return order.getRealizationInterval
+			}
 		}
-		log("Деталь " + part.name + " будет доставлена через " + order.getModificationInterval + " дней (по дате изменения заказа)"); 
-		return order.getModificationInterval
-	}
 
-	def end() {
-		partRequest.state = PartState.ARRIVED
-	}
-}
+		/* Part request logic */
+		operation PartProcessing() {
+			relevant partRequest = PartRequestType.accessible.filter[state == PartState.REQUESTED].any
 
-rule UtilizePartRequest() {
-	relevant partRequest = PartRequestType.accessible.filter[state == PartState.ARRIVED].any
+			def begin() {
+				partRequest.state = PartState.IN_TRANSIT
+			}
 
-	def execute() {
-		val orderType = partRequest.order
-		orderType.requests.remove(partRequest)
-		partRequest.erase()
-		if(orderType.requests.isEmpty())
-			orderType.state = OrderState.FINISHED
-	}
-}
+			def duration() {
+				val order = partRequest.original.order
+				val part = partRequest.original.part
+				if (takeParts(partRequest.original)) {
+					log("Деталь " + part.name + " взята со склада");
+					return 0
+				// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
+				} else if (partRequest.original.hasDateOfDelivery && partRequest.original.getDeliveryInterval > 0) {
+					log("Деталь " + part.name + " будет доставлена через " + partRequest.original.getDeliveryInterval +
+						" дней");
+					return partRequest.original.getDeliveryInterval
+				// Детали с отрицательной длительностью считаем уже на складе
+				} else if (partRequest.original.hasDateOfDelivery) {
+					log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе");
+					return 0
+				} else if (order.hasRealizationInterval) {
+					log("Деталь " + part.name + " будет доставлена через " + order.getRealizationInterval +
+						" дней (по дате реализации заказа)");
+					return order.getRealizationInterval
+				}
+				log("Деталь " + part.name + " будет доставлена через " + order.getModificationInterval +
+					" дней (по дате изменения заказа)");
+				return order.getModificationInterval
+			}
 
-logic Model {
-	activity orderProcessing = new Activity(OrderProcessing.create())
-	activity utilizeOrder = new Activity(UtilizeOrder.create())
-	activity partProcessing = new Activity(PartProcessing.create())
-	activity utilizePartRequest = new Activity(UtilizePartRequest.create())
-}
+			def end() {
+				partRequest.state = PartState.ARRIVED
+			}
+		}
 
-def init() {
-	val query = data.<Order>getQuery
-	val qOrder = QOrder.order
-	val orderList = query.from(qOrder).fetch
+		rule UtilizePartRequest() {
+			relevant partRequest = PartRequestType.accessible.filter[state == PartState.ARRIVED].any
 
-	for(order : orderList) {
-		OrderReceived.plan(order.getEpochDayOfCreation(), order)
-	}
-	log("Orders total " + orderList.size)
-}
+			def execute() {
+				val orderType = partRequest.order
+				orderType.requests.remove(partRequest)
+				partRequest.erase()
+				if (orderType.requests.isEmpty())
+					orderType.state = OrderState.FINISHED
+			}
+		}
 
-result fails = Result.create([orderStats.fails], new LastValueStatistics())
-result successes = Result.create([orderStats.successes], new LastValueStatistics())
+		logic Model {
+			activity orderProcessing = new Activity(OrderProcessing.create())
+			activity utilizeOrder = new Activity(UtilizeOrder.create())
+			activity partProcessing = new Activity(PartProcessing.create())
+			activity utilizePartRequest = new Activity(UtilizePartRequest.create())
+		}
+
+		def init() {
+			val query = data.<Order>getQuery
+			val qOrder = QOrder.order
+			val orderList = query.from(qOrder).fetch
+
+			for (order : orderList) {
+				OrderReceived.plan(order.getEpochDayOfCreation(), order)
+			}
+			log("Orders total " + orderList.size)
+		}
+
+		result fails = Result.create([orderStats.fails], new LastValueStatistics())
+		result successes = Result.create([orderStats.successes], new LastValueStatistics())
+		
