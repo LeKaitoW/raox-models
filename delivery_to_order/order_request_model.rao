@@ -26,14 +26,26 @@ type OrderStats {
 	Map<String, Part> localPartData
 	long fails
 	long successes
+	List<Double> processDuration 
+	List<Double> failPrices // В копейках, полагаю, если так в базе
+	List<Double> successfulPrices
 }
 
-resource orderStats = OrderStats.create(new HashMap, 0, 0)
+resource orderStats = OrderStats.create(new HashMap, 0, 0, new ArrayList, new ArrayList, new ArrayList)
 
 Part tryFecthLocal(Part part){
 	if (!orderStats.localPartData.containsKey(part.id))
 		orderStats.localPartData.put(part.id, part)
 	return orderStats.localPartData.get(part.id)
+}
+
+Double calculatePrice(Order order){
+	var sum = 0.0
+	for (partRequest : order.requestedParts){
+		val part = partRequest.part
+		sum += part.purchaseprice * priceMultiplier
+	}
+	return sum
 }
 
 boolean takeParts(PartRequest request) {
@@ -48,7 +60,8 @@ boolean takeParts(PartRequest request) {
 }
 
 /* Model data */
-constant allowedDeliveryWaitPeriod = 3 // Допустимое время ожидания заказа, дни
+constant allowedDeliveryWaitPeriodDays = 3
+constant priceMultiplier = 1.2
 enum PartState {REQUESTED, IN_TRANSIT, ARRIVED}
 enum OrderResult {OK, FAIL, LATE, EMPTY}
 enum OrderState {REQUESTED, PROCESSING, FINISHED}
@@ -70,7 +83,7 @@ type PartRequestType {
 }
 
 int waitPeriod() {
-	return allowedDeliveryWaitPeriod
+	return delivery_to_order.order_request_model.allowedDeliveryWaitPeriodDays
 }
 
 /* Order logic */
@@ -78,8 +91,8 @@ event OrderReceived(Order order) {
 	if (order.requestedParts.isEmpty && !order.hasRealizationInterval && !order.hasProcessingInterval) {
 		return
 	}
-	val orderType = OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
-	log("Created order " + orderType.getNumber + "(time:" + currentTime + ")")
+	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
+	log("Created order " + order.id + "(time:" + currentTime + ")")
 }
 
 rule OrderProcessing() {
@@ -128,11 +141,14 @@ rule UtilizeOrder() {
 				duration = order.original.getModificationInterval
 			}
 		}
-		val percentage = orderStats.successes * 100 / (orderStats.successes + orderStats.fails)
-		log(
-			"Utilized order " + order.getNumber + "\tResult:" + order.resulted + "\tDuration:" + duration +
-				"\tOrders " + orderStats.successes + ":" + orderStats.fails + " Success percentage: " + percentage +
-				"%")
+		
+		orderStats.processDuration.add(duration)
+		if(order.resulted == OrderResult.OK)
+			orderStats.successfulPrices.add(calculatePrice(order.original))
+		else
+			orderStats.failPrices.add(calculatePrice(order.original))
+						
+		log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
 	}
 }
 
@@ -202,6 +218,24 @@ def init() {
 		OrderReceived.plan(order.getEpochDayOfCreation(), order)
 	}
 	log("Orders total " + orderList.size)
+}
+
+def finish() {
+	val percentage = orderStats.successes * 100 / (orderStats.successes + orderStats.fails)
+	log("Result:\tOrders " + orderStats.successes + ":" + orderStats.fails + " Successful percentage: " + percentage + "%")
+	val durationResults = orderStats.processDuration.stream.mapToDouble([f | f]).summaryStatistics
+	val avg = durationResults.getAverage
+	val max = durationResults.getMax
+	val min = durationResults.getMin
+	log("Result:\tAverage " + avg + "\tMax:" + max + "\tMin:" + min)
+	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
+	val avgFailPrice = failPriceResults.getAverage
+	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
+	val avgSuccessPrice = successPriceResults.getAverage
+	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
+	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
+	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
+	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
 }
 
 result fails = Result.create([orderStats.fails])
