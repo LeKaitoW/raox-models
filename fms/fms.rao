@@ -52,15 +52,15 @@ resource detail9 = Details.create(Position.STORAGE_1)
 resource detail10 = Details.create(Position.STORAGE_1)
 
 def terminateCondition() {
-	return Details.all.filter[position != Position.STORAGE_2].any == null
+	return Details.accessible.filter[position == Position.STORAGE_2].size() == Details.all.size()
 }
 
 operation LoadingDetail() {
 	relevant detail = Details.accessible.filter[position == Position.STORAGE_1].any
-	relevant robot = Robots.accessible.filter [
+	relevant robot = Robots.accessible.filter[
 		position == Position.STORAGE_1 && state == RobotState.FREE
 	].any
-	relevant truck = Trucks.accessible.filter [
+	relevant truck = Trucks.accessible.filter[
 		position == Position.TRUCK_1_FROM && state == TruckState.FREE
 	].any
 
@@ -89,9 +89,7 @@ operation TransferingDetail() {
 	relevants truck, detail = combination(
 		Trucks.accessible.filter[state == TruckState.LOADED],
 		Details.accessible
-	).filter [
-		truck.position == detail.position
-	].any of types Trucks,Details
+	).filter[truck.position == detail.position].any of types Trucks, Details
 
 	def begin() {
 		truck.state = TruckState.MOVING
@@ -112,22 +110,15 @@ operation TransferingDetail() {
 
 Position whereTruckMove(Position position){
 	switch (position) {
-		case TRUCK_1_FROM: {
-			return Position.TRUCK_1_TO
-		}
-		case TRUCK_2_FROM: {
-			return Position.TRUCK_2_TO
-		}
-		case TRUCK_1_TO: {
-			return Position.TRUCK_1_FROM
-		}
-		case TRUCK_2_TO: {
-			return Position.TRUCK_2_FROM
-		}
-		default: {
-			throw new IllegalArgumentException(
-				"Position where truck move must be TRUCK_1_TO or TRUCK_2_TO or TRUCK_1_FROM or TRUCK_2_FROM.")
-		}
+		case TRUCK_1_FROM: return Position.TRUCK_1_TO
+		
+		case TRUCK_2_FROM: return Position.TRUCK_2_TO
+		
+		case TRUCK_1_TO: return Position.TRUCK_1_FROM
+		
+		case TRUCK_2_TO: return Position.TRUCK_2_FROM
+		
+		default: throw new IllegalArgumentException("Unexpected truck position.")
 	}
 }
 
@@ -137,10 +128,10 @@ operation InstallingOnMachine() {
 		Trucks.accessible.filter[state == TruckState.ARRIVED],
 		Robots.accessible.filter[state == RobotState.FREE],
 		Details.accessible
-	).filter [
-		truck.position == robot.position && truck.position == detail.position &&
-			isRobotConnectedWithMachine(robot.position, machine.position)
-	].any of types Machines, Trucks,Robots,Details
+	).filter[
+		truck.position == robot.position && truck.position == detail.position 
+		&& isRobotConnectedWithMachine(robot.position, machine.position)
+	].any of types Machines, Trucks, Robots, Details
 
 	def begin() {
 		machine.state = MachineState.LOADING
@@ -163,12 +154,10 @@ operation InstallingOnMachine() {
 }
 
 operation Machining() {
-	relevants detail, machine = combination(
-		Details.accessible,
-		Machines.accessible.filter[state == MachineState.READY_FOR_MACHINING]
-	).filter [
-		detail.position == machine.position
-	].any of types Details, Machines
+	relevants machine, detail = combination(
+		Machines.accessible.filter[state == MachineState.READY_FOR_MACHINING],
+		Details.accessible	
+	).filter[detail.position == machine.position].any of types Machines, Details
 
 	def begin() {
 		machine.state = MachineState.MACHINING
@@ -183,20 +172,20 @@ operation Machining() {
 	}
 }
 
-operation LoadingFromMachineToTruck() {
-	relevant truck = Trucks.accessible.filter [
+operation FinishingMachiningOnMachine1Or2() {
+	relevant truck = Trucks.accessible.filter[
 		state == TruckState.FREE && position == Position.TRUCK_2_FROM
 	].any
 
 	relevants machine, detail, robot = combination(
-		Machines.accessible.filter[state == MachineState.FINISHED_MACHINING && position != Position.MACHINE_3],
+		Machines.accessible.filter[state == MachineState.FINISHED_MACHINING 
+			&& (position == Position.MACHINE_1 || position == Position.MACHINE_2)
+		],
 		Details.accessible,
-		Robots.accessible.filter [
-			state == RobotState.FREE
-		]
-	).filter [
+		Robots.accessible.filter[state == RobotState.FREE]
+	).filter[
 		machine.position == detail.position && isRobotConnectedWithMachine(robot.position, machine.position)
-	].any of types Machines, Details,Robots
+	].any of types Machines, Details, Robots
 
 	def begin() {
 		machine.state = MachineState.UNLOADING
@@ -221,11 +210,11 @@ operation LoadingFromMachineToTruck() {
 
 boolean isRobotConnectedWithMachine(Position robotPosition, Position machinePosition)
 {
-	if (robotPosition == Position.MACHINE_1 || robotPosition == Position.MACHINE_2 ||
-		robotPosition == Position.TRUCK_1_TO || robotPosition == Position.TRUCK_2_FROM) {
+	if (robotPosition == Position.MACHINE_1 || robotPosition == Position.MACHINE_2 
+		|| robotPosition == Position.TRUCK_1_TO || robotPosition == Position.TRUCK_2_FROM) {
 		return machinePosition == Position.MACHINE_1 || machinePosition == Position.MACHINE_2
-	} else if (robotPosition == Position.MACHINE_3 || robotPosition == Position.TRUCK_2_TO || robotPosition ==
-		Position.STORAGE_2) {
+	} else if (robotPosition == Position.MACHINE_3 || robotPosition == Position.TRUCK_2_TO 
+		|| robotPosition == Position.STORAGE_2) {
 		return machinePosition == Position.MACHINE_3
 	}
 
@@ -233,13 +222,11 @@ boolean isRobotConnectedWithMachine(Position robotPosition, Position machinePosi
 }
 
 operation FinishingMachiningOnMachine3() {
-	relevant machine = Machines.accessible.filter [
+	relevant machine = Machines.accessible.filter[
 		state == MachineState.FINISHED_MACHINING && position == Position.MACHINE_3
 	].any
-	relevant detail = Details.accessible.filter [
-		position == Position.MACHINE_3
-	].any
-	relevant robot = Robots.accessible.filter [
+	relevant detail = Details.accessible.filter[position == Position.MACHINE_3].any
+	relevant robot = Robots.accessible.filter[
 		state == RobotState.FREE && isRobotConnectedWithMachine(position, machine.position)
 	].any
 
@@ -262,7 +249,7 @@ operation FinishingMachiningOnMachine3() {
 }
 
 operation RobotReturn() {
-	relevant robot = Robots.accessible.filter [
+	relevant robot = Robots.accessible.filter[
 		position != getRobotReturnPosition(position) && state == RobotState.FREE
 	].any
 
@@ -282,32 +269,24 @@ operation RobotReturn() {
 
 Position getRobotReturnPosition(Position currentPosition) {
 	switch (currentPosition) {
-		case TRUCK_1_FROM: {
-			return Position.STORAGE_1
-		}
-		case MACHINE_1: {
-			return Position.TRUCK_1_TO
-		}
-		case MACHINE_2: {
-			return Position.TRUCK_1_TO
-		}
-		case TRUCK_2_FROM: {
-			return Position.TRUCK_1_TO
-		}
-		case MACHINE_3: {
-			return Position.TRUCK_2_TO
-		}
-		case STORAGE_2: {
-			return Position.TRUCK_2_TO
-		}
-		default: {
-			return currentPosition
-		}
+		case TRUCK_1_FROM: return Position.STORAGE_1
+		
+		case MACHINE_1: return Position.TRUCK_1_TO
+		
+		case MACHINE_2: return Position.TRUCK_1_TO
+		
+		case TRUCK_2_FROM: return Position.TRUCK_1_TO
+		
+		case MACHINE_3: return Position.TRUCK_2_TO
+		
+		case STORAGE_2: return Position.TRUCK_2_TO
+		
+		default: return currentPosition	
 	}
 }
 
 operation TruckReturn() {
-	relevant truck = Trucks.accessible.filter [
+	relevant truck = Trucks.accessible.filter[
 		state == TruckState.FREE && isTruckInToPosition(position)
 	].any
 
@@ -334,19 +313,12 @@ boolean isTruckInToPosition(Position position){
 
 logic Model {
 	activity loadingDetail = new Activity(LoadingDetail.create())
-
 	activity transferingDetail = new Activity(TransferingDetail.create())
-
 	activity installingOnMachine = new Activity(InstallingOnMachine.create())
-
 	activity machining = new Activity(Machining.create())
-
-	activity loadingFromMachineToTruck = new Activity(LoadingFromMachineToTruck.create())
-
+	activity finishingMachiningOnMachine1Or2 = new Activity(FinishingMachiningOnMachine1Or2.create())
 	activity finishingMachiningOnMachine3 = new Activity(FinishingMachiningOnMachine3.create())
-
 	activity robotReturn = new Activity(RobotReturn.create())
-
 	activity truckReturn = new Activity(TruckReturn.create())
 }
 
@@ -359,8 +331,8 @@ frame Frame {
 
 		drawText('Time:', 10, 5)
 		drawText(currentTime.toString(), 60, 5)
-		drawText('STATE', 350, 45);
-		drawText('POSITION', 600, 45);
+		drawText('STATE', 350, 45)
+		drawText('POSITION', 600, 45)
 
 		for (machine : Machines.all) {
 			drawText('machine ' + (machine.number + 1), 10, 70 + machine.number * yOffset);
@@ -380,10 +352,15 @@ frame Frame {
 			drawText(robot.position.toString(), 600, 165 + robot.number * yOffset)
 		}
 
-		drawText('POSITION', 350, 250);
+		drawText('POSITION', 350, 250)
 		for (detail : Details.all) {
 			drawText('detail ' + (detail.number + 1), 10, 270 + detail.number * yOffset)
 			drawText(detail.position.toString(), 350, 270 + detail.number * yOffset)
 		}
+		
+		drawText('Detail`s count in storage 1', 10, 440)
+		drawText(Details.accessible.filter[position == Position.STORAGE_1].size().toString(), 350, 440)
+		drawText('Detail`s count in storage 2', 10, 460)
+		drawText(Details.accessible.filter[position == Position.STORAGE_2].size().toString(), 350, 460)
 	}
 }
