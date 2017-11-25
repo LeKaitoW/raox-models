@@ -1,0 +1,179 @@
+﻿import java.util.ArrayList
+import java.util.Arrays
+
+constant citiesCount = 5
+constant startCity = 1
+
+type Map {
+    ArrayList<ArrayList<Integer>> distance
+}
+
+resource map = Map.create(input.createMap())
+
+type Path {
+    ArrayList<Integer>  cities
+}
+
+resource path = Path.create(new ArrayList<Integer>(Arrays.asList(startCity)))
+
+rule GoToCity (int cityFrom, int cityTo){
+    relevant path_ =  path.onlyif[cities.get(cities.size() - 1).equals(cityFrom) && !isDuplicateCityInPath(cities)]
+
+    def execute() {
+        var ArrayList<Integer> temp = new ArrayList<Integer>(path_.cities)
+        temp.add(new Integer(cityTo))
+        path_.cities = temp
+    }
+}
+
+int distance(int city1, int city2) {
+    return map.distance.get(city1 - 1).get(city2 - 1)
+}
+
+boolean isDuplicateCityInPath(ArrayList<Integer> currentCities) {
+    for(var int i = 1; i <= citiesCount; i++ ) {
+        var int count = 0;
+        for(city: currentCities) {
+            if (city.equals(i)) {
+                count += 1
+            }
+        }
+        if(count > 1) {
+            return true
+        }
+    }
+    return false
+}
+
+boolean isPathFound(ArrayList<Integer> currentCities) {
+    if (!(currentCities.get(0).equals(startCity) && currentCities.get(currentCities.size() - 1).equals(startCity))) {
+        return false
+    } else {
+        for(var int i = 1; i <= citiesCount; i++ ) {
+        if(!currentCities.contains(new Integer(i))) {
+            return false
+        }
+    }
+    }
+    return true
+}
+
+search SolvingTSP {
+    edge go_to_1_from_2 = new Edge(GoToCity.create(2, 1), distance(2, 1))
+    edge go_to_1_from_3 = new Edge(GoToCity.create(3, 1), distance(3, 1))
+    edge go_to_1_from_4 = new Edge(GoToCity.create(4, 1), distance(4, 1))
+    edge go_to_1_from_5 = new Edge(GoToCity.create(5, 1), distance(5, 1))
+    edge go_to_2_from_1 = new Edge(GoToCity.create(1, 2), distance(1, 2))
+    edge go_to_2_from_3 = new Edge(GoToCity.create(3, 2), distance(3, 2))
+    edge go_to_2_from_4 = new Edge(GoToCity.create(4, 2), distance(4, 2))
+    edge go_to_2_from_5 = new Edge(GoToCity.create(5, 2), distance(5, 2))
+    edge go_to_3_from_1 = new Edge(GoToCity.create(1, 3), distance(1, 3))
+    edge go_to_3_from_2 = new Edge(GoToCity.create(2, 3), distance(2, 3))
+    edge go_to_3_from_4 = new Edge(GoToCity.create(4, 3), distance(4, 3))
+    edge go_to_3_from_5 = new Edge(GoToCity.create(5, 3), distance(5, 3))
+    edge go_to_4_from_1 = new Edge(GoToCity.create(1, 4), distance(1, 4))
+    edge go_to_4_from_2 = new Edge(GoToCity.create(2, 4), distance(2, 4))
+    edge go_to_4_from_3 = new Edge(GoToCity.create(3, 4), distance(3, 4))
+    edge go_to_4_from_5 = new Edge(GoToCity.create(5, 4), distance(5, 4))
+    edge go_to_5_from_1 = new Edge(GoToCity.create(1, 5), distance(1, 5))
+    edge go_to_5_from_2 = new Edge(GoToCity.create(2, 5), distance(2, 5))
+    edge go_to_5_from_3 = new Edge(GoToCity.create(3, 5), distance(3, 5))
+    edge go_to_5_from_4 = new Edge(GoToCity.create(4, 5), distance(4, 5))
+
+    def init() {
+        startCondition = [Path.all.exists[!cities.isEmpty()]]	
+        terminateCondition = [Path.all.exists[isPathFound(cities)]]
+        heuristic = [0.0]
+        compareTops = true
+    }
+}
+
+frame GraphTSP {
+    def init() {
+        background = new Background(800, 600, RaoColor.WHITE)
+    }
+    
+    def draw() {
+        var cities_ = new ArrayList<Integer>()
+        
+        for(_path : Path.all) {
+            if(isPathFound(_path.cities)) {
+                cities_ = _path.cities
+            }
+        }
+        
+        var ArrayList<Integer> x_coord = new ArrayList<Integer>()
+        var ArrayList<Integer> y_coord = new ArrayList<Integer>()
+        
+        val radius = 40
+        x_coord.add(250)
+        y_coord.add(50)
+        x_coord.add(150)
+        y_coord.add(200)
+        x_coord.add(450)
+        y_coord.add(100)
+        x_coord.add(200)
+        y_coord.add(350)
+        x_coord.add(400)
+        y_coord.add(300)
+        
+        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(1), y_coord.get(1))
+        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(2), y_coord.get(2))
+        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(3), y_coord.get(3))
+        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(4), y_coord.get(4))
+        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(2), y_coord.get(2))
+        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(3), y_coord.get(3))
+        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(4), y_coord.get(4))
+        drawLine(x_coord.get(2), y_coord.get(2), x_coord.get(3), y_coord.get(3))
+        drawLine(x_coord.get(2), y_coord.get(2), x_coord.get(4), y_coord.get(4))
+        drawLine(x_coord.get(3), y_coord.get(3), x_coord.get(4), y_coord.get(4))
+        
+        var int cost = 0;
+        for(var i = 1; i < cities_.size(); i++) {
+            cost += distance(cities_.get(i), cities_.get(i-1))
+            drawLine(x_coord.get(cities_.get(i-1)-1), y_coord.get(cities_.get(i-1)-1), x_coord.get(cities_.get(i)-1), y_coord.get(cities_.get(i)-1), RaoColor.GREEN)
+        }
+        
+        drawCircle(x_coord.get(0), y_coord.get(0), radius, RaoColor.WHITE, RaoColor.BLACK)
+        drawText("1", x_coord.get(0) - 4, y_coord.get(0) - 6)
+        drawCircle(x_coord.get(1), y_coord.get(1), radius, RaoColor.WHITE, RaoColor.BLACK)
+        drawText("2", x_coord.get(1) - 4, y_coord.get(1) - 6)
+        drawCircle(x_coord.get(2), y_coord.get(2), radius, RaoColor.WHITE, RaoColor.BLACK)
+        drawText("3", x_coord.get(2) - 4, y_coord.get(2) - 6)
+        drawCircle(x_coord.get(3), y_coord.get(3), radius, RaoColor.WHITE, RaoColor.BLACK)
+        drawText("4", x_coord.get(3) - 4, y_coord.get(3) - 6)
+        drawCircle(x_coord.get(4), y_coord.get(4), radius, RaoColor.WHITE, RaoColor.BLACK)
+        drawText("5", x_coord.get(4) - 4, y_coord.get(4) - 6)
+        
+        for(var i = 0; i < 7; i++) {
+            drawLine(550 + i * 40, 100, 550 + i * 40, 340)
+            drawLine(550, 100 + i * 40, 790, 100 + i * 40)
+        }
+        
+        for(var i = 1; i <= 5; i++) {
+            drawText(i.toString(), 567 + 40 * i, 115)
+            drawText(i.toString(), 567, 115 + 40 * i)
+        }
+        
+        drawText("Матрица расстояний между городами", 530, 80, RaoColor.BLACK, 240, Alignment.CENTER)
+        
+        for(var i = 0; i < 5; i++) {
+            for(var j = 0; j < 5; j++) {
+                drawText(map.distance.get(i).get(j).toString(), 607 + 40 * i, 155 + 40 * j)
+            }
+        }
+        
+        drawText("Кратчайший найденный путь обхода городов: ", 150, 450)
+        
+        for(var i = 0; i < cities_.size(); i++) {
+            if(i < cities_.size() - 1) {
+                drawText(cities_.get(i).toString + " -> ", 150 + i * 23, 475)
+            }
+            else {
+            drawText(cities_.get(i).toString(), 150 + i * 23, 475)
+            }
+        }
+        
+        drawText("Пройденный путь = " + cost.toString(), 150, 500)
+    }
+}

@@ -1,0 +1,12 @@
+﻿import java.util.ArrayList
+import java.util.Arrays
+
+ArrayList<ArrayList<Integer>> createMap() {
+    return new ArrayList<ArrayList<Integer>>(Arrays.asList(
+        new ArrayList<Integer>(Arrays.asList(0, 1, 5, 6, 7)),
+        new ArrayList<Integer>(Arrays.asList(1, 0, 3, 4, 10)),
+        new ArrayList<Integer>(Arrays.asList(5, 3, 0, 9, 5)),
+        new ArrayList<Integer>(Arrays.asList(6, 4, 9, 0, 7)),
+        new ArrayList<Integer>(Arrays.asList(7, 10, 5, 7, 0))
+    ))
+}
