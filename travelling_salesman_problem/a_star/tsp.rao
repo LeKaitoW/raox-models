@@ -1,8 +1,7 @@
-﻿import java.util.ArrayList
-import java.util.Arrays
+import java.util.ArrayList
 
-constant citiesCount = 5
 constant startCity = 1
+constant overrun = 400
 
 type Map {
     ArrayList<ArrayList<Integer>> distance
@@ -10,19 +9,31 @@ type Map {
 
 resource map = Map.create(input.createMap())
 
-type Path {
-    ArrayList<Integer>  cities
+type CurrentCity {
+    int cityNumber
 }
 
-resource path = Path.create(new ArrayList<Integer>(Arrays.asList(startCity)))
+resource currentCity = CurrentCity.create(startCity)
 
-rule GoToCity (int cityFrom, int cityTo){
-    relevant path_ =  path.onlyif[cities.get(cities.size() - 1).equals(cityFrom) && !isDuplicateCityInPath(cities)]
+type City {
+    String cityName
+    int cityNumber
+    int visitCount
+}
+
+resource city_1 = City.create("A", 1, 0)
+resource city_2 = City.create("B", 2, 0)
+resource city_3 = City.create("C", 3, 0)
+resource city_4 = City.create("D", 4, 0)
+resource city_5 = City.create("E", 5, 0)
+
+rule GoToCity(int cityFrom, int cityTo) {
+    relevant city_from =  currentCity.onlyif[cityNumber == cityFrom]
+    relevant city_to = City.all.filter[cityNumber == cityTo].any
 
     def execute() {
-        var ArrayList<Integer> temp = new ArrayList<Integer>(path_.cities)
-        temp.add(new Integer(cityTo))
-        path_.cities = temp
+        city_from.cityNumber = cityTo
+        city_to.visitCount = city_to.visitCount + 1
     }
 }
 
@@ -30,32 +41,13 @@ int distance(int city1, int city2) {
     return map.distance.get(city1 - 1).get(city2 - 1)
 }
 
-boolean isDuplicateCityInPath(ArrayList<Integer> currentCities) {
-    for(var int i = 1; i <= citiesCount; i++ ) {
-        var int count = 0;
-        for(city: currentCities) {
-            if (city.equals(i)) {
-                count += 1
-            }
-        }
-        if(count > 1) {
-            return true
-        }
+int visitDuplicateCityCount() {
+    var int additionalCost = 0
+    for(city : City.all) {
+        if(city.visitCount > 1)
+            additionalCost += city.visitCount * overrun
     }
-    return false
-}
-
-boolean isPathFound(ArrayList<Integer> currentCities) {
-    if (!(currentCities.get(0).equals(startCity) && currentCities.get(currentCities.size() - 1).equals(startCity))) {
-        return false
-    } else {
-        for(var int i = 1; i <= citiesCount; i++ ) {
-        if(!currentCities.contains(new Integer(i))) {
-            return false
-        }
-    }
-    }
-    return true
+    return additionalCost
 }
 
 search SolvingTSP {
@@ -81,14 +73,14 @@ search SolvingTSP {
     edge go_to_5_from_4 = new Edge(GoToCity.create(4, 5), distance(4, 5))
 
     def init() {
-        startCondition = [Path.all.exists[!cities.isEmpty()]]	
-        terminateCondition = [Path.all.exists[isPathFound(cities)]]
-        heuristic = [0.0]
+        startCondition = [City.all.exists[visitCount == 0]] 
+        terminateCondition = [City.all.forall[visitCount > 0] && CurrentCity.all.forall[cityNumber == 1]]
+        heuristic = [(visitDuplicateCityCount()) as double]
         compareTops = true
     }
 }
 
-frame GraphTSP {
+/*frame GraphTSP {
     def init() {
         background = new Background(800, 600, RaoColor.WHITE)
     }
@@ -168,12 +160,11 @@ frame GraphTSP {
         for(var i = 0; i < cities_.size(); i++) {
             if(i < cities_.size() - 1) {
                 drawText(cities_.get(i).toString + " -> ", 150 + i * 23, 475)
-            }
-            else {
-            drawText(cities_.get(i).toString(), 150 + i * 23, 475)
+            } else {
+                drawText(cities_.get(i).toString(), 150 + i * 23, 475)
             }
         }
         
         drawText("Пройденный путь = " + cost.toString(), 150, 500)
     }
-}
+}*/
