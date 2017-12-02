@@ -1,4 +1,5 @@
 import java.util.ArrayList
+import java.awt.Point
 
 constant startCity = 1
 constant overrun = 40000
@@ -9,35 +10,38 @@ type Map {
 
 resource map = Map.create(input.createMap())
 
-type CurrentCity {
-    int cityNumber
+type Path {
+    ArrayList<City> cities
 }
 
-resource currentCity = CurrentCity.create(startCity)
+resource path = Path.create(new ArrayList<City>())
 
 type City {
     String cityName
     int cityNumber
     int visitCount
+    Point point
 }
 
-resource city_1 = City.create("Москва", 1, 0)
-resource city_2 = City.create("Санкт-Петербург", 2, 0)
-resource city_3 = City.create("Нижний Новгород", 3, 0)
-resource city_4 = City.create("Казань", 4, 0)
-resource city_5 = City.create("Самара", 5, 0)
-resource city_6 = City.create("Екатеринбург", 6, 0)
-resource city_7 = City.create("Челябинск", 7, 0)
-resource city_8 = City.create("Омск", 8, 0)
-resource city_9 = City.create("Новосибирск", 9, 0)
+resource city_1 = City.create("Москва", 1, 0, new Point(127, 164))
+resource city_2 = City.create("Санкт-Петербург", 2, 0, new Point(44, 74))
+resource city_3 = City.create("Нижний Новгород", 3, 0, new Point(200, 151))
+resource city_4 = City.create("Казань", 4, 0, new Point(257, 164))
+resource city_5 = City.create("Самара", 5, 0, new Point(269, 212))
+resource city_6 = City.create("Екатеринбург", 6, 0, new Point(388, 141))
+resource city_7 = City.create("Челябинск", 7, 0, new Point(396, 175))
+resource city_8 = City.create("Омск", 8, 0, new Point(533, 180))
+resource city_9 = City.create("Новосибирск", 9, 0, new Point(641, 177))
 
 rule GoToCity(int cityFrom, int cityTo) {
-    relevant city_from =  currentCity.onlyif[cityNumber == cityFrom]
+    relevant path_ = path.onlyif[cities.get(cities.size() - 1).cityNumber.equals(cityFrom)]
     relevant city_to = City.all.filter[cityNumber == cityTo].any
 
     def execute() {
-        city_from.cityNumber = cityTo
         city_to.visitCount = city_to.visitCount + 1
+        var ArrayList<City> temp = new ArrayList<City>(path_.cities)
+        temp.add(city_to)
+        path_.cities = temp
     }
 }
 
@@ -54,10 +58,14 @@ int visitDuplicateCityCount() {
     return additionalCost
 }
 
+def init() {
+    path.cities.add(City.all.filter[cityNumber == startCity].any)
+}
+
 search SolvingTSP {
     edge go_to_1_from_2 = new Edge(GoToCity.create(2, 1), distance(2, 1))
     edge go_to_1_from_3 = new Edge(GoToCity.create(3, 1), distance(3, 1))
-    edge go_to_1_from_4 = new Edge(GoToCity.create(4, 1), distance(4, 1))
+    edge go_to_1_from_5 = new Edge(GoToCity.create(5, 1), distance(5, 1))
     edge go_to_2_from_1 = new Edge(GoToCity.create(1, 2), distance(1, 2))
     edge go_to_2_from_3 = new Edge(GoToCity.create(3, 2), distance(3, 2))
     edge go_to_3_from_1 = new Edge(GoToCity.create(1, 3), distance(1, 3))
@@ -88,97 +96,53 @@ search SolvingTSP {
 
     def init() {
         startCondition = [City.all.exists[visitCount == 0]] 
-        terminateCondition = [City.all.forall[visitCount > 0] && CurrentCity.all.forall[cityNumber == 1]]
+        terminateCondition = [City.all.forall[visitCount > 0] 
+            && path.cities.get(path.cities.size() - 1).cityNumber.equals(startCity)
+        ]
         heuristic = [(visitDuplicateCityCount()) as double]
         compareTops = true
     }
 }
 
-/*frame GraphTSP {
+frame GraphTSP {
     def init() {
-        background = new Background(800, 600, RaoColor.WHITE)
+        background = new Background(750, 300, RaoColor.WHITE)
     }
     
     def draw() {
-        var cities_ = new ArrayList<Integer>()
+        val radius = 30
         
-        for(_path : Path.all) {
-            if(isPathFound(_path.cities)) {
-                cities_ = _path.cities
+        for(city_from : City.all) {
+            for(city_to : City.all) {
+                if((!city_from.equals(city_to)) && (distance(city_from.cityNumber, city_to.cityNumber) != 0)) {
+                    drawLine(city_from.point.getX() as int, city_from.point.getY() as int,
+                        city_to.point.getX() as int, city_to.point.getY() as int)
+                }
             }
         }
         
-        var ArrayList<Integer> x_coord = new ArrayList<Integer>()
-        var ArrayList<Integer> y_coord = new ArrayList<Integer>()
-        
-        val radius = 40
-        x_coord.add(250)
-        y_coord.add(50)
-        x_coord.add(150)
-        y_coord.add(200)
-        x_coord.add(450)
-        y_coord.add(100)
-        x_coord.add(200)
-        y_coord.add(350)
-        x_coord.add(400)
-        y_coord.add(300)
-        
-        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(1), y_coord.get(1))
-        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(2), y_coord.get(2))
-        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(3), y_coord.get(3))
-        drawLine(x_coord.get(0), y_coord.get(0), x_coord.get(4), y_coord.get(4))
-        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(2), y_coord.get(2))
-        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(3), y_coord.get(3))
-        drawLine(x_coord.get(1), y_coord.get(1), x_coord.get(4), y_coord.get(4))
-        drawLine(x_coord.get(2), y_coord.get(2), x_coord.get(3), y_coord.get(3))
-        drawLine(x_coord.get(2), y_coord.get(2), x_coord.get(4), y_coord.get(4))
-        drawLine(x_coord.get(3), y_coord.get(3), x_coord.get(4), y_coord.get(4))
-        
-        var int cost = 0;
-        for(var i = 1; i < cities_.size(); i++) {
-            cost += distance(cities_.get(i), cities_.get(i-1))
-            drawLine(x_coord.get(cities_.get(i-1)-1), y_coord.get(cities_.get(i-1)-1), x_coord.get(cities_.get(i)-1), y_coord.get(cities_.get(i)-1), RaoColor.GREEN)
+        for(city : City.all) {
+            drawCircle(city.point.getX() as int, city.point.getY() as int, radius)
+            if(city.cityName.equals("Санкт-Петербург") || city.cityName.equals("Нижний Новгород")
+                || city.cityName.equals("Казань") || city.cityName.equals("Екатеринбург"))
+                drawText(city.cityName, city.point.getX() as int, city.point.getY() as int - 35)
+            else
+                drawText(city.cityName, city.point.getX() as int, city.point.getY() as int + 20)
         }
         
-        drawCircle(x_coord.get(0), y_coord.get(0), radius, RaoColor.WHITE, RaoColor.BLACK)
-        drawText("1", x_coord.get(0) - 4, y_coord.get(0) - 6)
-        drawCircle(x_coord.get(1), y_coord.get(1), radius, RaoColor.WHITE, RaoColor.BLACK)
-        drawText("2", x_coord.get(1) - 4, y_coord.get(1) - 6)
-        drawCircle(x_coord.get(2), y_coord.get(2), radius, RaoColor.WHITE, RaoColor.BLACK)
-        drawText("3", x_coord.get(2) - 4, y_coord.get(2) - 6)
-        drawCircle(x_coord.get(3), y_coord.get(3), radius, RaoColor.WHITE, RaoColor.BLACK)
-        drawText("4", x_coord.get(3) - 4, y_coord.get(3) - 6)
-        drawCircle(x_coord.get(4), y_coord.get(4), radius, RaoColor.WHITE, RaoColor.BLACK)
-        drawText("5", x_coord.get(4) - 4, y_coord.get(4) - 6)
-        
-        for(var i = 0; i < 7; i++) {
-            drawLine(550 + i * 40, 100, 550 + i * 40, 340)
-            drawLine(550, 100 + i * 40, 790, 100 + i * 40)
-        }
-        
-        for(var i = 1; i <= 5; i++) {
-            drawText(i.toString(), 567 + 40 * i, 115)
-            drawText(i.toString(), 567, 115 + 40 * i)
-        }
-        
-        drawText("Матрица расстояний между городами", 530, 80, RaoColor.BLACK, 240, Alignment.CENTER)
-        
-        for(var i = 0; i < 5; i++) {
-            for(var j = 0; j < 5; j++) {
-                drawText(map.distance.get(i).get(j).toString(), 607 + 40 * i, 155 + 40 * j)
+        for(city : City.all) {
+            var visitSequence = ""
+            var count = 0
+            for(var i = 0; i < path.cities.size(); i++) {
+                if(city.cityNumber == path.cities.get(i).cityNumber) {
+                    if(count > 0)
+                        visitSequence = visitSequence + "," + (i+1).toString()
+                    else
+                        visitSequence += (i+1).toString()
+                    count++
+                }
             }
+            drawText(visitSequence, city.point.getX() as int - 7, city.point.getY() as int - 5)
         }
-        
-        drawText("Кратчайший найденный путь обхода городов: ", 150, 450)
-        
-        for(var i = 0; i < cities_.size(); i++) {
-            if(i < cities_.size() - 1) {
-                drawText(cities_.get(i).toString + " -> ", 150 + i * 23, 475)
-            } else {
-                drawText(cities_.get(i).toString(), 150 + i * 23, 475)
-            }
-        }
-        
-        drawText("Пройденный путь = " + cost.toString(), 150, 500)
     }
-}*/
+}
