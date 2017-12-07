@@ -11,13 +11,13 @@ import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
 constant driver = "com.mysql.jdbc.Driver"
 
-constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-constant username = "observer"
-constant password = "compaq"
+//constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+//constant username = "observer"
+//constant password = "compaq"
 
-//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-//constant username = "jpademo"
-//constant password = "5xYB2e6T5Jo7ajA"
+constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "jpademo"
+constant password = "5xYB2e6T5Jo7ajA"
 
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
 

@@ -2,7 +2,6 @@ package domain;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 
 import javax.persistence.Column;
@@ -40,19 +39,8 @@ public class PartRequest {
 	@Column(name = "Count")
 	public int count;
 
-	public boolean hasDateOfDelivery() {
-		return dateOfDelivery != null;
-	}
-
 	public LocalDate getDateOfDelivery() {
 		return toLocalDate(dateOfDelivery);
-	}
-
-	public long getDeliveryInterval() {
-		LocalDate start = order.getDateOfCreation();
-		LocalDate end = getDateOfDelivery();
-		long interval = start.until(end, ChronoUnit.DAYS);
-		return interval;
 	}
 
 	private LocalDate toLocalDate(Calendar calendar) {
@@ -63,8 +51,7 @@ public class PartRequest {
 
 	@Override
 	public String toString() {
-		return "PartRequest [Part=" + part.name + ", DeliveryInterval=" + getDeliveryInterval() + ", Count=" + count
-				+ "]";
+		return "PartRequest [Part=" + part.name + ", Count=" + count + "]";
 	}
 
 	@SuppressWarnings("serial")

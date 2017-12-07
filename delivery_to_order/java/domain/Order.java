@@ -1,7 +1,6 @@
 package domain;
 
 import java.time.LocalDate;
-import java.time.temporal.ChronoUnit;
 import java.util.Calendar;
 import java.util.List;
 
@@ -34,7 +33,7 @@ public class Order {
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
-	private Calendar dateOfProcessing;
+	public Calendar dateOfProcessing;
 
 	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfRealization")
@@ -90,11 +89,7 @@ public class Order {
 		return getDateOfCreation().toEpochDay();
 	}
 
-	public boolean hasProcessingInterval() {
-		return dateOfProcessing != null;
-	}
-
-	private LocalDate getDateOfProcessing() {
+	public LocalDate getDateOfProcessing() {
 		return toLocalDate(dateOfProcessing);
 	}
 
@@ -102,29 +97,7 @@ public class Order {
 		return toLocalDate(dateOfRealization);
 	}
 
-	public boolean hasRealizationInterval() {
-		return dateOfRealization != null;
-	}
-
-	public long getRealizationInterval() {
-		LocalDate start = getDateOfCreation();
-		LocalDate end = getDateOfRealization();
-		long result = start.until(end, ChronoUnit.DAYS);
-		if (result < 0)
-			throw new IllegalStateException("getRealizationInterval " + result);
-		return result;
-	}
-
-	public long getModificationInterval() {
-		LocalDate start = getDateOfCreation();
-		LocalDate end = getDateOfProcessing();
-		long result = start.until(end, ChronoUnit.DAYS);
-		if (result < 0)
-			throw new IllegalStateException("getModificationInterval " + result);
-		return result;
-	}
-
-	public LocalDate toLocalDate(Calendar calendar) {
+	private LocalDate toLocalDate(Calendar calendar) {
 		return calendar == null ? null
 				: LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
 						calendar.get(Calendar.DAY_OF_MONTH));

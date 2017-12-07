@@ -9,17 +9,18 @@ import java.util.ArrayList
 import java.util.List
 import java.util.Map
 import java.util.HashMap
+import java.time.temporal.ChronoUnit
 
 /* Connection data */
 constant driver = "com.mysql.jdbc.Driver"
 
-constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-constant username = "observer"
-constant password = "compaq"
+//constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+//constant username = "observer"
+//constant password = "compaq"
 
-//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-//constant username = "jpademo"
-//constant password = "5xYB2e6T5Jo7ajA"
+constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "jpademo"
+constant password = "5xYB2e6T5Jo7ajA"
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
 
 type OrderStats {
@@ -33,7 +34,32 @@ type OrderStats {
 
 resource orderStats = OrderStats.create(new HashMap, 0, 0, new ArrayList, new ArrayList, new ArrayList)
 
-Part tryFecthLocal(Part part){
+long getModificationInterval(Order order) {
+	val start = order.getDateOfCreation();
+	val end = order.getDateOfProcessing();
+	val interval = start.until(end, ChronoUnit.DAYS);
+	if (interval < 0)
+		throw new IllegalStateException("getModificationInterval " + interval);
+	return interval;
+}
+
+long getRealizationInterval(Order order) {
+	val start = order.getDateOfCreation();
+	val end = order.getDateOfRealization();
+	val interval = start.until(end, ChronoUnit.DAYS);
+	if (interval < 0)
+		throw new IllegalStateException("getRealizationInterval " + interval);
+	return interval;
+}
+
+long getDeliveryInterval(PartRequest partRequest) {
+	val start = partRequest.order.getDateOfCreation();
+	val end = partRequest.getDateOfDelivery();
+	val interval = start.until(end, ChronoUnit.DAYS);
+	return interval;
+}
+
+Part tryFetchLocal(Part part){
 	if (!orderStats.localPartData.containsKey(part.id))
 		orderStats.localPartData.put(part.id, part)
 	return orderStats.localPartData.get(part.id)
@@ -49,7 +75,7 @@ Double calculatePrice(Order order){
 }
 
 boolean takeParts(PartRequest request) {
-	val part = tryFecthLocal(request.part)
+	val part = delivery_to_order.order_request_model.tryFetchLocal(request.part)
 	if (part.stocked >= request.count) {
 		part.stocked -= request.count;
 		return true;
@@ -88,7 +114,7 @@ int waitPeriod() {
 
 /* Order logic */
 event OrderReceived(Order order) {
-	if (order.requestedParts.isEmpty && !order.hasRealizationInterval && !order.hasProcessingInterval) {
+	if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
 		return
 	}
 	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
@@ -135,10 +161,10 @@ rule UtilizeOrder() {
 			}
 			case EMPTY: {
 				orderStats.fails = orderStats.fails + 1
-				if (order.original.hasRealizationInterval) {
-					duration = order.original.getRealizationInterval
+				if (order.original.dateOfRealization !== null) {
+					duration = getRealizationInterval(order.original)
 				}
-				duration = order.original.getModificationInterval
+				duration = getModificationInterval(order.original)
 			}
 		}
 		
@@ -167,22 +193,22 @@ operation PartProcessing() {
 			log("Деталь " + part.name + " взята со склада");
 			return 0
 		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
-		} else if (partRequest.original.hasDateOfDelivery && partRequest.original.getDeliveryInterval > 0) {
-			log("Деталь " + part.name + " будет доставлена через " + partRequest.original.getDeliveryInterval +
+		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) > 0) {
+			log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
 				" дней");
-			return partRequest.original.getDeliveryInterval
+			return getDeliveryInterval(partRequest.original)
 		// Детали с отрицательной длительностью считаем уже на складе
-		} else if (partRequest.original.hasDateOfDelivery) {
+		} else if (partRequest.original.dateOfDelivery !== null) {
 			log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе");
 			return 0
-		} else if (order.hasRealizationInterval) {
-			log("Деталь " + part.name + " будет доставлена через " + order.getRealizationInterval +
+		} else if (order.dateOfRealization !== null) {
+			log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
 				" дней (по дате реализации заказа)");
-			return order.getRealizationInterval
+			return getRealizationInterval(order)
 		}
-		log("Деталь " + part.name + " будет доставлена через " + order.getModificationInterval +
+		log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
 			" дней (по дате изменения заказа)");
-		return order.getModificationInterval
+		return getModificationInterval(order)
 	}
 
 	def end() {
@@ -227,15 +253,12 @@ def finish() {
 	val avg = durationResults.getAverage
 	val max = durationResults.getMax
 	val min = durationResults.getMin
-	log("Result:\tAverage " + avg + "\tMax:" + max + "\tMin:" + min)
+	log("Duration:\tAverage " + avg + "\tMax:" + max + "\tMin:" + min)
 	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
 	val avgFailPrice = failPriceResults.getAverage
 	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
 	val avgSuccessPrice = successPriceResults.getAverage
-	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
-	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
-	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
-	log("Result:\tAverage cost\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
+	log("Average cost:\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
 }
 
 result fails = Result.create([orderStats.fails])
