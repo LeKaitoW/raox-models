@@ -75,7 +75,7 @@ Double calculatePrice(Order order){
 }
 
 boolean takeParts(PartRequest request) {
-	val part = delivery_to_order.order_request_model.tryFetchLocal(request.part)
+	val part = tryFetchLocal(request.part)
 	if (part.stocked >= request.count) {
 		part.stocked -= request.count;
 		return true;
