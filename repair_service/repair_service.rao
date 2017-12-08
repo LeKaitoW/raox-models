@@ -491,8 +491,6 @@ constant width = 40
 constant height = 40
 
 frame Frame {
-	def init() {
-	} 
 	def draw() {
 		for (инженер : Инженер.all) {
 			drawText("инженер_" + Integer.toString(инженер.номер), 60, 60 * инженер.номер)
