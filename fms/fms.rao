@@ -64,16 +64,12 @@ resource machine3 = Machines.create(Position.MACHINE_3, MachineState.FREE, 15)
 type Details {
 	Position position
 }
-resource detail1 = Details.create(Position.STORAGE_1)
-resource detail2 = Details.create(Position.STORAGE_1)
-resource detail3 = Details.create(Position.STORAGE_1)
-resource detail4 = Details.create(Position.STORAGE_1)
-resource detail5 = Details.create(Position.STORAGE_1)
-resource detail6 = Details.create(Position.STORAGE_1)
-resource detail7 = Details.create(Position.STORAGE_1)
-resource detail8 = Details.create(Position.STORAGE_1)
-resource detail9 = Details.create(Position.STORAGE_1)
-resource detail10 = Details.create(Position.STORAGE_1)
+
+def init() {
+	for(var i = 0; i < 10; i += 1) {
+		Details.create(Position.STORAGE_1)
+	}
+}
 
 def terminateCondition() {
 	return Details.accessible.filter[position == Position.STORAGE_2].size() == Details.all.size()
@@ -344,38 +340,38 @@ frame Frame {
 		val yOffset = 15;
 
 		drawText('Time:', 10, 5)
-		drawText(currentTime.toString(), 60, 5)
+		drawText(currentTime, 60, 5)
 		drawText('STATE', 350, 45)
 		drawText('POSITION', 600, 45)
 
 		for (machine : Machines.all) {
 			drawText('machine ' + (machine.number + 1), 10, 70 + machine.number * yOffset);
-			drawText(machine.state.toString(), 350, 70 + machine.number * yOffset);
-			drawText(machine.position.toString(), 600, 70 + machine.number * yOffset);
+			drawText(machine.state, 350, 70 + machine.number * yOffset);
+			drawText(machine.position, 600, 70 + machine.number * yOffset);
 		}
 
 		for (truck : Trucks.all) {
 			drawText('truck ' + (truck.number + 1), 10, 125 + truck.number * yOffset)
-			drawText(truck.state.toString(), 350, 125 + truck.number * yOffset)
-			drawText(truck.position.toString(), 600, 125 + truck.number * yOffset)
+			drawText(truck.state, 350, 125 + truck.number * yOffset)
+			drawText(truck.position, 600, 125 + truck.number * yOffset)
 		}
 
 		for (robot : Robots.all) {
 			drawText('robot ' + (robot.number + 1), 10, 165 + robot.number * yOffset)
-			drawText(robot.state.toString(), 350, 165 + robot.number * yOffset)
-			drawText(robot.position.toString(), 600, 165 + robot.number * yOffset)
+			drawText(robot.state, 350, 165 + robot.number * yOffset)
+			drawText(robot.position, 600, 165 + robot.number * yOffset)
 		}
 
 		drawText('POSITION', 350, 250)
 		for (detail : Details.all) {
 			drawText('detail ' + (detail.number + 1), 10, 270 + detail.number * yOffset)
-			drawText(detail.position.toString(), 350, 270 + detail.number * yOffset)
+			drawText(detail.position, 350, 270 + detail.number * yOffset)
 		}
 
 		drawText('Detail`s count in storage 1', 10, 440)
-		drawText(Details.accessible.filter[position == Position.STORAGE_1].size().toString(), 350, 440)
+		drawText(Details.accessible.filter[position == Position.STORAGE_1].size(), 350, 440)
 		drawText('Detail`s count in storage 2', 10, 460)
-		drawText(Details.accessible.filter[position == Position.STORAGE_2].size().toString(), 350, 460)
+		drawText(Details.accessible.filter[position == Position.STORAGE_2].size(), 350, 460)
 	}
 }
 
