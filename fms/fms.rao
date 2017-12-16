@@ -1,3 +1,6 @@
+import java.awt.Point
+import java.util.List
+
 constant ROBOT_RETURN_DURATION = 0.2
 
 sequence exponential = new Exponential(123456789)
@@ -22,10 +25,31 @@ enum RobotState {FREE, BUSY}
 type Robots {
 	Position position
 	RobotState state
+	ViewRobotInfo viewRobotInfo
 }
-resource robot1 = Robots.create(Position.STORAGE_1, RobotState.FREE)
-resource robot2 = Robots.create(Position.TRUCK_1_TO, RobotState.FREE)
-resource robot3 = Robots.create(Position.TRUCK_2_TO, RobotState.FREE)
+type ViewRobotInfo {
+	Point basePoint
+	List<Position> positions
+	List<Integer> angles
+}
+resource robot1 = Robots.create(
+	Position.STORAGE_1,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(160, 150), newArrayList(Position.STORAGE_1, Position.TRUCK_1_FROM),
+		newArrayList(-45, 45))
+)
+resource robot2 = Robots.create(
+	Position.TRUCK_1_TO,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(320, 150), newArrayList(Position.MACHINE_1, Position.TRUCK_1_TO, Position.MACHINE_2),
+		newArrayList(-45, 45, 90))
+)
+resource robot3 = Robots.create(
+	Position.TRUCK_2_TO,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(320, 300), newArrayList(Position.MACHINE_3, Position.TRUCK_2_TO, Position.STORAGE_2),
+		newArrayList(-45, 45, 90))
+)
 
 enum MachineState {FREE, LOADING, READY_FOR_MACHINING, MACHINING, UNLOADING, FINISHED_MACHINING}
 type Machines {
@@ -111,13 +135,9 @@ operation TransferingDetail() {
 Position whereTruckMove(Position position){
 	switch (position) {
 		case TRUCK_1_FROM: return Position.TRUCK_1_TO
-		
 		case TRUCK_2_FROM: return Position.TRUCK_2_TO
-		
 		case TRUCK_1_TO: return Position.TRUCK_1_FROM
-		
 		case TRUCK_2_TO: return Position.TRUCK_2_FROM
-		
 		default: throw new IllegalArgumentException("Unexpected truck position.")
 	}
 }
@@ -156,7 +176,7 @@ operation InstallingOnMachine() {
 operation Machining() {
 	relevants machine, detail = combination(
 		Machines.accessible.filter[state == MachineState.READY_FOR_MACHINING],
-		Details.accessible	
+		Details.accessible
 	).filter[detail.position == machine.position].any of types Machines, Details
 
 	def begin() {
@@ -270,18 +290,12 @@ operation RobotReturn() {
 Position getRobotReturnPosition(Position currentPosition) {
 	switch (currentPosition) {
 		case TRUCK_1_FROM: return Position.STORAGE_1
-		
 		case MACHINE_1: return Position.TRUCK_1_TO
-		
 		case MACHINE_2: return Position.TRUCK_1_TO
-		
 		case TRUCK_2_FROM: return Position.TRUCK_1_TO
-		
 		case MACHINE_3: return Position.TRUCK_2_TO
-		
 		case STORAGE_2: return Position.TRUCK_2_TO
-		
-		default: return currentPosition	
+		default: return currentPosition
 	}
 }
 
@@ -357,10 +371,66 @@ frame Frame {
 			drawText('detail ' + (detail.number + 1), 10, 270 + detail.number * yOffset)
 			drawText(detail.position.toString(), 350, 270 + detail.number * yOffset)
 		}
-		
+
 		drawText('Detail`s count in storage 1', 10, 440)
 		drawText(Details.accessible.filter[position == Position.STORAGE_1].size().toString(), 350, 440)
 		drawText('Detail`s count in storage 2', 10, 460)
 		drawText(Details.accessible.filter[position == Position.STORAGE_2].size().toString(), 350, 460)
 	}
 }
+
+Point getRotatedPoint(Point basePoint,Point point,int angle){
+	var rotatePoint = new Point(
+		((point.x - basePoint.x) * Math.cos(angle) - (point.y - basePoint.y) * Math.sin(angle)).intValue(),
+		((point.x - basePoint.x) * Math.sin(angle) + (point.y - basePoint.y) * Math.cos(angle)).intValue())
+	rotatePoint.x += basePoint.x
+	rotatePoint.y += basePoint.y
+	
+	return rotatePoint
+}
+
+frame ModelAnimation {
+
+	def init() {
+		background = new Background(800, 600, RaoColor.WHITE)
+	}
+
+	def draw() {
+		for (robot : Robots.all) {
+			var baseRobotPoint = robot.viewRobotInfo.basePoint
+
+			var baseRobotCircle1Point = new Point(baseRobotPoint.x, baseRobotPoint.y)
+			var baseRobotLine1Point1 = new Point(baseRobotPoint.x - 30, baseRobotPoint.y)
+			var baseRobotLine1Point2 = new Point(baseRobotPoint.x + 80, baseRobotPoint.y)
+			var baseRobotCircle2Point = new Point(baseRobotPoint.x + 80, baseRobotPoint.y)
+			var baseRobotTrianglePoint1 = new Point(baseRobotPoint.x + 85, baseRobotPoint.y + 10)
+			var baseRobotTrianglePoint2 = new Point(baseRobotPoint.x + 85, baseRobotPoint.y - 10)
+			var baseRobotTrianglePoint3 = new Point(baseRobotPoint.x + 95, baseRobotPoint.y)
+
+			var angle = robot.viewRobotInfo.angles.get(robot.viewRobotInfo.positions.indexOf(robot.position))
+
+			var rotateRobotCircle1Point = getRotatedPoint(baseRobotPoint, baseRobotCircle1Point, angle)
+			var rotateRobotLine1Point1 = getRotatedPoint(baseRobotPoint, baseRobotLine1Point1, angle)
+			var rotateRobotLine1Point2 = getRotatedPoint(baseRobotPoint, baseRobotLine1Point2, angle)
+			var rotateRobotCircle2Point = getRotatedPoint(baseRobotPoint, baseRobotCircle2Point, angle)
+			var rotateRobotTrianglePoint1 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint1, angle)
+			var rotateRobotTrianglePoint2 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint2, angle)
+			var rotateRobotTrianglePoint3 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint3, angle)
+
+			drawCircle(rotateRobotCircle1Point.x, rotateRobotCircle1Point.y, 20)
+			drawLine(rotateRobotLine1Point1.x, rotateRobotLine1Point1.y, rotateRobotLine1Point2.x,
+				rotateRobotLine1Point2.y)
+			drawCircle(rotateRobotCircle2Point.x, rotateRobotCircle2Point.y, 10)
+			drawTriangle(
+				rotateRobotTrianglePoint1.x,
+				rotateRobotTrianglePoint1.y,
+				rotateRobotTrianglePoint2.x,
+				rotateRobotTrianglePoint2.y,
+				rotateRobotTrianglePoint3.x,
+				rotateRobotTrianglePoint3.y
+			)
+		}
+
+	}
+}
+
