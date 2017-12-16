@@ -35,20 +35,22 @@ type ViewRobotInfo {
 resource robot1 = Robots.create(
 	Position.STORAGE_1,
 	RobotState.FREE,
-	ViewRobotInfo.create(new Point(160, 150), newArrayList(Position.STORAGE_1, Position.TRUCK_1_FROM),
-		newArrayList(-45, 45))
+	ViewRobotInfo.create(new Point(100, 150), newArrayList(Position.NOWHERE, Position.STORAGE_1
+	, Position.TRUCK_1_FROM), newArrayList(0, -60, 32))
 )
 resource robot2 = Robots.create(
 	Position.TRUCK_1_TO,
 	RobotState.FREE,
-	ViewRobotInfo.create(new Point(320, 150), newArrayList(Position.MACHINE_1, Position.TRUCK_1_TO, Position.MACHINE_2),
-		newArrayList(-45, 45, 90))
+	ViewRobotInfo.create(new Point(550, 195),
+		newArrayList(Position.NOWHERE, Position.MACHINE_1, Position.TRUCK_1_TO, Position.MACHINE_2,
+			Position.TRUCK_2_FROM), newArrayList(95, -5, 180, 50, 115))
 )
 resource robot3 = Robots.create(
 	Position.TRUCK_2_TO,
 	RobotState.FREE,
-	ViewRobotInfo.create(new Point(320, 300), newArrayList(Position.MACHINE_3, Position.TRUCK_2_TO, Position.STORAGE_2),
-		newArrayList(-45, 45, 90))
+	ViewRobotInfo.create(new Point(428, 460),
+		newArrayList(Position.NOWHERE, Position.MACHINE_3, Position.TRUCK_2_TO, Position.STORAGE_2),
+		newArrayList(180, 225, 0, 135))
 )
 
 enum MachineState {FREE, LOADING, READY_FOR_MACHINING, MACHINING, UNLOADING, FINISHED_MACHINING}
@@ -153,6 +155,7 @@ operation InstallingOnMachine() {
 		machine.state = MachineState.LOADING
 		truck.state = TruckState.WAITING
 		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 	}
 
 	def duration() {
@@ -206,6 +209,7 @@ operation FinishingMachiningOnMachine1Or2() {
 	def begin() {
 		machine.state = MachineState.UNLOADING
 		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 		truck.state = TruckState.BUSY
 		detail.position = Position.NOWHERE
 	}
@@ -250,6 +254,7 @@ operation FinishingMachiningOnMachine3() {
 		machine.state = MachineState.UNLOADING
 		detail.position = Position.NOWHERE
 		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 	}
 
 	def duration() {
@@ -266,11 +271,12 @@ operation FinishingMachiningOnMachine3() {
 
 operation RobotReturn() {
 	relevant robot = Robots.accessible.filter[
-		position != getRobotReturnPosition(position) && state == RobotState.FREE
+		position != getRobotReturnPosition(it) && state == RobotState.FREE
 	].any
 
 	def begin() {
 		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 	}
 
 	def duration() {
@@ -279,19 +285,15 @@ operation RobotReturn() {
 
 	def end() {
 		robot.state = RobotState.FREE
-		robot.position = getRobotReturnPosition(robot.position)
+		robot.position = getRobotReturnPosition(robot)
 	}
 }
 
-Position getRobotReturnPosition(Position currentPosition) {
-	switch (currentPosition) {
-		case TRUCK_1_FROM: return Position.STORAGE_1
-		case MACHINE_1: return Position.TRUCK_1_TO
-		case MACHINE_2: return Position.TRUCK_1_TO
-		case TRUCK_2_FROM: return Position.TRUCK_1_TO
-		case MACHINE_3: return Position.TRUCK_2_TO
-		case STORAGE_2: return Position.TRUCK_2_TO
-		default: return currentPosition
+Position getRobotReturnPosition(Robots robot) {
+	switch (robot) {
+		case robot1: return Position.STORAGE_1
+		case robot2: return Position.TRUCK_1_TO
+		case robot3: return Position.TRUCK_2_TO
 	}
 }
 
@@ -377,11 +379,13 @@ frame Frame {
 
 Point getRotatedPoint(Point basePoint,Point point,int angle){
 	var rotatePoint = new Point(
-		((point.x - basePoint.x) * Math.cos(angle) - (point.y - basePoint.y) * Math.sin(angle)).intValue(),
-		((point.x - basePoint.x) * Math.sin(angle) + (point.y - basePoint.y) * Math.cos(angle)).intValue())
+		((point.x - basePoint.x) * Math.cos(angle * Math.PI / 180) -
+			(point.y - basePoint.y) * Math.sin(angle * Math.PI / 180)).intValue(),
+		((point.x - basePoint.x) * Math.sin(angle * Math.PI / 180) +
+			(point.y - basePoint.y) * Math.cos(angle * Math.PI / 180)).intValue())
 	rotatePoint.x += basePoint.x
 	rotatePoint.y += basePoint.y
-	
+
 	return rotatePoint
 }
 
@@ -392,6 +396,46 @@ frame ModelAnimation {
 	}
 
 	def draw() {
+		// Транспортные линии
+		drawLine(130, 180, 130, 210, RaoColor.BLACK);
+		drawLine(130, (180 + 210) / 2, 500, (180 + 210) / 2, RaoColor.BLACK);
+		drawLine(500, 180, 500, 210, RaoColor.BLACK);
+		drawLine(500, 230, 530, 230, RaoColor.BLACK);
+		drawLine((500 + 530) / 2, 230, (500 + 530) / 2, 500, RaoColor.BLACK);
+		drawLine(500, 500, 530, 500, RaoColor.BLACK);
+
+		// Транспорт
+		if (truck1.state == TruckState.MOVING)
+			drawRectangle(285, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else if (truck1.position == Position.TRUCK_1_TO)
+			drawRectangle(430, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else
+			drawRectangle(140, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+
+		if (truck2.state == TruckState.MOVING)
+			drawRectangle(500, 330, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else if (truck2.position == Position.TRUCK_2_TO)
+			drawRectangle(500, 430, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else
+			drawRectangle(500, 240, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+
+		drawText("Machine 1", 610, 135, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(610, 160, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+		drawText("Machine 2", 580, 220, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(580, 240, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+		drawText("Machine 3", 270, 345, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(270, 370, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+
+		drawText("Storage 1", 100, 15, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(100, 40, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
+		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_1].size(), 100, 45,
+			RaoColor.BLACK, 130, Alignment.CENTER);
+
+		drawText("Storage 2", 270, 475, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(270, 500, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
+		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_2].size(), 270, 530,
+			RaoColor.BLACK, 130, Alignment.CENTER);
+
 		for (robot : Robots.all) {
 			var baseRobotPoint = robot.viewRobotInfo.basePoint
 
@@ -413,17 +457,19 @@ frame ModelAnimation {
 			var rotateRobotTrianglePoint2 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint2, angle)
 			var rotateRobotTrianglePoint3 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint3, angle)
 
-			drawCircle(rotateRobotCircle1Point.x, rotateRobotCircle1Point.y, 20)
+			drawCircle(rotateRobotCircle1Point.x, rotateRobotCircle1Point.y, 20, RaoColor.RED, RaoColor.DARK_RED)
 			drawLine(rotateRobotLine1Point1.x, rotateRobotLine1Point1.y, rotateRobotLine1Point2.x,
-				rotateRobotLine1Point2.y)
-			drawCircle(rotateRobotCircle2Point.x, rotateRobotCircle2Point.y, 10)
+				rotateRobotLine1Point2.y, RaoColor.RED)
+			drawCircle(rotateRobotCircle2Point.x, rotateRobotCircle2Point.y, 10, RaoColor.RED, RaoColor.DARK_RED)
 			drawTriangle(
 				rotateRobotTrianglePoint1.x,
 				rotateRobotTrianglePoint1.y,
 				rotateRobotTrianglePoint2.x,
 				rotateRobotTrianglePoint2.y,
 				rotateRobotTrianglePoint3.x,
-				rotateRobotTrianglePoint3.y
+				rotateRobotTrianglePoint3.y,
+				RaoColor.RED,
+				RaoColor.DARK_RED
 			)
 		}
 
