@@ -378,11 +378,12 @@ frame Frame {
 }
 
 Point getRotatedPoint(Point basePoint,Point point,int angle){
+	var angleInRad=angle * Math.PI / 180
 	var rotatePoint = new Point(
-		((point.x - basePoint.x) * Math.cos(angle * Math.PI / 180) -
-			(point.y - basePoint.y) * Math.sin(angle * Math.PI / 180)).intValue(),
-		((point.x - basePoint.x) * Math.sin(angle * Math.PI / 180) +
-			(point.y - basePoint.y) * Math.cos(angle * Math.PI / 180)).intValue())
+		((point.x - basePoint.x) * Math.cos(angleInRad) -
+			(point.y - basePoint.y) * Math.sin(angleInRad)).intValue(),
+		((point.x - basePoint.x) * Math.sin(angleInRad) +
+			(point.y - basePoint.y) * Math.cos(angleInRad)).intValue())
 	rotatePoint.x += basePoint.x
 	rotatePoint.y += basePoint.y
 
@@ -420,11 +421,17 @@ frame ModelAnimation {
 			drawRectangle(500, 240, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
 
 		drawText("Machine 1", 610, 135, RaoColor.BLACK, 130, Alignment.CENTER);
-		drawRectangle(610, 160, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
-		drawText("Machine 2", 580, 220, RaoColor.BLACK, 130, Alignment.CENTER);
-		drawRectangle(580, 240, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
-		drawText("Machine 3", 270, 345, RaoColor.BLACK, 130, Alignment.CENTER);
-		drawRectangle(270, 370, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+		if(machine1.state==MachineState.MACHINING)
+			drawRectangle(610, 160, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
+		else drawRectangle(610, 160, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+			drawText("Machine 2", 580, 220, RaoColor.BLACK, 130, Alignment.CENTER);
+		if(machine2.state==MachineState.MACHINING)
+			drawRectangle(580, 240, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
+		else drawRectangle(580, 240, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+			drawText("Machine 3", 270, 345, RaoColor.BLACK, 130, Alignment.CENTER);
+		if(machine3.state==MachineState.MACHINING)
+			drawRectangle(270, 370, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
+		else drawRectangle(270, 370, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
 
 		drawText("Storage 1", 100, 15, RaoColor.BLACK, 130, Alignment.CENTER);
 		drawRectangle(100, 40, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
@@ -472,7 +479,6 @@ frame ModelAnimation {
 				RaoColor.DARK_RED
 			)
 		}
-
 	}
 }
 
