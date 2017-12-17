@@ -1,314 +1,337 @@
-constant длительность_погрузки_на_тележку = 1.5
-constant длительность_доставки_тележкой = 2.0
-constant длительность_устаноки_на_станок = 1.0
-constant длительность_разгрузки_станка = 0.5
-constant длительность_возврата_робота = 0.2
+import java.awt.Point
+import java.util.List
 
-sequence экспоненциальный = new Exponential(123456789)
+constant ROBOT_RETURN_DURATION = 0.2
 
-enum Положение {
-	СТАНОК_1, СТАНОК_2, СТАНОК_3, НАКОПИТЕЛЬ_1, НАКОПИТЕЛЬ_2, ТЕЛЕЖКА_1_Н, ТЕЛЕЖКА_1_К, ТЕЛЕЖКА_2_Н, ТЕЛЕЖКА_2_К, НИГДЕ
+sequence exponential = new Exponential(123456789)
+sequence truckLoadingDuration = new Exponential(123456789, 1 / 1.5)
+sequence truckTransferDuration = new Exponential(123456789, 1 / 2.0)
+sequence installingOnMachineDuration = new Exponential(123456789, 1 / 1.0)
+sequence machineUnloadingDuration = new Exponential(123456789, 1 / 0.5)
+
+enum Position {
+	MACHINE_1, MACHINE_2, MACHINE_3, STORAGE_1, STORAGE_2, TRUCK_1_FROM, TRUCK_1_TO, TRUCK_2_FROM, TRUCK_2_TO, NOWHERE
 }
 
-type Накопители {
-	int номер
-	Положение положение
-	int текущее_количество
+enum TruckState {FREE, BUSY, LOADED, MOVING, ARRIVED, WAITING}
+type Trucks {
+	Position position
+	TruckState state
+}
+resource truck1 = Trucks.create(Position.TRUCK_1_FROM, TruckState.FREE)
+resource truck2 = Trucks.create(Position.TRUCK_2_FROM, TruckState.FREE)
+
+enum RobotState {FREE, BUSY}
+type Robots {
+	Position position
+	RobotState state
+	ViewRobotInfo viewRobotInfo
+}
+type ViewRobotInfo {
+	Point basePoint
+	List<Position> positions
+	List<Integer> angles
+}
+resource robot1 = Robots.create(
+	Position.STORAGE_1,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(100, 150), newArrayList(Position.NOWHERE, Position.STORAGE_1
+	, Position.TRUCK_1_FROM), newArrayList(0, -60, 32))
+)
+resource robot2 = Robots.create(
+	Position.TRUCK_1_TO,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(550, 195),
+		newArrayList(Position.NOWHERE, Position.MACHINE_1, Position.TRUCK_1_TO, Position.MACHINE_2,
+			Position.TRUCK_2_FROM), newArrayList(95, -5, 180, 50, 115))
+)
+resource robot3 = Robots.create(
+	Position.TRUCK_2_TO,
+	RobotState.FREE,
+	ViewRobotInfo.create(new Point(428, 460),
+		newArrayList(Position.NOWHERE, Position.MACHINE_3, Position.TRUCK_2_TO, Position.STORAGE_2),
+		newArrayList(180, 225, 0, 135))
+)
+
+enum MachineState {FREE, LOADING, READY_FOR_MACHINING, MACHINING, UNLOADING, FINISHED_MACHINING}
+type Machines {
+	Position position
+	MachineState state
+	double machiningDuration
+}
+resource machine1 = Machines.create(Position.MACHINE_1, MachineState.FREE, 28)
+resource machine2 = Machines.create(Position.MACHINE_2, MachineState.FREE, 28)
+resource machine3 = Machines.create(Position.MACHINE_3, MachineState.FREE, 15)
+
+type Details {
+	Position position
 }
 
-resource накопитель_1 = Накопители.create(1, Положение.НАКОПИТЕЛЬ_1, 10)
-resource накопитель_2 = Накопители.create(2, Положение.НАКОПИТЕЛЬ_2, 0)
-
-enum Состояние_тележки {СВОБОДНА, ЗАНЯТА, ЗАГРУЖЕНА, ПЕРЕМЕЩАЕТСЯ, ПРИБЫЛА, ОЖИДАЕТ}
-type Тележки {
-	int номер
-	Положение положение
-	Состояние_тележки состояние
+def init() {
+	for(var i = 0; i < 10; i += 1) {
+		Details.create(Position.STORAGE_1)
+	}
 }
-resource тележка_1 = Тележки.create(1, Положение.ТЕЛЕЖКА_1_Н, Состояние_тележки.СВОБОДНА)
-resource тележка_2 = Тележки.create(2, Положение.ТЕЛЕЖКА_2_Н, Состояние_тележки.СВОБОДНА)
-
-enum Состояние_робота {СВОБОДЕН, ЗАНЯТ}
-type Роботы {
-	int номер
-	Положение положение
-	Состояние_робота состояние
-}
-resource робот_1 = Роботы.create(1, Положение.НАКОПИТЕЛЬ_1, Состояние_робота.СВОБОДЕН)
-resource робот_2 = Роботы.create(2, Положение.ТЕЛЕЖКА_1_К, Состояние_робота.СВОБОДЕН)
-resource робот_3 = Роботы.create(3, Положение.ТЕЛЕЖКА_2_К, Состояние_робота.СВОБОДЕН)
-
-enum Состояние_станка {СВОБОДЕН, ЗАГРУЖАЕТСЯ, ГОТОВ_К_ОБРАБОТКЕ, РАБОТАЕТ, РАЗГРУЖАЕТСЯ, ЗАКОНЧИЛ_ОБРАБОТКУ}
-type Станки {
-	int номер
-	Положение положение
-	Состояние_станка состояние
-	double длительность_обработки
-}
-resource станок_1 = Станки.create(1, Положение.СТАНОК_1, Состояние_станка.СВОБОДЕН, 28)
-resource станок_2 = Станки.create(2, Положение.СТАНОК_2, Состояние_станка.СВОБОДЕН, 28)
-resource станок_3 = Станки.create(3, Положение.СТАНОК_3, Состояние_станка.СВОБОДЕН, 15)
-
-enum Состояние_детали {ХРАНИТСЯ, ТРАНСПОРТИРУЕТСЯ, ОБРАБАТЫВАЕТСЯ, ОБРАБОТКА_ЗАКОНЧЕНА}
-type Детали {
-	int номер
-	Положение положение
-	Состояние_детали состояние
-}
-resource деталь_1 = Детали.create(1, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_2 = Детали.create(2, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_3 = Детали.create(3, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_4 = Детали.create(4, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_5 = Детали.create(5, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_6 = Детали.create(6, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_7 = Детали.create(7, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_8 = Детали.create(8, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_9 = Детали.create(9, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
-resource деталь_10 = Детали.create(10, Положение.НАКОПИТЕЛЬ_1, Состояние_детали.ХРАНИТСЯ)
 
 def terminateCondition() {
-	return накопитель_2.текущее_количество == 10
+	return Details.accessible.filter[position == Position.STORAGE_2].size() == Details.all.size()
 }
 
-operation Погрузка_детали() {
-	relevant накопитель = Накопители.all.filter[номер == 1 && текущее_количество > 0].any
-	relevant деталь = Детали.all.filter[положение == Положение.НАКОПИТЕЛЬ_1].any
-	relevant робот = Роботы.all.filter [
-		номер == 1 && положение == Положение.НАКОПИТЕЛЬ_1 && состояние == Состояние_робота.СВОБОДЕН
+operation LoadingDetail() {
+	relevant detail = Details.accessible.filter[position == Position.STORAGE_1].any
+	relevant robot = Robots.accessible.filter[
+		position == Position.STORAGE_1 && state == RobotState.FREE
 	].any
-	relevant тележка = Тележки.all.filter [
-		номер == 1 && положение == Положение.ТЕЛЕЖКА_1_Н && состояние == Состояние_тележки.СВОБОДНА
+	relevant truck = Trucks.accessible.filter[
+		position == Position.TRUCK_1_FROM && state == TruckState.FREE
 	].any
 
 	def begin() {
-		накопитель.текущее_количество = накопитель.текущее_количество - 1
-		деталь.состояние = Состояние_детали.ТРАНСПОРТИРУЕТСЯ
-		робот.состояние = Состояние_робота.ЗАНЯТ
-		тележка.состояние = Состояние_тележки.ЗАНЯТА
+		robot.state = RobotState.BUSY
+		truck.state = TruckState.BUSY
 
-		робот.положение = Положение.НИГДЕ
-		деталь.положение = робот.положение
+		robot.position = Position.NOWHERE
+		detail.position = robot.position
 	}
 
 	def duration() {
-		return экспоненциальный.next(1.0 / длительность_погрузки_на_тележку)
+		return truckLoadingDuration.next()
 	}
 
 	def end() {
-		робот.состояние = Состояние_робота.СВОБОДЕН
-		тележка.состояние = Состояние_тележки.ЗАГРУЖЕНА
+		robot.state = RobotState.FREE
+		truck.state = TruckState.LOADED
 
-		робот.положение = Положение.ТЕЛЕЖКА_1_Н
-		деталь.положение = робот.положение
+		robot.position = Position.TRUCK_1_FROM
+		detail.position = robot.position
 	}
 }
 
-operation Доставка_детали(int номер_тележки, Положение откуда, Положение куда) {
-	relevant тележка = Тележки.all.filter[положение == откуда && состояние == Состояние_тележки.ЗАГРУЖЕНА].any
-	relevant деталь = Детали.all.filter[положение == откуда].any
+operation TransferingDetail() {
+	relevants truck, detail = combination(
+		Trucks.accessible.filter[state == TruckState.LOADED],
+		Details.accessible
+	).filter[truck.position == detail.position].any of types Trucks, Details
 
 	def begin() {
-		тележка.состояние = Состояние_тележки.ПЕРЕМЕЩАЕТСЯ
+		truck.state = TruckState.MOVING
+		detail.position = Position.NOWHERE
 	}
 
 	def duration() {
-		return экспоненциальный.next(1.0 / длительность_доставки_тележкой)
+		return truckTransferDuration.next()
 	}
 
 	def end() {
-		тележка.состояние = Состояние_тележки.ПРИБЫЛА
+		truck.state = TruckState.ARRIVED
 
-		тележка.положение = куда
-		деталь.положение = тележка.положение
+		truck.position = whereTruckMove(truck.position)
+		detail.position = truck.position
 	}
 }
 
-operation Установка_на_станке(Положение положение_станка, Положение положение_детали) {
-	relevant станок = Станки.all.filter[положение == положение_станка && состояние == Состояние_станка.СВОБОДЕН].any
-	relevant тележка = Тележки.all.filter[положение == положение_детали && состояние == Состояние_тележки.ПРИБЫЛА].any
-	relevant робот = Роботы.all.filter[положение == положение_детали && состояние == Состояние_робота.СВОБОДЕН].any
-	relevant деталь = Детали.all.filter[положение == положение_детали].any
+Position whereTruckMove(Position position){
+	switch (position) {
+		case TRUCK_1_FROM: return Position.TRUCK_1_TO
+		case TRUCK_2_FROM: return Position.TRUCK_2_TO
+		case TRUCK_1_TO: return Position.TRUCK_1_FROM
+		case TRUCK_2_TO: return Position.TRUCK_2_FROM
+		default: throw new IllegalArgumentException("Unexpected truck position.")
+	}
+}
+
+operation InstallingOnMachine() {
+	relevants machine, truck, robot, detail = combination(
+		Machines.accessible.filter[state == MachineState.FREE],
+		Trucks.accessible.filter[state == TruckState.ARRIVED],
+		Robots.accessible.filter[state == RobotState.FREE],
+		Details.accessible
+	).filter[
+		truck.position == robot.position && truck.position == detail.position 
+		&& isRobotConnectedWithMachine(robot.position, machine.position)
+	].any of types Machines, Trucks, Robots, Details
 
 	def begin() {
-		станок.состояние = Состояние_станка.ЗАГРУЖАЕТСЯ
-		тележка.состояние = Состояние_тележки.ОЖИДАЕТ
-		робот.состояние = Состояние_робота.ЗАНЯТ
+		machine.state = MachineState.LOADING
+		truck.state = TruckState.WAITING
+		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 	}
 
 	def duration() {
-		return экспоненциальный.next(1.0 / длительность_устаноки_на_станок)
+		return installingOnMachineDuration.next()
 	}
 
 	def end() {
-		станок.состояние = Состояние_станка.ГОТОВ_К_ОБРАБОТКЕ
-		тележка.состояние = Состояние_тележки.СВОБОДНА
-		робот.состояние = Состояние_робота.СВОБОДЕН
+		machine.state = MachineState.READY_FOR_MACHINING
+		truck.state = TruckState.FREE
+		robot.state = RobotState.FREE
 
-		робот.положение = станок.положение
-		деталь.положение = станок.положение
+		robot.position = machine.position
+		detail.position = machine.position
 	}
 }
 
-operation Обработка_на_станке(Положение положение_станка) {
-	relevant станок = Станки.all.filter [
-		положение == положение_станка && состояние == Состояние_станка.ГОТОВ_К_ОБРАБОТКЕ
-	].any
-	relevant деталь = Детали.all.filter[положение == положение_станка].any
+operation Machining() {
+	relevants machine, detail = combination(
+		Machines.accessible.filter[state == MachineState.READY_FOR_MACHINING],
+		Details.accessible
+	).filter[detail.position == machine.position].any of types Machines, Details
 
 	def begin() {
-		станок.состояние = Состояние_станка.РАБОТАЕТ
-		деталь.состояние = Состояние_детали.ОБРАБАТЫВАЕТСЯ
+		machine.state = MachineState.MACHINING
 	}
 
 	def duration() {
-		return станок.длительность_обработки
+		return machine.machiningDuration
 	}
 
 	def end() {
-		станок.состояние = Состояние_станка.ЗАКОНЧИЛ_ОБРАБОТКУ
-		деталь.состояние = Состояние_детали.ОБРАБОТКА_ЗАКОНЧЕНА
+		machine.state = MachineState.FINISHED_MACHINING
 	}
 }
 
-operation Перегрузка_со_станка_на_тележку(Положение положение_станка) {
-	relevant станок = Станки.all.filter [
-		положение == положение_станка && состояние == Состояние_станка.ЗАКОНЧИЛ_ОБРАБОТКУ
+operation FinishingMachiningOnMachine1Or2() {
+	relevant truck = Trucks.accessible.filter[
+		state == TruckState.FREE && position == Position.TRUCK_2_FROM
 	].any
-	relevant робот = Роботы.all.filter [
-		состояние == Состояние_робота.СВОБОДЕН && робот_связан_со_станком(номер, станок.номер)
-	].any
-	relevant тележка = Тележки.all.filter [
-		номер == 2 && состояние == Состояние_тележки.СВОБОДНА && положение == Положение.ТЕЛЕЖКА_2_Н
-	].any
-	relevant деталь = Детали.all.filter[положение == положение_станка].any
+
+	relevants machine, detail, robot = combination(
+		Machines.accessible.filter[state == MachineState.FINISHED_MACHINING 
+			&& (position == Position.MACHINE_1 || position == Position.MACHINE_2)
+		],
+		Details.accessible,
+		Robots.accessible.filter[state == RobotState.FREE]
+	).filter[
+		machine.position == detail.position && isRobotConnectedWithMachine(robot.position, machine.position)
+	].any of types Machines, Details, Robots
 
 	def begin() {
-		станок.состояние = Состояние_станка.РАЗГРУЖАЕТСЯ
-		робот.состояние = Состояние_робота.ЗАНЯТ
-		тележка.состояние = Состояние_тележки.ЗАНЯТА
-		деталь.состояние = Состояние_детали.ТРАНСПОРТИРУЕТСЯ
+		machine.state = MachineState.UNLOADING
+		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
+		truck.state = TruckState.BUSY
+		detail.position = Position.NOWHERE
 	}
 
 	def duration() {
-		return экспоненциальный.next(1.0 / длительность_разгрузки_станка)
+		return machineUnloadingDuration.next()
 	}
 
 	def end() {
-		станок.состояние = Состояние_станка.СВОБОДЕН
-		робот.состояние = Состояние_робота.СВОБОДЕН
-		тележка.состояние = Состояние_тележки.ЗАГРУЖЕНА
+		machine.state = MachineState.FREE
+		robot.state = RobotState.FREE
+		truck.state = TruckState.LOADED
 
-		робот.положение = Положение.ТЕЛЕЖКА_2_Н
-		деталь.положение = робот.положение
+		robot.position = Position.TRUCK_2_FROM
+		detail.position = robot.position
 	}
 }
 
-boolean робот_связан_со_станком(int номер_робота, int номер_станка)
+boolean isRobotConnectedWithMachine(Position robotPosition, Position machinePosition)
 {
-	if (номер_робота == 2) {
-		return номер_станка == 1 || номер_станка == 2
-	} else if (номер_робота == 3) {
-		return номер_станка == 3
+	if (robotPosition == Position.MACHINE_1 || robotPosition == Position.MACHINE_2 
+		|| robotPosition == Position.TRUCK_1_TO || robotPosition == Position.TRUCK_2_FROM) {
+		return machinePosition == Position.MACHINE_1 || machinePosition == Position.MACHINE_2
+	} else if (robotPosition == Position.MACHINE_3 || robotPosition == Position.TRUCK_2_TO 
+		|| robotPosition == Position.STORAGE_2) {
+		return machinePosition == Position.MACHINE_3
 	}
 
 	return false
 }
 
-operation Окончание_обработки_на_станке_3() {
-	relevant станок = станок_3.onlyif[состояние == Состояние_станка.ЗАКОНЧИЛ_ОБРАБОТКУ]
-	relevant деталь = Детали.all.filter[положение == станок.положение].any
-	relevant накопитель = накопитель_2
-
-	def begin() {
-		станок.состояние = Состояние_станка.РАЗГРУЖАЕТСЯ
-		деталь.состояние = Состояние_детали.ТРАНСПОРТИРУЕТСЯ
-	}
-
-	def duration() {
-		return экспоненциальный.next(1.0 / длительность_разгрузки_станка)
-	}
-
-	def end() {
-		станок.состояние = Состояние_станка.СВОБОДЕН
-		деталь.положение = накопитель.положение
-		деталь.состояние = Состояние_детали.ХРАНИТСЯ
-		накопитель.текущее_количество = накопитель.текущее_количество + 1
-	}
-}
-
-operation Возврат_робота() {
-	relevant робот = Роботы.all.filter [
-		положение != место_возврата_робота(положение) && состояние == Состояние_робота.СВОБОДЕН
+operation FinishingMachiningOnMachine3() {
+	relevant machine = Machines.accessible.filter[
+		state == MachineState.FINISHED_MACHINING && position == Position.MACHINE_3
+	].any
+	relevant detail = Details.accessible.filter[position == Position.MACHINE_3].any
+	relevant robot = Robots.accessible.filter[
+		state == RobotState.FREE && isRobotConnectedWithMachine(position, machine.position)
 	].any
 
 	def begin() {
-		робот.состояние = Состояние_робота.ЗАНЯТ
+		machine.state = MachineState.UNLOADING
+		detail.position = Position.NOWHERE
+		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
 	}
 
 	def duration() {
-		return длительность_возврата_робота
+		return machineUnloadingDuration.next()
 	}
 
 	def end() {
-		робот.состояние = Состояние_робота.СВОБОДЕН
-		робот.положение = место_возврата_робота(робот.положение)
+		robot.state = RobotState.FREE
+		robot.position = Position.STORAGE_2
+		machine.state = MachineState.FREE
+		detail.position = Position.STORAGE_2
 	}
 }
 
-Положение место_возврата_робота(Положение текущее_место) {
-	if (текущее_место == Положение.ТЕЛЕЖКА_1_Н) {
-		return Положение.НАКОПИТЕЛЬ_1
-	} else if (текущее_место == Положение.СТАНОК_1 || текущее_место == Положение.СТАНОК_2 ||
-		текущее_место == Положение.ТЕЛЕЖКА_2_Н) {
-		return Положение.ТЕЛЕЖКА_1_К
-	} else if (текущее_место == Положение.СТАНОК_3) {
-		return Положение.ТЕЛЕЖКА_2_К
-	}
-
-	return текущее_место
-}
-
-operation Возврат_тележки(int номер_тележки, Положение откуда, Положение куда) {
-	relevant тележка = Тележки.all.filter[положение == откуда && состояние == Состояние_тележки.СВОБОДНА].any
+operation RobotReturn() {
+	relevant robot = Robots.accessible.filter[
+		position != getRobotReturnPosition(it) && state == RobotState.FREE
+	].any
 
 	def begin() {
-		тележка.состояние = Состояние_тележки.ЗАНЯТА
+		robot.state = RobotState.BUSY
+		robot.position = Position.NOWHERE
+	}
+
+	def duration() {
+		return ROBOT_RETURN_DURATION
+	}
+
+	def end() {
+		robot.state = RobotState.FREE
+		robot.position = getRobotReturnPosition(robot)
+	}
+}
+
+Position getRobotReturnPosition(Robots robot) {
+	switch (robot) {
+		case robot1: return Position.STORAGE_1
+		case robot2: return Position.TRUCK_1_TO
+		case robot3: return Position.TRUCK_2_TO
+	}
+}
+
+operation TruckReturn() {
+	relevant truck = Trucks.accessible.filter[
+		state == TruckState.FREE && isTruckInToPosition(position)
+	].any
+
+	def begin() {
+		truck.state = TruckState.BUSY
 	}
 
 	def duration () {
-		return экспоненциальный.next(1.0 / длительность_доставки_тележкой)
+		return truckTransferDuration.next()
 	}
 
 	def end() {
-		тележка.состояние = Состояние_тележки.СВОБОДНА
-		тележка.положение = куда
+		truck.state = TruckState.FREE
+		truck.position = whereTruckMove(truck.position)
 	}
 }
 
-logic Model {
-	activity погрузка_детали = new Activity(Погрузка_детали.create())
-	activity доставка_детали_на_тележке_1 = new Activity(
-		Доставка_детали.create(1, Положение.ТЕЛЕЖКА_1_Н, Положение.ТЕЛЕЖКА_1_К))
-	activity доставка_детали_на_тележке_2 = new Activity(
-		Доставка_детали.create(2, Положение.ТЕЛЕЖКА_2_Н, Положение.ТЕЛЕЖКА_2_К))
-	activity установка_на_станке_1 = new Activity(
-		Установка_на_станке.create(Положение.СТАНОК_1, Положение.ТЕЛЕЖКА_1_К))
-	activity установка_на_станке_2 = new Activity(
-		Установка_на_станке.create(Положение.СТАНОК_2, Положение.ТЕЛЕЖКА_1_К))
-	activity установка_на_станке_3 = new Activity(
-		Установка_на_станке.create(Положение.СТАНОК_3, Положение.ТЕЛЕЖКА_2_К))
-	activity обработка_на_станке_1 = new Activity(Обработка_на_станке.create(Положение.СТАНОК_1))
-	activity обработка_на_станке_2 = new Activity(Обработка_на_станке.create(Положение.СТАНОК_2))
-	activity обработка_на_станке_3 = new Activity(Обработка_на_станке.create(Положение.СТАНОК_3))
-	activity перегрузка_со_станка_1_на_тележку = new Activity(
-		Перегрузка_со_станка_на_тележку.create(Положение.СТАНОК_1))
-	activity перегрузка_со_станка_2_на_тележку = new Activity(
-		Перегрузка_со_станка_на_тележку.create(Положение.СТАНОК_2))
-	activity окончание_обработки_на_станке_3 = new Activity(Окончание_обработки_на_станке_3.create())
+boolean isTruckInToPosition(Position position){
+	if (position == Position.TRUCK_1_TO || position == Position.TRUCK_2_TO)
+		return true
+	else
+		return false;
+}
 
-	activity возврат_робота = new Activity(Возврат_робота.create())
-	activity возврат_тележки_1 = new Activity(Возврат_тележки.create(1, Положение.ТЕЛЕЖКА_1_К, Положение.ТЕЛЕЖКА_1_Н))
-	activity возврат_тележки_2 = new Activity(Возврат_тележки.create(2, Положение.ТЕЛЕЖКА_2_К, Положение.ТЕЛЕЖКА_2_Н))
+logic Model {
+	activity loadingDetail = new Activity(LoadingDetail.create())
+	activity transferingDetail = new Activity(TransferingDetail.create())
+	activity installingOnMachine = new Activity(InstallingOnMachine.create())
+	activity machining = new Activity(Machining.create())
+	activity finishingMachiningOnMachine1Or2 = new Activity(FinishingMachiningOnMachine1Or2.create())
+	activity finishingMachiningOnMachine3 = new Activity(FinishingMachiningOnMachine3.create())
+	activity robotReturn = new Activity(RobotReturn.create())
+	activity truckReturn = new Activity(TruckReturn.create())
 }
 
 frame Frame {
@@ -316,70 +339,149 @@ frame Frame {
 		background = new Background(800, 600, RaoColor.WHITE)
 	}
 	def draw() {
-		drawText('Время:', 10, 5)
-		drawText(currentTime.toString(), 60, 5)
+		val yOffset = 15;
 
-		drawText('станок 1', 10, 70)
-		drawText(станок_1.состояние.toString(), 350, 70)
-		drawText(станок_1.положение.toString(), 600, 70)
-		drawText('станок 2', 10, 85)
-		drawText(станок_2.состояние.toString(), 350, 85)
-		drawText(станок_2.положение.toString(), 600, 85)
-		drawText('станок 3', 10, 100)
-		drawText(станок_3.состояние.toString(), 350, 100)
-		drawText(станок_3.положение.toString(), 600, 100)
+		drawText('Time:', 10, 5)
+		drawText(currentTime, 60, 5)
+		drawText('STATE', 350, 45)
+		drawText('POSITION', 600, 45)
 
-		drawText('тележка 1', 10, 125)
-		drawText(тележка_1.состояние.toString(), 350, 125)
-		drawText(тележка_1.положение.toString(), 600, 125)
-		drawText('тележка 2', 10, 140)
-		drawText(тележка_2.состояние.toString(), 350, 140)
-		drawText(тележка_2.положение.toString(), 600, 140)
+		for (machine : Machines.all) {
+			drawText('machine ' + (machine.number + 1), 10, 70 + machine.number * yOffset);
+			drawText(machine.state, 350, 70 + machine.number * yOffset);
+			drawText(machine.position, 600, 70 + machine.number * yOffset);
+		}
 
-		drawText('робот 1', 10, 165)
-		drawText(робот_1.состояние.toString(), 350, 165)
-		drawText(робот_1.положение.toString(), 600, 165)
-		drawText('робот 2', 10, 180)
-		drawText(робот_2.состояние.toString(), 350, 180)
-		drawText(робот_2.положение.toString(), 600, 180)
-		drawText('робот 3', 10, 195)
-		drawText(робот_3.состояние.toString(), 350, 195)
-		drawText(робот_3.положение.toString(), 600, 195)
+		for (truck : Trucks.all) {
+			drawText('truck ' + (truck.number + 1), 10, 125 + truck.number * yOffset)
+			drawText(truck.state, 350, 125 + truck.number * yOffset)
+			drawText(truck.position, 600, 125 + truck.number * yOffset)
+		}
 
-		drawText('Кол-во детале в 1-м накопителе', 10, 220)
-		drawText(накопитель_1.текущее_количество.toString(), 350, 220)
-		drawText('Кол-во детале в 2-м накопителе', 10, 235)
-		drawText(накопитель_2.текущее_количество.toString(), 350, 235)
+		for (robot : Robots.all) {
+			drawText('robot ' + (robot.number + 1), 10, 165 + robot.number * yOffset)
+			drawText(robot.state, 350, 165 + robot.number * yOffset)
+			drawText(robot.position, 600, 165 + robot.number * yOffset)
+		}
 
-		drawText('деталь 1', 10, 300)
-		drawText(деталь_1.положение.toString(), 350, 300)
-		drawText(деталь_1.состояние.toString(), 600, 300)
-		drawText('деталь 2', 10, 315)
-		drawText(деталь_2.положение.toString(), 350, 315)
-		drawText(деталь_2.состояние.toString(), 600, 315)
-		drawText('деталь 3', 10, 330)
-		drawText(деталь_3.положение.toString(), 350, 330)
-		drawText(деталь_3.состояние.toString(), 600, 330)
-		drawText('деталь 4', 10, 345)
-		drawText(деталь_4.положение.toString(), 350, 345)
-		drawText(деталь_4.состояние.toString(), 600, 345)
-		drawText('деталь 5', 10, 360)
-		drawText(деталь_5.положение.toString(), 350, 360)
-		drawText(деталь_5.состояние.toString(), 600, 360)
-		drawText('деталь 6', 10, 375)
-		drawText(деталь_6.положение.toString(), 350, 375)
-		drawText(деталь_6.состояние.toString(), 600, 375)
-		drawText('деталь 7', 10, 390)
-		drawText(деталь_7.положение.toString(), 350, 390)
-		drawText(деталь_7.состояние.toString(), 600, 390)
-		drawText('деталь 8', 10, 405)
-		drawText(деталь_8.положение.toString(), 350, 405)
-		drawText(деталь_8.состояние.toString(), 600, 405)
-		drawText('деталь 9', 10, 420)
-		drawText(деталь_9.положение.toString(), 350, 420)
-		drawText(деталь_9.состояние.toString(), 600, 420)
-		drawText('деталь 10', 10, 435)
-		drawText(деталь_10.положение.toString(), 350, 435)
-		drawText(деталь_10.состояние.toString(), 600, 435)
+		drawText('POSITION', 350, 250)
+		for (detail : Details.all) {
+			drawText('detail ' + (detail.number + 1), 10, 270 + detail.number * yOffset)
+			drawText(detail.position, 350, 270 + detail.number * yOffset)
+		}
+
+		drawText('Detail`s count in storage 1', 10, 440)
+		drawText(Details.accessible.filter[position == Position.STORAGE_1].size(), 350, 440)
+		drawText('Detail`s count in storage 2', 10, 460)
+		drawText(Details.accessible.filter[position == Position.STORAGE_2].size(), 350, 460)
 	}
 }
+
+Point getRotatedPoint(Point basePoint,Point point,int angle){
+	val angleInRad = angle * Math.PI / 180
+	val rotatePoint = new Point(
+		((point.x - basePoint.x) * Math.cos(angleInRad) -
+			(point.y - basePoint.y) * Math.sin(angleInRad)).intValue(),
+		((point.x - basePoint.x) * Math.sin(angleInRad) +
+			(point.y - basePoint.y) * Math.cos(angleInRad)).intValue())
+	rotatePoint.x += basePoint.x
+	rotatePoint.y += basePoint.y
+
+	return rotatePoint
+}
+
+frame ModelAnimation {
+
+	def init() {
+		background = new Background(800, 600, RaoColor.WHITE)
+	}
+
+	def draw() {
+		// Транспортные линии
+		drawLine(130, 180, 130, 210, RaoColor.BLACK)
+		drawLine(130, (180 + 210) / 2, 500, (180 + 210) / 2, RaoColor.BLACK)
+		drawLine(500, 180, 500, 210, RaoColor.BLACK)
+		drawLine(500, 230, 530, 230, RaoColor.BLACK)
+		drawLine((500 + 530) / 2, 230, (500 + 530) / 2, 500, RaoColor.BLACK)
+		drawLine(500, 500, 530, 500, RaoColor.BLACK)
+
+		// Транспорт
+		if (truck1.state == TruckState.MOVING)
+			drawRectangle(285, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else if (truck1.position == Position.TRUCK_1_TO)
+			drawRectangle(430, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else
+			drawRectangle(140, 180, 60, 30, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+
+		if (truck2.state == TruckState.MOVING)
+			drawRectangle(500, 330, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else if (truck2.position == Position.TRUCK_2_TO)
+			drawRectangle(500, 430, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+		else
+			drawRectangle(500, 240, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
+
+		val machinesCoordinates = newArrayList(
+			newArrayList(610, 160),
+			newArrayList(580, 240),
+			newArrayList(270, 370)
+		)
+		for (machine : Machines.all) {
+			drawText('Machine ' + (machine.number + 1), machinesCoordinates.get(machine.number).get(0),
+				machinesCoordinates.get(machine.number).get(1) - 20, RaoColor.BLACK, 130, Alignment.CENTER
+			)
+			val machineColor = if (machine.state == MachineState.MACHINING) RaoColor.DARK_GREEN else RaoColor.DARK_RED
+			drawRectangle(machinesCoordinates.get(machine.number).get(0), machinesCoordinates.get(machine.number).get(1),
+				130, 50, machineColor, machineColor
+			)
+		}
+
+		drawText("Storage 1", 100, 20, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(100, 40, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
+		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_1].size(), 100, 45,
+			RaoColor.BLACK, 130, Alignment.CENTER);
+
+		drawText("Storage 2", 270, 480, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawRectangle(270, 500, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
+		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_2].size(), 270, 530,
+			RaoColor.BLACK, 130, Alignment.CENTER);
+
+		for (robot : Robots.all) {
+			var baseRobotPoint = robot.viewRobotInfo.basePoint
+
+			var baseRobotCircle1Point = new Point(baseRobotPoint.x, baseRobotPoint.y)
+			var baseRobotLine1Point1 = new Point(baseRobotPoint.x - 30, baseRobotPoint.y)
+			var baseRobotLine1Point2 = new Point(baseRobotPoint.x + 80, baseRobotPoint.y)
+			var baseRobotCircle2Point = new Point(baseRobotPoint.x + 80, baseRobotPoint.y)
+			var baseRobotTrianglePoint1 = new Point(baseRobotPoint.x + 85, baseRobotPoint.y + 10)
+			var baseRobotTrianglePoint2 = new Point(baseRobotPoint.x + 85, baseRobotPoint.y - 10)
+			var baseRobotTrianglePoint3 = new Point(baseRobotPoint.x + 95, baseRobotPoint.y)
+
+			var angle = robot.viewRobotInfo.angles.get(robot.viewRobotInfo.positions.indexOf(robot.position))
+
+			var rotateRobotCircle1Point = getRotatedPoint(baseRobotPoint, baseRobotCircle1Point, angle)
+			var rotateRobotLine1Point1 = getRotatedPoint(baseRobotPoint, baseRobotLine1Point1, angle)
+			var rotateRobotLine1Point2 = getRotatedPoint(baseRobotPoint, baseRobotLine1Point2, angle)
+			var rotateRobotCircle2Point = getRotatedPoint(baseRobotPoint, baseRobotCircle2Point, angle)
+			var rotateRobotTrianglePoint1 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint1, angle)
+			var rotateRobotTrianglePoint2 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint2, angle)
+			var rotateRobotTrianglePoint3 = getRotatedPoint(baseRobotPoint, baseRobotTrianglePoint3, angle)
+
+			drawCircle(rotateRobotCircle1Point.x, rotateRobotCircle1Point.y, 20, RaoColor.RED, RaoColor.DARK_RED)
+			drawLine(rotateRobotLine1Point1.x, rotateRobotLine1Point1.y, rotateRobotLine1Point2.x,
+				rotateRobotLine1Point2.y, RaoColor.RED
+			)
+			drawCircle(rotateRobotCircle2Point.x, rotateRobotCircle2Point.y, 10, RaoColor.RED, RaoColor.DARK_RED)
+			drawTriangle(
+				rotateRobotTrianglePoint1.x,
+				rotateRobotTrianglePoint1.y,
+				rotateRobotTrianglePoint2.x,
+				rotateRobotTrianglePoint2.y,
+				rotateRobotTrianglePoint3.x,
+				rotateRobotTrianglePoint3.y,
+				RaoColor.RED,
+				RaoColor.DARK_RED
+			)
+		}
+	}
+}
+
