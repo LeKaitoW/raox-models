@@ -378,8 +378,8 @@ frame Frame {
 }
 
 Point getRotatedPoint(Point basePoint,Point point,int angle){
-	var angleInRad=angle * Math.PI / 180
-	var rotatePoint = new Point(
+	val angleInRad = angle * Math.PI / 180
+	val rotatePoint = new Point(
 		((point.x - basePoint.x) * Math.cos(angleInRad) -
 			(point.y - basePoint.y) * Math.sin(angleInRad)).intValue(),
 		((point.x - basePoint.x) * Math.sin(angleInRad) +
@@ -398,12 +398,12 @@ frame ModelAnimation {
 
 	def draw() {
 		// Транспортные линии
-		drawLine(130, 180, 130, 210, RaoColor.BLACK);
-		drawLine(130, (180 + 210) / 2, 500, (180 + 210) / 2, RaoColor.BLACK);
-		drawLine(500, 180, 500, 210, RaoColor.BLACK);
-		drawLine(500, 230, 530, 230, RaoColor.BLACK);
-		drawLine((500 + 530) / 2, 230, (500 + 530) / 2, 500, RaoColor.BLACK);
-		drawLine(500, 500, 530, 500, RaoColor.BLACK);
+		drawLine(130, 180, 130, 210, RaoColor.BLACK)
+		drawLine(130, (180 + 210) / 2, 500, (180 + 210) / 2, RaoColor.BLACK)
+		drawLine(500, 180, 500, 210, RaoColor.BLACK)
+		drawLine(500, 230, 530, 230, RaoColor.BLACK)
+		drawLine((500 + 530) / 2, 230, (500 + 530) / 2, 500, RaoColor.BLACK)
+		drawLine(500, 500, 530, 500, RaoColor.BLACK)
 
 		// Транспорт
 		if (truck1.state == TruckState.MOVING)
@@ -420,25 +420,27 @@ frame ModelAnimation {
 		else
 			drawRectangle(500, 240, 30, 60, RaoColor.DARK_GRAY, RaoColor.DARK_GRAY)
 
-		drawText("Machine 1", 610, 135, RaoColor.BLACK, 130, Alignment.CENTER);
-		if(machine1.state==MachineState.MACHINING)
-			drawRectangle(610, 160, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
-		else drawRectangle(610, 160, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
-			drawText("Machine 2", 580, 220, RaoColor.BLACK, 130, Alignment.CENTER);
-		if(machine2.state==MachineState.MACHINING)
-			drawRectangle(580, 240, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
-		else drawRectangle(580, 240, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
-			drawText("Machine 3", 270, 345, RaoColor.BLACK, 130, Alignment.CENTER);
-		if(machine3.state==MachineState.MACHINING)
-			drawRectangle(270, 370, 130, 50, RaoColor.DARK_GREEN, RaoColor.DARK_GREEN)
-		else drawRectangle(270, 370, 130, 50, RaoColor.DARK_RED, RaoColor.DARK_RED)
+		val machinesCoordinates = newArrayList(
+			newArrayList(610, 160),
+			newArrayList(580, 240),
+			newArrayList(270, 370)
+		)
+		for (machine : Machines.all) {
+			drawText('Machine ' + (machine.number + 1), machinesCoordinates.get(machine.number).get(0),
+				machinesCoordinates.get(machine.number).get(1) - 20, RaoColor.BLACK, 130, Alignment.CENTER
+			)
+			val machineColor = if (machine.state == MachineState.MACHINING) RaoColor.DARK_GREEN else RaoColor.DARK_RED
+			drawRectangle(machinesCoordinates.get(machine.number).get(0), machinesCoordinates.get(machine.number).get(1),
+				130, 50, machineColor, machineColor
+			)
+		}
 
-		drawText("Storage 1", 100, 15, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawText("Storage 1", 100, 20, RaoColor.BLACK, 130, Alignment.CENTER);
 		drawRectangle(100, 40, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
 		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_1].size(), 100, 45,
 			RaoColor.BLACK, 130, Alignment.CENTER);
 
-		drawText("Storage 2", 270, 475, RaoColor.BLACK, 130, Alignment.CENTER);
+		drawText("Storage 2", 270, 480, RaoColor.BLACK, 130, Alignment.CENTER);
 		drawRectangle(270, 500, 130, 50, RaoColor.GRAY, RaoColor.GRAY)
 		drawText("Details: " + Details.accessible.filter[position == Position.STORAGE_2].size(), 270, 530,
 			RaoColor.BLACK, 130, Alignment.CENTER);
@@ -466,7 +468,8 @@ frame ModelAnimation {
 
 			drawCircle(rotateRobotCircle1Point.x, rotateRobotCircle1Point.y, 20, RaoColor.RED, RaoColor.DARK_RED)
 			drawLine(rotateRobotLine1Point1.x, rotateRobotLine1Point1.y, rotateRobotLine1Point2.x,
-				rotateRobotLine1Point2.y, RaoColor.RED)
+				rotateRobotLine1Point2.y, RaoColor.RED
+			)
 			drawCircle(rotateRobotCircle2Point.x, rotateRobotCircle2Point.y, 10, RaoColor.RED, RaoColor.DARK_RED)
 			drawTriangle(
 				rotateRobotTrianglePoint1.x,
