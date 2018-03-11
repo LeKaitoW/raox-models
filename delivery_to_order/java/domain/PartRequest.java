@@ -2,7 +2,6 @@ package domain;
 
 import java.io.Serializable;
 import java.time.LocalDate;
-import java.util.Calendar;
 
 import javax.persistence.Column;
 import javax.persistence.Entity;
@@ -11,8 +10,6 @@ import javax.persistence.IdClass;
 import javax.persistence.JoinColumn;
 import javax.persistence.ManyToOne;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "requestedpartslist")
@@ -32,22 +29,11 @@ public class PartRequest {
 	@Column(name = "Price")
 	public int price;
 
-	@Temporal(TemporalType.DATE)
 	@Column(name = "DateOfDelivery")
-	public Calendar dateOfDelivery;
+	public LocalDate dateOfDelivery;
 
 	@Column(name = "Count")
 	public int count;
-
-	public LocalDate getDateOfDelivery() {
-		return toLocalDate(dateOfDelivery);
-	}
-
-	private LocalDate toLocalDate(Calendar calendar) {
-		return calendar == null ? null
-				: LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
-						calendar.get(Calendar.DAY_OF_MONTH));
-	}
 
 	@Override
 	public String toString() {

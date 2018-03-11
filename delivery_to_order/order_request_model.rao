@@ -10,18 +10,21 @@ import java.util.List
 import java.util.Map
 import java.util.HashMap
 import java.time.temporal.ChronoUnit
+import java.time.LocalDate
+import domain.LocalDateAttributeConverter
 
 /* Connection data */
 constant driver = "com.mysql.jdbc.Driver"
 
-//constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-//constant username = "observer"
-//constant password = "compaq"
+constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "Observer"
+constant password = "CY73-YVRE-3FT2"
 
-constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-constant username = "jpademo"
-constant password = "5xYB2e6T5Jo7ajA"
-dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest)
+//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+//constant username = "jpademo"
+//constant password = "5xYB2e6T5Jo7ajA"
+
+dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
 
 type OrderStats {
 	Map<String, Part> localPartData
@@ -35,28 +38,28 @@ type OrderStats {
 resource orderStats = OrderStats.create(new HashMap, 0, 0, new ArrayList, new ArrayList, new ArrayList)
 
 long getModificationInterval(Order order) {
-	val start = order.getDateOfCreation();
-	val end = order.getDateOfProcessing();
-	val interval = start.until(end, ChronoUnit.DAYS);
+	val start = order.dateOfCreation
+	val end = order.dateOfProcessing
+	val interval = start.until(end, ChronoUnit.DAYS)
 	if (interval < 0)
-		throw new IllegalStateException("getModificationInterval " + interval);
-	return interval;
+		throw new IllegalStateException("getModificationInterval " + interval)
+	return interval
 }
 
 long getRealizationInterval(Order order) {
-	val start = order.getDateOfCreation();
-	val end = order.getDateOfRealization();
-	val interval = start.until(end, ChronoUnit.DAYS);
+	val start = order.dateOfCreation
+	val end = order.dateOfRealization
+	val interval = start.until(end, ChronoUnit.DAYS)
 	if (interval < 0)
-		throw new IllegalStateException("getRealizationInterval " + interval);
-	return interval;
+		throw new IllegalStateException("getRealizationInterval " + interval)
+	return interval
 }
 
 long getDeliveryInterval(PartRequest partRequest) {
-	val start = partRequest.order.getDateOfCreation();
-	val end = partRequest.getDateOfDelivery();
-	val interval = start.until(end, ChronoUnit.DAYS);
-	return interval;
+	val start = partRequest.order.dateOfCreation
+	val end = partRequest.dateOfDelivery
+	val interval = start.until(end, ChronoUnit.DAYS)
+	return interval
 }
 
 Part tryFetchLocal(Part part){
@@ -77,11 +80,11 @@ Double calculatePrice(Order order){
 boolean takeParts(PartRequest request) {
 	val part = tryFetchLocal(request.part)
 	if (part.stocked >= request.count) {
-		part.stocked -= request.count;
-		return true;
+		part.stocked -= request.count
+		return true
 	} else {
-		part.stocked = 0;
-		return false;
+		part.stocked = 0
+		return false
 	}
 }
 
@@ -236,9 +239,11 @@ logic Model {
 }
 
 def init() {
+	val startDate = LocalDate.now.minusYears(1)
 	val query = data.<Order>getQuery
 	val qOrder = QOrder.order
-	val orderList = query.from(qOrder).fetch
+	val orderList = query.from(qOrder).where(qOrder.dateOfCreation.after(startDate)).fetch
+	//val orderList = query.from(qOrder).fetch
 
 	for (order : orderList) {
 		OrderReceived.plan(order.getEpochDayOfCreation(), order)

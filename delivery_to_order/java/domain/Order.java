@@ -1,7 +1,6 @@
 package domain;
 
 import java.time.LocalDate;
-import java.util.Calendar;
 import java.util.List;
 
 import javax.persistence.Column;
@@ -10,8 +9,6 @@ import javax.persistence.FetchType;
 import javax.persistence.Id;
 import javax.persistence.OneToMany;
 import javax.persistence.Table;
-import javax.persistence.Temporal;
-import javax.persistence.TemporalType;
 
 @Entity
 @Table(name = "sparepartsrequests")
@@ -27,17 +24,14 @@ public class Order {
 	@Column(name = "SolutionName")
 	public String solutionName;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfCreation")
-	public Calendar dateOfCreation;
+	public LocalDate dateOfCreation;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfProcessing")
-	public Calendar dateOfProcessing;
+	public LocalDate dateOfProcessing;
 
-	@Temporal(TemporalType.TIMESTAMP)
 	@Column(name = "DateOfRealization")
-	public Calendar dateOfRealization;
+	public LocalDate dateOfRealization;
 
 	@Column(name = "OrderNumber")
 	public int orderNumber;
@@ -81,26 +75,8 @@ public class Order {
 	@OneToMany(mappedBy = "order", fetch = FetchType.LAZY)
 	public List<PartRequest> requestedParts;
 
-	public LocalDate getDateOfCreation() {
-		return toLocalDate(dateOfCreation);
-	}
-
 	public long getEpochDayOfCreation() {
-		return getDateOfCreation().toEpochDay();
-	}
-
-	public LocalDate getDateOfProcessing() {
-		return toLocalDate(dateOfProcessing);
-	}
-
-	public LocalDate getDateOfRealization() {
-		return toLocalDate(dateOfRealization);
-	}
-
-	private LocalDate toLocalDate(Calendar calendar) {
-		return calendar == null ? null
-				: LocalDate.of(calendar.get(Calendar.YEAR), calendar.get(Calendar.MONTH) + 1,
-						calendar.get(Calendar.DAY_OF_MONTH));
+		return dateOfCreation.toEpochDay();
 	}
 
 	@Override
