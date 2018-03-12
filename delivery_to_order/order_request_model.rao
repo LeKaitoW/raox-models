@@ -238,6 +238,11 @@ logic Model {
 	activity utilizePartRequest = new Activity(UtilizePartRequest.create())
 }
 
+def experiments(){
+	init()
+	start()
+}
+
 def init() {
 	val startDate = LocalDate.now.minusYears(1)
 	val query = data.<Order>getQuery
