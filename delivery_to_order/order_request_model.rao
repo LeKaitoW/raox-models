@@ -8,8 +8,6 @@ import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
 import java.util.ArrayList
 import java.util.List
-import java.util.Map
-import java.util.HashMap
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
 
@@ -27,7 +25,6 @@ constant password = "CY73-YVRE-3FT2"
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
 
 type OrderStats {
-	Map<String, Part> localPartData
 	long fails
 	long successes
 	List<Double> processDuration 
@@ -35,7 +32,7 @@ type OrderStats {
 	List<Double> successfulPrices
 }
 
-resource orderStats = OrderStats.create(new HashMap, 0, 0, new ArrayList, new ArrayList, new ArrayList)
+resource orderStats = OrderStats.create(0, 0, new ArrayList, new ArrayList, new ArrayList)
 
 long getModificationInterval(Order order) {
 	val start = order.dateOfCreation
@@ -62,12 +59,6 @@ long getDeliveryInterval(PartRequest partRequest) {
 	return interval
 }
 
-Part tryFetchLocal(Part part){
-	if (!orderStats.localPartData.containsKey(part.id))
-		orderStats.localPartData.put(part.id, part)
-	return orderStats.localPartData.get(part.id)
-}
-
 Double calculatePrice(Order order){
 	var sum = 0.0
 	for (partRequest : order.requestedParts){
@@ -78,7 +69,7 @@ Double calculatePrice(Order order){
 }
 
 boolean takeParts(PartRequest request) {
-	val part = tryFetchLocal(request.part)
+	val part = request.part
 	if (part.stocked >= request.count) {
 		part.stocked -= request.count
 		return true
@@ -177,7 +168,7 @@ rule UtilizeOrder() {
 		else
 			orderStats.failPrices.add(calculatePrice(order.original))
 						
-		log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
+		//log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
 	}
 }
 
@@ -193,23 +184,23 @@ operation PartProcessing() {
 		val order = partRequest.original.order
 		val part = partRequest.original.part
 		if (takeParts(partRequest.original)) {
-			// log("Деталь " + part.name + " взята со склада");
+			//log("Деталь " + part.name + " взята со склада");
 			return 0
 		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
-		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) > 0) {
-			// log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
+		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) >= 0) {
+			//log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
 			//	" дней");
 			return getDeliveryInterval(partRequest.original)
 		// Детали с отрицательной длительностью считаем уже на складе
 		} else if (partRequest.original.dateOfDelivery !== null) {
-			// log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе");
+			//log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе "+getDeliveryInterval(partRequest.original));
 			return 0
 		} else if (order.dateOfRealization !== null) {
-			// log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
+			//log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
 			// 	" дней (по дате реализации заказа)");
 			return getRealizationInterval(order)
 		}
-		// log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
+		//log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
 		//	" дней (по дате изменения заказа)");
 		return getModificationInterval(order)
 	}
@@ -240,13 +231,13 @@ logic Model {
 
 def experiments(){
 	init()
-	for (var i = 0; i < 4; i++) {
-		orderStats.localPartData.clear
+	for (var i = 0; i < 3; i++) {
 		orderStats.fails = 0
 		orderStats.successes = 0
 		orderStats.processDuration.clear
 		orderStats.failPrices.clear
 		orderStats.successfulPrices.clear
+		data.clear
 
 		val startDate = LocalDate.now.minusDays(15)
 		val query = data.<Order>getQuery
