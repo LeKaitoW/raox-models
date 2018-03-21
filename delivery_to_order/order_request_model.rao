@@ -1,3 +1,4 @@
+import domain.LocalDateAttributeConverter
 import domain.Order
 import domain.Part
 import domain.PartRequest
@@ -11,7 +12,6 @@ import java.util.Map
 import java.util.HashMap
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
-import domain.LocalDateAttributeConverter
 
 /* Connection data */
 constant driver = "com.mysql.jdbc.Driver"
@@ -121,7 +121,7 @@ event OrderReceived(Order order) {
 		return
 	}
 	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
-	log("Created order " + order.id + "(time:" + currentTime + ")")
+	// log("Created order " + order.id + "(time:" + currentTime + " creation:" + order.dateOfCreation + ")")
 }
 
 rule OrderProcessing() {
@@ -132,7 +132,7 @@ rule OrderProcessing() {
 		if (parts.isEmpty) { // Пустые - заказы, по которым не смогли подобрать деталь, считаются неуспешными
 			order.state = OrderState.FINISHED
 			order.resulted = OrderResult.EMPTY
-			log("Processed order (no parts) " + order.getNumber)
+			// log("Processed order (no parts) " + order.getNumber)
 			return
 		}
 		for (partRequest : parts) {
@@ -140,7 +140,7 @@ rule OrderProcessing() {
 			order.requests.add(partRequestType)
 		}
 		order.state = OrderState.PROCESSING
-		log("Processed order (created " + parts.size() + " parts) " + order.getNumber)
+		// log("Processed order (created " + parts.size() + " parts) " + order.getNumber)
 	}
 }
 
@@ -193,24 +193,24 @@ operation PartProcessing() {
 		val order = partRequest.original.order
 		val part = partRequest.original.part
 		if (takeParts(partRequest.original)) {
-			log("Деталь " + part.name + " взята со склада");
+			// log("Деталь " + part.name + " взята со склада");
 			return 0
 		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
 		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) > 0) {
-			log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
-				" дней");
+			// log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
+			//	" дней");
 			return getDeliveryInterval(partRequest.original)
 		// Детали с отрицательной длительностью считаем уже на складе
 		} else if (partRequest.original.dateOfDelivery !== null) {
-			log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе");
+			// log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе");
 			return 0
 		} else if (order.dateOfRealization !== null) {
-			log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
-				" дней (по дате реализации заказа)");
+			// log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
+			// 	" дней (по дате реализации заказа)");
 			return getRealizationInterval(order)
 		}
-		log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
-			" дней (по дате изменения заказа)");
+		// log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
+		//	" дней (по дате изменения заказа)");
 		return getModificationInterval(order)
 	}
 
@@ -240,20 +240,27 @@ logic Model {
 
 def experiments(){
 	init()
-	start()
+	for (var i = 0; i < 4; i++) {
+		orderStats.localPartData.clear
+		orderStats.fails = 0
+		orderStats.successes = 0
+		orderStats.processDuration.clear
+		orderStats.failPrices.clear
+		orderStats.successfulPrices.clear
+
+		val startDate = LocalDate.now.minusDays(15)
+		val query = data.<Order>getQuery
+		val qOrder = QOrder.order
+		val orderList = query.from(qOrder).where(qOrder.dateOfCreation.after(startDate)).orderBy(qOrder.id.asc).fetch
+		for (order : orderList) {
+			OrderReceived.plan(order.getEpochDayOfCreation(), order)
+		}
+		log("Orders total " + orderList.size)
+		start()
+	}
 }
 
 def init() {
-	val startDate = LocalDate.now.minusYears(1)
-	val query = data.<Order>getQuery
-	val qOrder = QOrder.order
-	val orderList = query.from(qOrder).where(qOrder.dateOfCreation.after(startDate)).fetch
-	//val orderList = query.from(qOrder).fetch
-
-	for (order : orderList) {
-		OrderReceived.plan(order.getEpochDayOfCreation(), order)
-	}
-	log("Orders total " + orderList.size)
 }
 
 def finish() {
@@ -263,12 +270,14 @@ def finish() {
 	val avg = durationResults.getAverage
 	val max = durationResults.getMax
 	val min = durationResults.getMin
-	log("Duration:\tAverage " + avg + "\tMax:" + max + "\tMin:" + min)
+	log(String.format("Duration (of %d):\tAverage %f\tMax:%f\tMin:%f", orderStats.processDuration.size, avg, max, min))
 	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
 	val avgFailPrice = failPriceResults.getAverage
 	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
 	val avgSuccessPrice = successPriceResults.getAverage
-	log("Average cost:\tsuccessful:" + avgSuccessPrice + "\tfail:" + avgFailPrice)
+	log(
+		String.format("Average cost (of %d):\tsuccessful:%f\tfail:%f",
+			(orderStats.successfulPrices.size + orderStats.failPrices.size), avgSuccessPrice, avgFailPrice))
 }
 
 result fails = Result.create([orderStats.fails])
