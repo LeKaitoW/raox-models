@@ -3,6 +3,7 @@ import domain.Order
 import domain.Part
 import domain.PartRequest
 import domain.QOrder
+import domain.QPartRequest
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
@@ -18,21 +19,19 @@ constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=co
 constant username = "Observer"
 constant password = "CY73-YVRE-3FT2"
 
-//constant url = "jdbc:mysql://mikhailmineev.ru:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
-//constant username = "jpademo"
-//constant password = "5xYB2e6T5Jo7ajA"
-
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
 
 type OrderStats {
+	long allowedWaitPeriodMultiplePartDays
 	long fails
 	long successes
-	List<Double> processDuration 
-	List<Double> failPrices // В копейках, полагаю, если так в базе
+	List<Double> failDuration
+	List<Double> successfulDuration
+	List<Double> failPrices
 	List<Double> successfulPrices
 }
 
-resource orderStats = OrderStats.create(0, 0, new ArrayList, new ArrayList, new ArrayList)
+resource orderStats = OrderStats.create(3, 0, 0, new ArrayList, new ArrayList, new ArrayList, new ArrayList)
 
 long getModificationInterval(Order order) {
 	val start = order.dateOfCreation
@@ -59,28 +58,67 @@ long getDeliveryInterval(PartRequest partRequest) {
 	return interval
 }
 
-Double calculatePrice(Order order){
-	var sum = 0.0
+Double calculatePrice(OrderType orderType){
+	val order = orderType.original
+	var sum = orderType.deliveryPrices
 	for (partRequest : order.requestedParts){
 		val part = partRequest.part
-		sum += part.purchaseprice * priceMultiplier
+		// TODO На обсуждении есть заказы с 0 ценами и отрацательной разницей + странно (закуп - продаж)
+		/*if(part.purchaseprice <= 0 || part.sellingprice <= 0 || part.sellingprice - part.purchaseprice < 0) 
+			blog(LogLevel.WARN, String.format("Part %s has strange prices purchase:%d celling:%d", part,
+				part.purchaseprice, part.sellingprice))*/
+		sum += part.sellingprice - part.purchaseprice
 	}
 	return sum
 }
 
-boolean takeParts(PartRequest request) {
+boolean takeParts(PartRequestType requestType) {
+	val request = requestType.original
 	val part = request.part
+	// со склада
 	if (part.stocked >= request.count) {
 		part.stocked -= request.count
 		return true
+	// нужно заказать
 	} else {
-		part.stocked = 0
+		// проверка будущей потребности, берем +1 месяц
+		val startDate = requestType.original.order.dateOfCreation
+		val endDate = startDate.plusMonths(1)
+		val query = data.<PartRequest>getQuery
+		val qpartRequest = QPartRequest.partRequest
+		val partList = query.from(qpartRequest).where(
+			qpartRequest.order.dateOfCreation.between(startDate, endDate).and(qpartRequest.eq(request))).fetch
+			
+		var futureRequirementCount = 0
+		for(row : partList)
+			futureRequirementCount += row.count
+			
+		var supplyAmount = 0
+		if (futureRequirementCount == 1) {
+			// вызываем курьера, за 700 рублей
+			// сбрасываем число, не мог здесь оказаться, если деталей хватало, или если требовалось > 1
+			supplyAmount = 1
+			requestType.order.deliveryPrices = requestType.order.deliveryPrices + 700
+		} else {
+			// > 1, дозаказываем детали на 6 недель
+			val endDateForDelivery = startDate.plusWeeks(6)
+			val query2 = data.<PartRequest>getQuery
+			val partListToAdd = query2.from(qpartRequest).where(
+				qpartRequest.order.dateOfCreation.between(startDate, endDateForDelivery).and(
+					qpartRequest.part.eq(part))).fetch
+
+			for (row : partListToAdd)
+				supplyAmount += row.count
+				
+			requestType.order.deliveryPrices = requestType.order.deliveryPrices + 1500
+		}
+		part.stocked += supplyAmount - request.count
 		return false
 	}
 }
 
 /* Model data */
-constant allowedDeliveryWaitPeriodDays = 3
+constant allowedWaitPeriodSinglePartDays = 3
 constant priceMultiplier = 1.2
 enum PartState {REQUESTED, IN_TRANSIT, ARRIVED}
 enum OrderResult {OK, FAIL, LATE, EMPTY}
@@ -92,18 +130,23 @@ type OrderType {
 	OrderResult resulted
 	double creationTime
 	double emptyProcessDuration
-	List<PartRequestType> requests // One to many
+	double deliveryPrices
+	List<PartRequestType> requests
 }
 
 type PartRequestType {
 	PartRequest original
 	PartState state
 	double creationTime
-	OrderType order // Many to one 
+	OrderType order
 }
 
-int waitPeriod() {
-	return delivery_to_order.order_request_model.allowedDeliveryWaitPeriodDays
+long waitPeriod(OrderType order) {
+	if(order.original.requestedParts.size == 1) {
+		return 3
+	} else {
+		return orderStats.allowedWaitPeriodMultiplePartDays
+	}
 }
 
 /* Order logic */
@@ -111,7 +154,7 @@ event OrderReceived(Order order) {
 	if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
 		return
 	}
-	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
+	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, 0, new ArrayList())
 	// log("Created order " + order.id + "(time:" + currentTime + " creation:" + order.dateOfCreation + ")")
 }
 
@@ -123,7 +166,7 @@ rule OrderProcessing() {
 		if (parts.isEmpty) { // Пустые - заказы, по которым не смогли подобрать деталь, считаются неуспешными
 			order.state = OrderState.FINISHED
 			order.resulted = OrderResult.EMPTY
-			// log("Processed order (no parts) " + order.getNumber)
+			//log(String.format("Processed order (no parts) %s", order.getNumber))
 			return
 		}
 		for (partRequest : parts) {
@@ -131,44 +174,7 @@ rule OrderProcessing() {
 			order.requests.add(partRequestType)
 		}
 		order.state = OrderState.PROCESSING
-		// log("Processed order (created " + parts.size() + " parts) " + order.getNumber)
-	}
-}
-
-rule UtilizeOrder() {
-	relevant order = OrderType.accessible.filter[state == OrderState.FINISHED].any
-
-	def execute() {
-		order.erase()
-		if (currentTime - order.creationTime > waitPeriod)
-			order.resulted = OrderResult.LATE
-		var duration = currentTime - order.creationTime
-		switch (order.resulted) {
-			case LATE: {
-				orderStats.fails = orderStats.fails + 1
-			}
-			case FAIL: {
-				orderStats.fails = orderStats.fails + 1
-			}
-			case OK: {
-				orderStats.successes = orderStats.successes + 1
-			}
-			case EMPTY: {
-				orderStats.fails = orderStats.fails + 1
-				if (order.original.dateOfRealization !== null) {
-					duration = getRealizationInterval(order.original)
-				}
-				duration = getModificationInterval(order.original)
-			}
-		}
-		
-		orderStats.processDuration.add(duration)
-		if(order.resulted == OrderResult.OK)
-			orderStats.successfulPrices.add(calculatePrice(order.original))
-		else
-			orderStats.failPrices.add(calculatePrice(order.original))
-						
-		//log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
+		//log("Processed order (created " + parts.size() + " parts) " + order.getNumber)
 	}
 }
 
@@ -183,8 +189,8 @@ operation PartProcessing() {
 	def duration() {
 		val order = partRequest.original.order
 		val part = partRequest.original.part
-		if (takeParts(partRequest.original)) {
-			//log("Деталь " + part.name + " взята со склада");
+		if (takeParts(partRequest)) {
+			//log(String.format("Деталь %s взята со склада", part.name));
 			return 0
 		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
 		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) >= 0) {
@@ -222,6 +228,49 @@ rule UtilizePartRequest() {
 	}
 }
 
+rule UtilizeOrder() {
+	relevant order = OrderType.accessible.filter[state == OrderState.FINISHED].any
+
+	def execute() {
+		order.erase()
+		if (currentTime - order.creationTime > waitPeriod(order))
+			order.resulted = OrderResult.LATE
+		switch (order.resulted) {
+			case LATE: {
+				orderStats.fails = orderStats.fails + 1
+				val duration = currentTime - order.creationTime
+				orderStats.failDuration.add(duration)
+			}
+			case FAIL: {
+				orderStats.fails = orderStats.fails + 1
+				val duration = currentTime - order.creationTime
+				orderStats.failDuration.add(duration)
+			}
+			case OK: {
+				orderStats.successes = orderStats.successes + 1
+				val duration = currentTime - order.creationTime
+				orderStats.successfulDuration.add(duration)
+			}
+			case EMPTY: {
+				orderStats.fails = orderStats.fails + 1
+				var duration = 0.0
+				if (order.original.dateOfRealization !== null) {
+					duration = getRealizationInterval(order.original)
+				}
+				duration = getModificationInterval(order.original)
+				orderStats.failDuration.add(duration)
+			}
+		}
+		
+		if(order.resulted == OrderResult.OK)
+			orderStats.successfulPrices.add(calculatePrice(order))
+		else
+			orderStats.failPrices.add(calculatePrice(order))
+						
+		//log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
+	}
+}
+
 logic Model {
 	activity orderProcessing = new Activity(OrderProcessing.create())
 	activity utilizeOrder = new Activity(UtilizeOrder.create())
@@ -230,24 +279,24 @@ logic Model {
 }
 
 def experiments(){
-	init()
-	for (var i = 0; i < 3; i++) {
+	init
+	for (var i = 0; i < 1; i++) {
 		orderStats.fails = 0
 		orderStats.successes = 0
-		orderStats.processDuration.clear
+		orderStats.failDuration.clear
+		orderStats.successfulDuration.clear
 		orderStats.failPrices.clear
 		orderStats.successfulPrices.clear
 		data.clear
 
-		val startDate = LocalDate.now.minusDays(15)
+		val startDate = LocalDate.now.minusYears(2)
 		val query = data.<Order>getQuery
 		val qOrder = QOrder.order
 		val orderList = query.from(qOrder).where(qOrder.dateOfCreation.after(startDate)).orderBy(qOrder.id.asc).fetch
 		for (order : orderList) {
 			OrderReceived.plan(order.getEpochDayOfCreation(), order)
 		}
-		log("Orders total " + orderList.size)
-		start()
+		start
 	}
 }
 
@@ -256,19 +305,25 @@ def init() {
 
 def finish() {
 	val percentage = orderStats.successes * 100 / (orderStats.successes + orderStats.fails)
-	log("Result:\tOrders " + orderStats.successes + ":" + orderStats.fails + " Successful percentage: " + percentage + "%")
-	val durationResults = orderStats.processDuration.stream.mapToDouble([f | f]).summaryStatistics
-	val avg = durationResults.getAverage
-	val max = durationResults.getMax
-	val min = durationResults.getMin
-	log(String.format("Duration (of %d):\tAverage %f\tMax:%f\tMin:%f", orderStats.processDuration.size, avg, max, min))
-	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
-	val avgFailPrice = failPriceResults.getAverage
-	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
-	val avgSuccessPrice = successPriceResults.getAverage
 	log(
-		String.format("Average cost (of %d):\tsuccessful:%f\tfail:%f",
-			(orderStats.successfulPrices.size + orderStats.failPrices.size), avgSuccessPrice, avgFailPrice))
+		String.format("Result: \t\tOrders: %d/%d Successful percentage: %d%%", orderStats.successes, orderStats.fails,
+			percentage))
+	val failResults = orderStats.failDuration.stream.mapToDouble([f | f]).summaryStatistics
+	log(
+		String.format("Fail duration: \tAverage: %f\tMax: %f\tMin: %f", failResults.getAverage, failResults.getMax,
+			failResults.getMin))
+	val successfulResults = orderStats.successfulDuration.stream.mapToDouble([f | f]).summaryStatistics
+	log(
+		String.format("Ok duration: \tAverage: %f\tMax: %f\tMin: %f", successfulResults.getAverage,
+			successfulResults.getMax, successfulResults.
+				getMin))
+	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
+	log(String.format("Fail price: \tAverage: %f", failPriceResults.getAverage))
+	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
+	log(String.format("Ok prive: \t\tAverage: %f", successPriceResults.getAverage))
+	
+	orderStats.allowedWaitPeriodMultiplePartDays = ((failResults.getAverage + successfulResults.getAverage) / 2).longValue
+	log(String.format("New average wait: %d", orderStats.allowedWaitPeriodMultiplePartDays))
 }
 
 result fails = Result.create([orderStats.fails])
