@@ -11,27 +11,31 @@ import java.util.ArrayList
 import java.util.List
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
+import java.util.TreeMap
+import java.util.stream.Collectors
 
 /* Connection data */
 constant driver = "com.mysql.jdbc.Driver"
-
 constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
 constant username = "Observer"
 constant password = "CY73-YVRE-3FT2"
+constant initialBalance = 5_000_000
+constant failDuration = new ArrayList<Double>
+constant successfulDuration = new ArrayList<Double>
+constant failPrices = new ArrayList<Long>
+constant successfulPrices = new ArrayList<Long>
+constant deliveries = new ArrayList<Integer>
 
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
 
 type OrderStats {
-	long allowedWaitPeriodMultiplePartDays
-	long fails
-	long successes
-	List<Double> failDuration
-	List<Double> successfulDuration
-	List<Double> failPrices
-	List<Double> successfulPrices
+	long balance
+	double fillCoeff
+	int fillDateForward
+	DiscreteHistogram<Long> randomWaitPeriod
 }
 
-resource orderStats = OrderStats.create(3, 0, 0, new ArrayList, new ArrayList, new ArrayList, new ArrayList)
+resource orderStats = OrderStats.create(initialBalance, 1, 6, null)
 
 long getModificationInterval(Order order) {
 	val start = order.dateOfCreation
@@ -58,16 +62,24 @@ long getDeliveryInterval(PartRequest partRequest) {
 	return interval
 }
 
-Double calculatePrice(OrderType orderType){
+long calculatePrice(OrderType orderType){
 	val order = orderType.original
-	var sum = orderType.deliveryPrices
+	var sum = 0L
 	for (partRequest : order.requestedParts){
 		val part = partRequest.part
-		// TODO На обсуждении есть заказы с 0 ценами и отрацательной разницей + странно (закуп - продаж)
-		/*if(part.purchaseprice <= 0 || part.sellingprice <= 0 || part.sellingprice - part.purchaseprice < 0) 
-			blog(LogLevel.WARN, String.format("Part %s has strange prices purchase:%d celling:%d", part,
-				part.purchaseprice, part.sellingprice))*/
-		sum += part.sellingprice - part.purchaseprice
+		var sellprice = 0
+		var count = partRequest.count
+		//if(partRequest.price > 1)
+		//	sellprice = partRequest.price
+		// Очень много заказов, где расчет по данной цене будет меньше 0, и мутные цены
+		if(sellprice == 0 && part.sellingprice > 0 || sellprice > part.sellingprice * 1000)
+			sellprice = part.sellingprice
+		if(sellprice == 0 && part.clientprice > 0)
+			sellprice = part.clientprice
+		if(sellprice == 0 && part.retailprice > 0)
+			sellprice = part.retailprice
+		debug(String.format("Деталь стоит %d, %s", sellprice * count, partRequest))
+		sum += sellprice * count
 	}
 	return sum
 }
@@ -98,10 +110,10 @@ boolean takeParts(PartRequestType requestType) {
 			// вызываем курьера, за 700 рублей
 			// сбрасываем число, не мог здесь оказаться, если деталей хватало, или если требовалось > 1
 			supplyAmount = 1
-			requestType.order.deliveryPrices = requestType.order.deliveryPrices + 700
+			orderStats.balance = orderStats.balance - 700
 		} else {
 			// > 1, дозаказываем детали на 6 недель
-			val endDateForDelivery = startDate.plusWeeks(6)
+			val endDateForDelivery = startDate.plusWeeks(orderStats.fillDateForward)
 			val query2 = data.<PartRequest>getQuery
 			val partListToAdd = query2.from(qpartRequest).where(
 				qpartRequest.order.dateOfCreation.between(startDate, endDateForDelivery).and(
@@ -110,19 +122,26 @@ boolean takeParts(PartRequestType requestType) {
 			for (row : partListToAdd)
 				supplyAmount += row.count
 				
-			requestType.order.deliveryPrices = requestType.order.deliveryPrices + 1500
+			supplyAmount = Math.round(supplyAmount * orderStats.fillCoeff) as int
+
+			orderStats.balance = orderStats.balance - 1500
 		}
+		val price = part.purchaseprice * supplyAmount
+		if(price > 300_000)
+			info(String.format("Доставка за %d р. %d деталей \tБаланс: %d %s", price, supplyAmount, orderStats.balance, request))
+		deliveries.add(price)
+		orderStats.balance = orderStats.balance - price
 		part.stocked += supplyAmount - request.count
 		return false
 	}
 }
 
 /* Model data */
-constant allowedWaitPeriodSinglePartDays = 3
-constant priceMultiplier = 1.2
 enum PartState {REQUESTED, IN_TRANSIT, ARRIVED}
 enum OrderResult {OK, FAIL, LATE, EMPTY}
 enum OrderState {REQUESTED, PROCESSING, FINISHED}
+enum Level {DEBUG, INFO}
+constant logLevel = Level.INFO
 
 type OrderType {
 	Order original
@@ -130,7 +149,6 @@ type OrderType {
 	OrderResult resulted
 	double creationTime
 	double emptyProcessDuration
-	double deliveryPrices
 	List<PartRequestType> requests
 }
 
@@ -142,19 +160,19 @@ type PartRequestType {
 }
 
 long waitPeriod(OrderType order) {
-	if(order.original.requestedParts.size == 1) {
-		return 3
-	} else {
-		return orderStats.allowedWaitPeriodMultiplePartDays
-	}
+	return orderStats.randomWaitPeriod.next()
 }
 
 /* Order logic */
+event Payments() {
+	orderStats.balance = orderStats.balance - 200_000
+}
+
 event OrderReceived(Order order) {
 	if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
 		return
 	}
-	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, 0, new ArrayList())
+	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0, new ArrayList())
 	// log("Created order " + order.id + "(time:" + currentTime + " creation:" + order.dateOfCreation + ")")
 }
 
@@ -190,24 +208,27 @@ operation PartProcessing() {
 		val order = partRequest.original.order
 		val part = partRequest.original.part
 		if (takeParts(partRequest)) {
-			//log(String.format("Деталь %s взята со склада", part.name));
+			debug(String.format("Деталь %s взята со склада", part.name));
 			return 0
 		// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
 		} else if (partRequest.original.dateOfDelivery !== null && getDeliveryInterval(partRequest.original) >= 0) {
-			//log("Деталь " + part.name + " будет доставлена через " + getDeliveryInterval(partRequest.original) +
-			//	" дней");
+			debug(
+				String.format("Деталь %s будет доставлена через %d дней", part.name,
+					getDeliveryInterval(partRequest.original)))
 			return getDeliveryInterval(partRequest.original)
 		// Детали с отрицательной длительностью считаем уже на складе
 		} else if (partRequest.original.dateOfDelivery !== null) {
-			//log("Деталь " + part.name + " имеет <0 длительность, считаем, что на складе "+getDeliveryInterval(partRequest.original));
+			debug(
+				String.format("Деталь %s имеет <0 длительность, считаем, что на складе. Длительность: %d", part.name,
+					getDeliveryInterval(partRequest.original)));
 			return 0
 		} else if (order.dateOfRealization !== null) {
-			//log("Деталь " + part.name + " будет доставлена через " + getRealizationInterval(order) +
-			// 	" дней (по дате реализации заказа)");
+			debug(
+				String.format("Деталь %s будет доставлена через %d дней (по дате реализации заказа)", part.name,
+					getRealizationInterval(order)));
 			return getRealizationInterval(order)
 		}
-		//log("Деталь " + part.name + " будет доставлена через " + getModificationInterval(order) +
-		//	" дней (по дате изменения заказа)");
+		debug(String.format("Деталь %s будет доставлена через %d дней (по дате изменения заказа)",part.name, getModificationInterval(order)));
 		return getModificationInterval(order)
 	}
 
@@ -237,37 +258,38 @@ rule UtilizeOrder() {
 			order.resulted = OrderResult.LATE
 		switch (order.resulted) {
 			case LATE: {
-				orderStats.fails = orderStats.fails + 1
 				val duration = currentTime - order.creationTime
-				orderStats.failDuration.add(duration)
+				failDuration.add(duration)
 			}
 			case FAIL: {
-				orderStats.fails = orderStats.fails + 1
 				val duration = currentTime - order.creationTime
-				orderStats.failDuration.add(duration)
+				failDuration.add(duration)
 			}
 			case OK: {
-				orderStats.successes = orderStats.successes + 1
 				val duration = currentTime - order.creationTime
-				orderStats.successfulDuration.add(duration)
+				successfulDuration.add(duration)
 			}
 			case EMPTY: {
-				orderStats.fails = orderStats.fails + 1
 				var duration = 0.0
 				if (order.original.dateOfRealization !== null) {
 					duration = getRealizationInterval(order.original)
 				}
 				duration = getModificationInterval(order.original)
-				orderStats.failDuration.add(duration)
+				failDuration.add(duration)
 			}
 		}
 		
-		if(order.resulted == OrderResult.OK)
-			orderStats.successfulPrices.add(calculatePrice(order))
-		else
-			orderStats.failPrices.add(calculatePrice(order))
-						
-		//log("Utilized order " + order.original.id + "\tResult:" + order.resulted + "\tDuration:" + duration + "\t")
+		val price = calculatePrice(order)
+		if (order.resulted == OrderResult.OK) {
+			successfulPrices.add(price)
+			orderStats.balance = orderStats.balance + price
+		} else {
+			failPrices.add(price)
+			//orderStats.balance = orderStats.balance - price
+		}
+		if (price > 300000 || price < 0)
+			info(String.format("Заказ обработан %d р. %s\t\tБаланс: %d %s", price, order.resulted, orderStats.balance, order.original))
+		//	throw new Exception(order.original.toString);
 	}
 }
 
@@ -278,53 +300,115 @@ logic Model {
 	activity utilizePartRequest = new Activity(UtilizePartRequest.create())
 }
 
+sequence случайный_тип_клиента = new DiscreteHistogram<Long>(1234567,
+    #[1L -> 7.0, 2L -> 3.0])
+    
 def experiments(){
 	init
-	for (var i = 0; i < 1; i++) {
-		orderStats.fails = 0
-		orderStats.successes = 0
-		orderStats.failDuration.clear
-		orderStats.successfulDuration.clear
-		orderStats.failPrices.clear
-		orderStats.successfulPrices.clear
+	val startDate = LocalDate.parse("2017-01-01")
+	val endDate = LocalDate.parse("2018-01-01")
+	val qOrder = QOrder.order
+	
+	val _query = data.<Order>getQuery
+	val _orderList = _query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).fetch
+	
+	val map = new TreeMap<Long,Pair<Double,Double>>
+	for (order : _orderList) {
+	if (!(order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null)) {
+			val ok = order.dateOfRealization !== null
+			if (ok) {
+				val interval = order.dateOfCreation.until(order.dateOfRealization, ChronoUnit.DAYS)
+				val results = map.computeIfAbsent(interval, [k|(0.0d -> 0.0d)])
+				map.put(interval, results.key + 1 -> results.value)
+			} else {
+				val interval = order.dateOfCreation.until(order.dateOfProcessing, ChronoUnit.DAYS)
+				val results = map.computeIfAbsent(interval, [k|(0.0d -> 0.0d)])
+				map.put(interval, results.key -> results.value + 1)
+			}
+		}
+	}
+	val seq = map.entrySet().stream().filter([e|e.key <= 30]).map([e |
+		e.key -> (e.value.key / e.value.value)
+	]).collect(Collectors.<Pair<Long, ? extends Number>>toList())
+	debug("Using this sequence for order wait: " + seq.toString)
+	orderStats.randomWaitPeriod = new DiscreteHistogram<Long>(1234567L, seq)
+	
+	orderStats.fillCoeff = 0.4096
+	do {
+		orderStats.fillCoeff = orderStats.fillCoeff * 1.25
+		orderStats.balance = initialBalance
+		orderStats.randomWaitPeriod = new DiscreteHistogram<Long>(1234567L, seq)
+		failDuration.clear
+		successfulDuration.clear
+		failPrices.clear
+		successfulPrices.clear
+		deliveries.clear
 		data.clear
+		
+		info(String.format("Эксперимент. Коэффициент докупки %f", orderStats.fillCoeff))
 
-		val startDate = LocalDate.now.minusYears(2)
 		val query = data.<Order>getQuery
-		val qOrder = QOrder.order
-		val orderList = query.from(qOrder).where(qOrder.dateOfCreation.after(startDate)).orderBy(qOrder.id.asc).fetch
+		val orderList = query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).fetch
 		for (order : orderList) {
 			OrderReceived.plan(order.getEpochDayOfCreation(), order)
 		}
+		var payDate = startDate
+		while (payDate.isBefore(endDate)) {
+			Payments.plan(payDate.toEpochDay())
+			payDate = payDate.plusMonths(1)
+		}
 		start
-	}
+	} while (orderStats.fillCoeff < 2)
+}
+
+def terminateCondition() {
+    return orderStats.balance <= 0
 }
 
 def init() {
 }
 
 def finish() {
-	val percentage = orderStats.successes * 100 / (orderStats.successes + orderStats.fails)
+	val successes = successfulDuration.size
+	val fails = failDuration.size
+	val percentage = if((successes + fails) == 0) 0 else successes * 100 /
+			(successes + fails)
 	log(
-		String.format("Result: \t\tOrders: %d/%d Successful percentage: %d%%", orderStats.successes, orderStats.fails,
+		String.format("Result: \t\tOrders: %d/%d Successful percentage: %d%%", successes,
+			successes + fails,
 			percentage))
-	val failResults = orderStats.failDuration.stream.mapToDouble([f | f]).summaryStatistics
+	val failResults = failDuration.stream.mapToDouble([f | f]).summaryStatistics
 	log(
 		String.format("Fail duration: \tAverage: %f\tMax: %f\tMin: %f", failResults.getAverage, failResults.getMax,
 			failResults.getMin))
-	val successfulResults = orderStats.successfulDuration.stream.mapToDouble([f | f]).summaryStatistics
+	val successfulResults = successfulDuration.stream.mapToDouble([f | f]).summaryStatistics
 	log(
 		String.format("Ok duration: \tAverage: %f\tMax: %f\tMin: %f", successfulResults.getAverage,
 			successfulResults.getMax, successfulResults.
 				getMin))
-	val failPriceResults = orderStats.failPrices.stream.mapToDouble([f | f]).summaryStatistics
-	log(String.format("Fail price: \tAverage: %f", failPriceResults.getAverage))
-	val successPriceResults = orderStats.successfulPrices.stream.mapToDouble([f | f]).summaryStatistics
-	log(String.format("Ok prive: \t\tAverage: %f", successPriceResults.getAverage))
+	val failPriceResults = failPrices.stream.mapToLong([f | f]).summaryStatistics
+	log(
+		String.format("Fail price: \tAverage: %f\tMax: %d\tMin: %d", failPriceResults.getAverage,
+			failPriceResults.getMax,
+			failPriceResults.
+				getMin))
+	val successPriceResults = successfulPrices.stream.mapToLong([f | f]).summaryStatistics
+	log(
+		String.format("Ok prive: \t\tAverage: %f\tMax: %d\tMin: %d", successPriceResults.getAverage,
+			successPriceResults.getMax, successPriceResults.getMin))
+	val deliveryResults = deliveries.stream.mapToInt([f | f]).summaryStatistics
+	log(
+		String.format("Deliveries: \t\tSum: %d", deliveryResults.getSum))
 	
-	orderStats.allowedWaitPeriodMultiplePartDays = ((failResults.getAverage + successfulResults.getAverage) / 2).longValue
-	log(String.format("New average wait: %d", orderStats.allowedWaitPeriodMultiplePartDays))
+	log(String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
 }
 
-result fails = Result.create([orderStats.fails])
-result successes = Result.create([orderStats.successes])
+void info(String text){
+	if (logLevel.ordinal <= Level.INFO.ordinal)
+		log(Level.INFO + "\t" + text)
+}
+
+void debug(String text){
+	if (logLevel.ordinal <= Level.DEBUG.ordinal)
+		log(Level.DEBUG + "\t" + text)
+}

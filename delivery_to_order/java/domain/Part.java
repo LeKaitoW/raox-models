@@ -44,6 +44,9 @@ public class Part {
 
 	@Override
 	public String toString() {
-		return name;
-	};
+		return "Part [name=" + name + ", retailprice=" + retailprice + ", purchaseprice=" + purchaseprice
+				+ ", sellingprice=" + sellingprice + ", clientprice=" + clientprice + ", purtnerprice=" + purtnerprice
+				+ ", stocked=" + stocked + ", reserved=" + reserved + ", store=" + store + ", catalogueprice="
+				+ catalogueprice + "]";
+	}
 }

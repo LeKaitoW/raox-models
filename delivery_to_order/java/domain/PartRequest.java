@@ -33,11 +33,17 @@ public class PartRequest {
 	public LocalDate dateOfDelivery;
 
 	@Column(name = "Count")
-	public int count;
+	private int count;
+
+	public int getCount() {
+		if (count > 1000)
+			return 1;
+		return count;
+	}
 
 	@Override
 	public String toString() {
-		return "PartRequest [Part=" + part.name + ", Count=" + count + "]";
+		return "PartRequest [Part=" + part + ", Count=" + count + ", Price=" + price + "]";
 	}
 
 	@SuppressWarnings("serial")
