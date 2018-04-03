@@ -1,0 +1,16 @@
+import java.util.Arrays
+import java.util.ArrayList
+
+ArrayList<ArrayList<Integer>> createMap() {
+    return new ArrayList<ArrayList<Integer>>(Arrays.asList(
+        new ArrayList<Integer>(Arrays.asList(   0,  710,  420,   0, 1100,   0,   0,   0,   0)),
+        new ArrayList<Integer>(Arrays.asList( 710,    0, 1100,   0,    0,   0,   0,   0,   0)),
+        new ArrayList<Integer>(Arrays.asList( 420, 1100,    0, 390,  680,   0,   0,   0,   0)),
+        new ArrayList<Integer>(Arrays.asList(   0,    0,  390,   0,  360, 960, 960,   0,   0)),
+        new ArrayList<Integer>(Arrays.asList(1100,    0,  680, 360,    0, 990, 870,   0,   0)),
+        new ArrayList<Integer>(Arrays.asList(   0,    0,    0, 960,  990,   0, 210, 910,   0)),
+        new ArrayList<Integer>(Arrays.asList(   0,    0,    0, 960,  870, 210,   0, 920,   0)),
+        new ArrayList<Integer>(Arrays.asList(   0,    0,    0,   0,    0, 910, 920,   0, 650)),
+        new ArrayList<Integer>(Arrays.asList(   0,    0,    0,   0,    0,   0,   0, 650,   0))              
+    ))
+}

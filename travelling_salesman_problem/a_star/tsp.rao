@@ -1,0 +1,148 @@
+import java.util.ArrayList
+import java.awt.Point
+
+constant startCity = 1
+constant overrun = 40000
+
+type Map {
+    ArrayList<ArrayList<Integer>> distance
+}
+
+resource map = Map.create(input.createMap())
+
+type Path {
+    ArrayList<City> cities
+}
+
+resource path = Path.create(new ArrayList<City>())
+
+type City {
+    String cityName
+    int cityNumber
+    int visitCount
+    Point point
+}
+
+resource city_1 = City.create("Москва", 1, 0, new Point(127, 164))
+resource city_2 = City.create("Санкт-Петербург", 2, 0, new Point(44, 74))
+resource city_3 = City.create("Нижний Новгород", 3, 0, new Point(200, 151))
+resource city_4 = City.create("Казань", 4, 0, new Point(257, 164))
+resource city_5 = City.create("Самара", 5, 0, new Point(269, 212))
+resource city_6 = City.create("Екатеринбург", 6, 0, new Point(388, 141))
+resource city_7 = City.create("Челябинск", 7, 0, new Point(396, 175))
+resource city_8 = City.create("Омск", 8, 0, new Point(533, 180))
+resource city_9 = City.create("Новосибирск", 9, 0, new Point(641, 177))
+
+rule GoToCity(int cityFrom, int cityTo) {
+    relevant path_ = path.onlyif[cities.get(cities.size() - 1).cityNumber.equals(cityFrom)]
+    relevant city_to = City.all.filter[cityNumber == cityTo].any
+
+    def execute() {
+        city_to.visitCount = city_to.visitCount + 1
+        var ArrayList<City> temp = new ArrayList<City>(path_.cities)
+        temp.add(city_to)
+        path_.cities = temp
+    }
+}
+
+int distance(int city1, int city2) {
+    return map.distance.get(city1 - 1).get(city2 - 1)
+}
+
+int visitDuplicateCityCount() {
+    var int additionalCost = 0
+    for(city : City.all) {
+        if(city.visitCount > 1)
+            additionalCost += city.visitCount * overrun
+    }
+    return additionalCost
+}
+
+def init() {
+    path.cities.add(City.all.filter[cityNumber == startCity].any)
+}
+
+search SolvingTSP {
+    edge go_to_1_from_2 = new Edge(GoToCity.create(2, 1), distance(2, 1))
+    edge go_to_1_from_3 = new Edge(GoToCity.create(3, 1), distance(3, 1))
+    edge go_to_1_from_5 = new Edge(GoToCity.create(5, 1), distance(5, 1))
+    edge go_to_2_from_1 = new Edge(GoToCity.create(1, 2), distance(1, 2))
+    edge go_to_2_from_3 = new Edge(GoToCity.create(3, 2), distance(3, 2))
+    edge go_to_3_from_1 = new Edge(GoToCity.create(1, 3), distance(1, 3))
+    edge go_to_3_from_2 = new Edge(GoToCity.create(2, 3), distance(2, 3))
+    edge go_to_3_from_4 = new Edge(GoToCity.create(4, 3), distance(4, 3))
+    edge go_to_3_from_5 = new Edge(GoToCity.create(5, 3), distance(5, 3))
+    edge go_to_4_from_3 = new Edge(GoToCity.create(3, 4), distance(3, 4))
+    edge go_to_4_from_5 = new Edge(GoToCity.create(5, 4), distance(5, 4))
+    edge go_to_4_from_6 = new Edge(GoToCity.create(6, 4), distance(6, 4))
+    edge go_to_4_from_7 = new Edge(GoToCity.create(7, 4), distance(7, 4))
+    edge go_to_5_from_1 = new Edge(GoToCity.create(1, 5), distance(1, 5))
+    edge go_to_5_from_3 = new Edge(GoToCity.create(3, 5), distance(3, 5))
+    edge go_to_5_from_4 = new Edge(GoToCity.create(4, 5), distance(4, 5))
+    edge go_to_5_from_6 = new Edge(GoToCity.create(6, 5), distance(6, 5))
+    edge go_to_5_from_7 = new Edge(GoToCity.create(7, 5), distance(7, 5))
+    edge go_to_6_from_4 = new Edge(GoToCity.create(4, 6), distance(4, 6))
+    edge go_to_6_from_5 = new Edge(GoToCity.create(5, 6), distance(5, 6))
+    edge go_to_6_from_7 = new Edge(GoToCity.create(7, 6), distance(7, 6))
+    edge go_to_6_from_8 = new Edge(GoToCity.create(8, 6), distance(8, 6))
+    edge go_to_7_from_4 = new Edge(GoToCity.create(4, 7), distance(4, 7))
+    edge go_to_7_from_5 = new Edge(GoToCity.create(5, 7), distance(5, 7))
+    edge go_to_7_from_6 = new Edge(GoToCity.create(6, 7), distance(6, 7))
+    edge go_to_7_from_8 = new Edge(GoToCity.create(8, 7), distance(8, 7))
+    edge go_to_8_from_6 = new Edge(GoToCity.create(6, 8), distance(6, 8))
+    edge go_to_8_from_7 = new Edge(GoToCity.create(7, 8), distance(7, 8))
+    edge go_to_8_from_9 = new Edge(GoToCity.create(9, 8), distance(9, 8))
+    edge go_to_9_from_8 = new Edge(GoToCity.create(8, 9), distance(8, 9))
+
+    def init() {
+        startCondition = [City.all.exists[visitCount == 0]] 
+        terminateCondition = [City.all.forall[visitCount > 0] 
+            && path.cities.get(path.cities.size() - 1).cityNumber.equals(startCity)
+        ]
+        heuristic = [(visitDuplicateCityCount()) as double]
+        compareTops = true
+    }
+}
+
+frame GraphTSP {
+    def init() {
+        background = new Background(750, 300, RaoColor.WHITE)
+    }
+    
+    def draw() {
+        val radius = 30
+        
+        for(city_from : City.all) {
+            for(city_to : City.all) {
+                if((!city_from.equals(city_to)) && (distance(city_from.cityNumber, city_to.cityNumber) != 0)) {
+                    drawLine(city_from.point.getX() as int, city_from.point.getY() as int,
+                        city_to.point.getX() as int, city_to.point.getY() as int)
+                }
+            }
+        }
+        
+        for(city : City.all) {
+            drawCircle(city.point.getX() as int, city.point.getY() as int, radius)
+            if(city.cityName.equals("Санкт-Петербург") || city.cityName.equals("Нижний Новгород")
+                || city.cityName.equals("Казань") || city.cityName.equals("Екатеринбург"))
+                drawText(city.cityName, city.point.getX() as int, city.point.getY() as int - 35)
+            else
+                drawText(city.cityName, city.point.getX() as int, city.point.getY() as int + 20)
+        }
+        
+        for(city : City.all) {
+            var visitSequence = ""
+            var count = 0
+            for(var i = 0; i < path.cities.size(); i++) {
+                if(city.cityNumber == path.cities.get(i).cityNumber) {
+                    if(count > 0)
+                        visitSequence = visitSequence + "," + (i+1).toString()
+                    else
+                        visitSequence += (i+1).toString()
+                    count++
+                }
+            }
+            drawText(visitSequence, city.point.getX() as int - 7, city.point.getY() as int - 5)
+        }
+    }
+}
