@@ -1,0 +1,404 @@
+import domain.LocalDateAttributeConverter
+import domain.Order
+import domain.Part
+import domain.PartRequest
+import domain.QOrder
+import domain.QPartRequest
+
+import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
+
+import java.util.ArrayList
+import java.time.temporal.ChronoUnit
+import java.time.LocalDate
+import java.util.TreeMap
+import java.util.stream.Collectors
+import java.util.Map
+import java.util.HashMap
+import java.util.DoubleSummaryStatistics
+
+/* Connection data */
+constant driver = "com.mysql.jdbc.Driver"
+constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
+constant username = "Observer"
+constant password = "CY73-YVRE-3FT2"
+/* Data containers */
+constant failDuration = new ArrayList<Double>
+constant successfulDuration = new ArrayList<Double>
+constant failPrices = new ArrayList<Long>
+constant successfulPrices = new ArrayList<Long>
+constant deliveries = new ArrayList<Integer>
+/* Simulation constants */
+constant startSimulation = "2017-01-01"
+constant finishSimulation = "2018-01-01"
+constant initialBalance = 1_000_000
+constant successfulDurationMaxDays = 0
+constant seed = 1234567L
+constant logLevel = Level.INFO
+enum OrderResult {OK, FAIL, LATE}
+enum OrderState {REQUESTED, PROCESSING, FINISHED}
+enum Level {DEBUG, INFO}
+
+dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
+
+type OrderStats {
+	long balance
+	double fillCoeff
+	int fillDateForward
+	Map<String, Double> partGetPossibility
+	Uniform randomDeviveryOk
+}
+
+resource orderStats = OrderStats.create(initialBalance, 1, 6, new HashMap, null)
+
+long getModificationInterval(Order order) {
+	val start = order.dateOfCreation
+	val end = order.dateOfProcessing
+	val interval = start.until(end, ChronoUnit.DAYS)
+	if (interval < 0)
+		throw new IllegalStateException("getModificationInterval " + interval)
+	return interval
+}
+
+long getRealizationInterval(Order order) {
+	val start = order.dateOfCreation
+	val end = order.dateOfRealization
+	val interval = start.until(end, ChronoUnit.DAYS)
+	if (interval < 0)
+		throw new IllegalStateException("getRealizationInterval " + interval)
+	return interval
+}
+
+long getDeliveryInterval(PartRequest partRequest) {
+	val start = partRequest.order.dateOfCreation
+	val end = partRequest.dateOfDelivery
+	val interval = start.until(end, ChronoUnit.DAYS)
+	return interval
+}
+
+long calculatePrice(OrderType orderType){
+	val order = orderType.original
+	var sum = 0L
+	for (partRequest : order.requestedParts){
+		val part = partRequest.part
+		var sellprice = 0
+		var count = partRequest.count
+		if(part.sellingprice > 0)
+			sellprice = part.sellingprice
+		if(sellprice == 0 && part.clientprice > 0)
+			sellprice = part.clientprice
+		if(sellprice == 0 && part.retailprice > 0)
+			sellprice = part.retailprice
+		debug(String.format("Деталь стоит %d, %s", sellprice * count, partRequest))
+		sum += sellprice * count
+	}
+	return sum
+}
+
+boolean canTakePartsFromWarehouse(PartRequest request) {
+	return request.part.stocked >= request.count;
+}
+
+void takePartsForOrder(Order order) {
+	for (PartRequest request : order.requestedParts) {
+		takeParts(request)
+	}
+}
+
+void takeParts(PartRequest request) {
+	val part = request.part
+	if (canTakePartsFromWarehouse(request)) {
+		part.stocked -= request.count
+	} else {
+		// проверка будущей потребности, берем +1 месяц
+		val startDate = request.order.dateOfCreation
+		val endDate = startDate.plusMonths(1)
+		val query = data.<PartRequest>getQuery
+		val qpartRequest = QPartRequest.partRequest
+		val partList = query.from(qpartRequest).where(
+			qpartRequest.order.dateOfCreation.between(startDate, endDate).and(qpartRequest.eq(request))).fetch
+			
+		var futureRequirementCount = 0
+		for(row : partList)
+			futureRequirementCount += row.count
+			
+		var deliveryPrice = 0
+		var supplyAmount = 0
+		if (futureRequirementCount == 1) {
+			// вызываем курьера, за 700 рублей
+			// сбрасываем число, не мог здесь оказаться, если деталей хватало, или если требовалось > 1
+			supplyAmount = 1
+			deliveryPrice = 700
+		} else {
+			// > 1, дозаказываем детали на 6 недель
+			val endDateForDelivery = startDate.plusWeeks(orderStats.fillDateForward)
+			val query2 = data.<PartRequest>getQuery
+			val partListToAdd = query2.from(qpartRequest).where(
+				qpartRequest.order.dateOfCreation.between(startDate, endDateForDelivery).and(
+					qpartRequest.part.eq(part))).fetch
+
+			for (row : partListToAdd)
+				supplyAmount += row.count
+				
+			supplyAmount = Math.round(supplyAmount * orderStats.fillCoeff) as int
+			deliveryPrice = 1500
+		}
+		val price = part.purchaseprice * supplyAmount + deliveryPrice
+		debugIf(price > 300_000, String.format("Доставка за %d р. %d деталей \tБаланс: %d %s", price, supplyAmount, orderStats.balance, request))
+		deliveries.add(price)
+		orderStats.balance = orderStats.balance - price
+		part.stocked += supplyAmount - request.count
+	}
+}
+
+long duration(PartRequest request) {
+	val order = request.order
+	val part = request.part
+	if (canTakePartsFromWarehouse(request)) {
+		debug(String.format("Деталь %s взята со склада", part.name));
+		return 0
+	// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
+	} else if (request.dateOfDelivery !== null && getDeliveryInterval(request) >= 0) {
+		debug(
+			String.format("Деталь %s будет доставлена через %d дней", part.name,
+				getDeliveryInterval(request)))
+		return getDeliveryInterval(request)
+	// Детали с отрицательной длительностью считаем уже на складе
+	} else if (request.dateOfDelivery !== null) {
+		debug(
+			String.format("Деталь %s имеет <0 длительность, считаем, что на складе. Длительность: %d", part.name,
+				getDeliveryInterval(request)));
+		return 0
+	} else if (order.dateOfRealization !== null) {
+		debug(
+			String.format("Деталь %s будет доставлена через %d дней (по дате реализации заказа)", part.name,
+				getRealizationInterval(order)));
+		return getRealizationInterval(order)
+	}
+	debug(
+		String.format("Деталь %s будет доставлена через %d дней (по дате изменения заказа)", part.name,
+			getModificationInterval(order)));
+	return getModificationInterval(order)
+}
+
+/* Model data */
+type OrderType {
+	Order original
+	OrderState state
+	OrderResult resulted
+	double creationTime
+	double emptyProcessDuration
+}
+
+/* Order logic */
+event Payments() {
+	orderStats.balance = orderStats.balance - 200_000
+}
+
+event OrderReceived(Order order) {
+	if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
+		return
+	}
+	if (order.solutionName == "ЗаявкаВыданаВРезерв") {
+		return
+	}
+	OrderType.create(order, OrderState.REQUESTED, OrderResult.OK, currentTime, 0)
+}
+
+operation OrderProcessing() {
+	relevant order = OrderType.accessible.filter[state == OrderState.REQUESTED].any
+
+	def begin() {
+		order.state = OrderState.PROCESSING
+	}
+
+	def duration() {
+		val parts = order.original.requestedParts
+		var duration = Long.MIN_VALUE
+		for (partRequest : parts) {
+			duration = Math.max(duration, duration(partRequest))
+		}
+		val orderOkStat = new DoubleSummaryStatistics
+		for (partRequest : parts) {
+			val partId = partRequest.part.id
+			val possibility = orderStats.partGetPossibility.get(partId);
+			orderOkStat.accept(possibility);
+		}
+		if (orderOkStat.getAverage < orderStats.randomDeviveryOk.next)
+			order.resulted = OrderResult.FAIL
+		else
+			takePartsForOrder(order.original)
+		return duration
+	}
+
+	def end() {
+		order.state = OrderState.FINISHED
+	}
+}
+
+rule UtilizeOrder() {
+	relevant order = OrderType.accessible.filter[state == OrderState.FINISHED].any
+
+	def execute() {
+		order.erase()
+		val price = calculatePrice(order)
+		val duration = currentTime - order.creationTime
+		switch (order.resulted) {
+			case OK: {
+				orderStats.balance = orderStats.balance + price
+				successfulDuration.add(duration)
+				successfulPrices.add(price)
+			}
+			default: {
+				failDuration.add(duration)
+				failPrices.add(price)
+			}
+		}
+		debug(String.format("Заказ обработан %d р. %s\t\tБаланс: %d %s", price, order.resulted, orderStats.balance, order.original))
+	}
+}
+
+logic Model {
+	activity orderProcessing = new Activity(OrderProcessing.create())
+	activity utilizeOrder = new Activity(UtilizeOrder.create())
+}
+
+def experiments(){
+	init
+	
+	/* Gist creation */
+	val startDate = LocalDate.parse(startSimulation)
+	val endDate = LocalDate.parse(finishSimulation)
+	val qOrder = QOrder.order
+
+	val _query = data.<Order>getQuery
+	val _orderList = _query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(
+		qOrder.id.asc).fetch
+
+	val map = new TreeMap<String, Pair<Double, Double>>
+	for (order : _orderList) {
+		if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
+		}
+		if (order.solutionName == "ЗаявкаВыданаВРезерв") {
+		} else {
+			val ok = order.dateOfRealization !== null
+			for (request : order.requestedParts) {
+				val part = request.part
+				val partData = map.computeIfAbsent(part.id, [k|(0.0d -> 0.0d)])
+				if (ok) {
+					map.put(part.id, partData.key + 1 -> partData.value)
+				} else {
+					map.put(part.id, partData.key -> partData.value + 1)
+				}
+			}
+		}
+	}
+	val seq = map.entrySet.stream.map([ e |
+		e.key -> (e.value.key / (e.value.value + e.value.key))
+	]).collect(Collectors.<Pair<String, Double>, String, Double>toMap([k|k.key], [v|v.value]))
+	info("Using this sequence for order wait: " + seq.toString)
+	orderStats.partGetPossibility = seq
+	
+	/* Experiment fill coeff */
+	var countExperiment = 1;
+	orderStats.fillDateForward = 2
+	do {
+		orderStats.fillDateForward = orderStats.fillDateForward + 1
+		orderStats.fillCoeff = 0.1
+		do {
+			orderStats.fillCoeff = orderStats.fillCoeff + 0.3
+
+			info(
+				String.format("Эксперимент %d. Коэффициент докупки %f. Недель наперед %d", countExperiment++,
+					orderStats.fillCoeff, orderStats.fillDateForward))
+			createSimulationEvents
+			start
+		} while (orderStats.fillCoeff < 2)
+	} while (orderStats.fillDateForward < 8)
+}
+
+def terminateCondition() {
+    return orderStats.balance <= 0
+}
+
+void createSimulationEvents() {
+	failDuration.clear
+	successfulDuration.clear
+	failPrices.clear
+	successfulPrices.clear
+	deliveries.clear
+	data.clear
+	orderStats.balance = initialBalance
+	orderStats.randomDeviveryOk = new Uniform(seed, 0, 1)
+
+	val startDate = LocalDate.parse(startSimulation)
+	val endDate = LocalDate.parse(finishSimulation)
+	val qOrder = QOrder.order
+
+	val query = data.<Order>getQuery
+	val orderList = query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).
+		fetch
+	for (order : orderList) {
+		OrderReceived.plan(order.getEpochDayOfCreation(), order)
+	}
+
+	var payDate = startDate
+	while (payDate.isBefore(endDate)) {
+		Payments.plan(payDate.toEpochDay())
+		payDate = payDate.plusMonths(1)
+	}
+}
+
+def finish() {
+	val successes = successfulDuration.size
+	val fails = failDuration.size
+	val percentage = if((successes + fails) == 0) 0 else successes * 100 /
+			(successes + fails)
+	log(
+		String.format("Result: \t\tOrders: %d/%d Successful percentage: %d%%", successes,
+			successes + fails,
+			percentage))
+	val failResults = failDuration.stream.mapToDouble([f | f]).summaryStatistics
+	log(
+		String.format("Fail duration: \tAverage: %f\tMax: %f\tMin: %f", failResults.getAverage, failResults.getMax,
+			failResults.getMin))
+	val successfulResults = successfulDuration.stream.mapToDouble([f | f]).summaryStatistics
+	log(
+		String.format("Ok duration: \tAverage: %f\tMax: %f\tMin: %f", successfulResults.getAverage,
+			successfulResults.getMax, successfulResults.
+				getMin))
+	val failPriceResults = failPrices.stream.mapToLong([f | f]).summaryStatistics
+	log(
+		String.format("Fail price: \tAverage: %f\tMax: %d\tMin: %d", failPriceResults.getAverage,
+			failPriceResults.getMax,
+			failPriceResults.
+				getMin))
+	val successPriceResults = successfulPrices.stream.mapToLong([f | f]).summaryStatistics
+	log(
+		String.format("Ok prive: \t\tAverage: %f\tMax: %d\tMin: %d", successPriceResults.getAverage,
+			successPriceResults.getMax, successPriceResults.getMin))
+	val deliveryResults = deliveries.stream.mapToInt([f | f]).summaryStatistics
+	log(
+		String.format("Deliveries: \t\tSum: %d", deliveryResults.getSum))
+	
+	log(String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
+}
+
+void infoIf(boolean condition, String text){
+	if (condition)
+		info(text)
+}
+
+void info(String text){
+	if (logLevel.ordinal <= Level.INFO.ordinal)
+		log(Level.INFO + "\t" + text)
+}
+
+void debugIf(boolean condition, String text){
+	if (condition)
+		debug(text)
+}
+
+void debug(String text){
+	if (logLevel.ordinal <= Level.DEBUG.ordinal)
+		log(Level.DEBUG + "\t" + text)
+}
