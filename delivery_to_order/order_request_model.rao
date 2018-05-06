@@ -18,12 +18,22 @@ constant driver = "com.mysql.jdbc.Driver"
 constant url = "jdbc:mysql://localhost:3306/corpterminal?zeroDateTimeBehavior=convertToNull"
 constant username = "Observer"
 constant password = "CY73-YVRE-3FT2"
-constant initialBalance = 5_000_000
+/* Data containers */
 constant failDuration = new ArrayList<Double>
 constant successfulDuration = new ArrayList<Double>
 constant failPrices = new ArrayList<Long>
 constant successfulPrices = new ArrayList<Long>
 constant deliveries = new ArrayList<Integer>
+/* Simulation constants */
+constant startSimulation = "2017-01-01"
+constant finishSimulation = "2018-01-01"
+constant initialBalance = 1_000_000
+constant successfulDurationMaxDays = 0
+constant seed = 1234567L
+constant logLevel = Level.INFO
+enum OrderResult {OK, FAIL, LATE}
+enum OrderState {REQUESTED, PROCESSING, FINISHED}
+enum Level {DEBUG, INFO}
 
 dataprovider data = new SqlDataProvider(driver, url, username, password, Part, Order, PartRequest, LocalDateAttributeConverter)
 
@@ -129,8 +139,7 @@ void takeParts(PartRequest request) {
 			deliveryPrice = 1500
 		}
 		val price = part.purchaseprice * supplyAmount + deliveryPrice
-		if(price > 300_000)
-			info(String.format("Доставка за %d р. %d деталей \tБаланс: %d %s", price, supplyAmount, orderStats.balance, request))
+		debugIf(price > 300_000, String.format("Доставка за %d р. %d деталей \tБаланс: %d %s", price, supplyAmount, orderStats.balance, request))
 		deliveries.add(price)
 		orderStats.balance = orderStats.balance - price
 		part.stocked += supplyAmount - request.count
@@ -168,11 +177,6 @@ long duration(PartRequest request) {
 }
 
 /* Model data */
-enum OrderResult {OK, FAIL, LATE}
-enum OrderState {REQUESTED, PROCESSING, FINISHED}
-enum Level {DEBUG, INFO}
-constant logLevel = Level.INFO
-
 type OrderType {
 	Order original
 	OrderState state
@@ -209,18 +213,9 @@ operation OrderProcessing() {
 
 	def duration() {
 		val parts = order.original.requestedParts
-		if (parts.isEmpty) { // Пустые - заказы, по которым не смогли подобрать деталь, считаются неуспешными
-			order.resulted = OrderResult.FAIL
-			if (order.original.dateOfRealization !== null) {
-				return getRealizationInterval(order.original)
-			}
-			return getModificationInterval(order.original)
-		}
 		var duration = Long.MIN_VALUE
 		for (partRequest : parts) {
-			val newDuration = duration(partRequest)
-			if (duration < newDuration)
-				duration = newDuration
+			duration = Math.max(duration, duration(partRequest))
 		}
 		if (duration > waitPeriod(order))
 			order.resulted = OrderResult.LATE
@@ -239,27 +234,18 @@ rule UtilizeOrder() {
 
 	def execute() {
 		order.erase()
-		switch (order.resulted) {
-			case LATE: {
-				val duration = currentTime - order.creationTime
-				failDuration.add(duration)
-			}
-			case FAIL: {
-				val duration = currentTime - order.creationTime
-				failDuration.add(duration)
-			}
-			case OK: {
-				val duration = currentTime - order.creationTime
-				successfulDuration.add(duration)
-			}
-		}
-		
 		val price = calculatePrice(order)
-		if (order.resulted == OrderResult.OK) {
-			successfulPrices.add(price)
-			orderStats.balance = orderStats.balance + price
-		} else {
-			failPrices.add(price)
+		val duration = currentTime - order.creationTime
+		switch (order.resulted) {
+			case OK: {
+				orderStats.balance = orderStats.balance + price
+				successfulDuration.add(duration)
+				successfulPrices.add(price)
+			}
+			default: {
+				failDuration.add(duration)
+				failPrices.add(price)
+			}
 		}
 		debug(String.format("Заказ обработан %d р. %s\t\tБаланс: %d %s", price, order.resulted, orderStats.balance, order.original))
 	}
@@ -270,21 +256,24 @@ logic Model {
 	activity utilizeOrder = new Activity(UtilizeOrder.create())
 }
 
-sequence случайный_тип_клиента = new DiscreteHistogram<Long>(1234567,
-    #[1L -> 7.0, 2L -> 3.0])
-    
 def experiments(){
 	init
-	val startDate = LocalDate.parse("2017-01-01")
-	val endDate = LocalDate.parse("2018-01-01")
+	
+	/* Gist creation */
+	val startDate = LocalDate.parse(startSimulation)
+	val endDate = LocalDate.parse(finishSimulation)
 	val qOrder = QOrder.order
-	
+
 	val _query = data.<Order>getQuery
-	val _orderList = _query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).fetch
-	
-	val map = new TreeMap<Long,Pair<Double,Double>>
+	val _orderList = _query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(
+		qOrder.id.asc).fetch
+
+	val map = new TreeMap<Long, Pair<Double, Double>>
 	for (order : _orderList) {
-	if (!(order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null)) {
+		if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
+		}
+		if (order.solutionName == "ЗаявкаВыданаВРезерв") {
+		} else {
 			val ok = order.dateOfRealization !== null
 			if (ok) {
 				val interval = order.dateOfCreation.until(order.dateOfRealization, ChronoUnit.DAYS)
@@ -297,45 +286,59 @@ def experiments(){
 			}
 		}
 	}
-	val seq = map.entrySet().stream().filter([e|e.key <= 30]).map([e |
+	val seq = map.entrySet.stream.filter([e|e.key <= successfulDurationMaxDays]).map([ e |
 		e.key -> (e.value.key / e.value.value)
 	]).collect(Collectors.<Pair<Long, ? extends Number>>toList())
 	debug("Using this sequence for order wait: " + seq.toString)
-	orderStats.randomWaitPeriod = new DiscreteHistogram<Long>(1234567L, seq)
-	
-	orderStats.fillCoeff = 0.8
-	do {
-		orderStats.fillCoeff = orderStats.fillCoeff + 0.2
-		orderStats.balance = initialBalance
-		orderStats.randomWaitPeriod = new DiscreteHistogram<Long>(1234567L, seq)
-		failDuration.clear
-		successfulDuration.clear
-		failPrices.clear
-		successfulPrices.clear
-		deliveries.clear
-		data.clear
-		
-		info(String.format("Эксперимент. Коэффициент докупки %f", orderStats.fillCoeff))
 
-		val query = data.<Order>getQuery
-		val orderList = query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).fetch
-		for (order : orderList) {
-			OrderReceived.plan(order.getEpochDayOfCreation(), order)
-		}
-		var payDate = startDate
-		while (payDate.isBefore(endDate)) {
-			Payments.plan(payDate.toEpochDay())
-			payDate = payDate.plusMonths(1)
-		}
-		start
-	} while (orderStats.fillCoeff < 2)
+	/* Experiment fill coeff */
+	var countExperiment = 1;
+	orderStats.fillDateForward = 2
+	do {
+		orderStats.fillDateForward = orderStats.fillDateForward + 1
+		orderStats.fillCoeff = 0.1
+		do {
+			orderStats.fillCoeff = orderStats.fillCoeff + 0.3
+			orderStats.balance = initialBalance
+			orderStats.randomWaitPeriod = new DiscreteHistogram<Long>(seed, seq)
+
+			info(
+				String.format("Эксперимент %d. Коэффициент докупки %f. Недель наперед %d", countExperiment++,
+					orderStats.fillCoeff, orderStats.fillDateForward))
+			createSimulationEvents
+			start
+		} while (orderStats.fillCoeff < 2)
+	} while (orderStats.fillDateForward < 8)
 }
 
 def terminateCondition() {
     return orderStats.balance <= 0
 }
 
-def init() {
+void createSimulationEvents() {
+	failDuration.clear
+	successfulDuration.clear
+	failPrices.clear
+	successfulPrices.clear
+	deliveries.clear
+	data.clear
+
+	val startDate = LocalDate.parse(startSimulation)
+	val endDate = LocalDate.parse(finishSimulation)
+	val qOrder = QOrder.order
+
+	val query = data.<Order>getQuery
+	val orderList = query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(qOrder.id.asc).
+		fetch
+	for (order : orderList) {
+		OrderReceived.plan(order.getEpochDayOfCreation(), order)
+	}
+
+	var payDate = startDate
+	while (payDate.isBefore(endDate)) {
+		Payments.plan(payDate.toEpochDay())
+		payDate = payDate.plusMonths(1)
+	}
 }
 
 def finish() {
@@ -373,9 +376,19 @@ def finish() {
 	log(String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
 }
 
+void infoIf(boolean condition, String text){
+	if (condition)
+		info(text)
+}
+
 void info(String text){
 	if (logLevel.ordinal <= Level.INFO.ordinal)
 		log(Level.INFO + "\t" + text)
+}
+
+void debugIf(boolean condition, String text){
+	if (condition)
+		debug(text)
 }
 
 void debug(String text){
