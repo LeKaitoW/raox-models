@@ -7,9 +7,10 @@ import domain.QPartRequest
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
 
-import java.util.ArrayList
+import java.io.PrintWriter
 import java.time.temporal.ChronoUnit
 import java.time.LocalDate
+import java.util.ArrayList
 import java.util.TreeMap
 import java.util.stream.Collectors
 import java.util.Map
@@ -27,13 +28,22 @@ constant successfulDuration = new ArrayList<Double>
 constant failPrices = new ArrayList<Long>
 constant successfulPrices = new ArrayList<Long>
 constant deliveries = new ArrayList<Integer>
+constant writer = new PrintWriter("order_request_model_by_part.csv", "UTF-8")
 /* Simulation constants */
+constant fillDateForwardMin = 0
+constant fillDateForwardMax = 9
+constant fillDateForwardStep = 1
+constant fillCoeffMin = 0.1
+constant fillCoeffMax = 2
+constant fillCoeffStep = 0.05
 constant startSimulation = "2017-01-01"
 constant finishSimulation = "2018-01-01"
 constant initialBalance = 1_000_000
 constant successfulDurationMaxDays = 0
 constant seed = 1234567L
 constant logLevel = Level.INFO
+constant extendedResult = false
+
 enum OrderResult {OK, FAIL, LATE}
 enum OrderState {REQUESTED, PROCESSING, FINISHED}
 enum Level {DEBUG, INFO}
@@ -109,6 +119,7 @@ void takeParts(PartRequest request) {
 	if (canTakePartsFromWarehouse(request)) {
 		part.stocked -= request.count
 	} else {
+		val requiredNowParts = request.count - part.stocked
 		// проверка будущей потребности, берем +1 месяц
 		val startDate = request.order.dateOfCreation
 		val endDate = startDate.plusMonths(1)
@@ -120,12 +131,12 @@ void takeParts(PartRequest request) {
 		var futureRequirementCount = 0
 		for(row : partList)
 			futureRequirementCount += row.count
+		
 			
 		var deliveryPrice = 0
 		var supplyAmount = 0
 		if (futureRequirementCount == 1) {
 			// вызываем курьера, за 700 рублей
-			// сбрасываем число, не мог здесь оказаться, если деталей хватало, или если требовалось > 1
 			supplyAmount = 1
 			deliveryPrice = 700
 		} else {
@@ -138,8 +149,11 @@ void takeParts(PartRequest request) {
 
 			for (row : partListToAdd)
 				supplyAmount += row.count
-				
+
 			supplyAmount = Math.round(supplyAmount * orderStats.fillCoeff) as int
+			if(supplyAmount < supplyAmount)
+				supplyAmount = requiredNowParts
+
 			deliveryPrice = 1500
 		}
 		val price = part.purchaseprice * supplyAmount + deliveryPrice
@@ -300,20 +314,20 @@ def experiments(){
 	
 	/* Experiment fill coeff */
 	var countExperiment = 1;
-	orderStats.fillDateForward = 2
+	orderStats.fillDateForward = fillDateForwardMin
 	do {
-		orderStats.fillDateForward = orderStats.fillDateForward + 1
-		orderStats.fillCoeff = 0.1
+		orderStats.fillCoeff = fillCoeffMin
 		do {
-			orderStats.fillCoeff = orderStats.fillCoeff + 0.3
-
 			info(
 				String.format("Эксперимент %d. Коэффициент докупки %f. Недель наперед %d", countExperiment++,
 					orderStats.fillCoeff, orderStats.fillDateForward))
 			createSimulationEvents
 			start
-		} while (orderStats.fillCoeff < 2)
-	} while (orderStats.fillDateForward < 8)
+			orderStats.fillCoeff = orderStats.fillCoeff + fillCoeffStep
+		} while (orderStats.fillCoeff < fillCoeffMax)
+		orderStats.fillDateForward = orderStats.fillDateForward + fillDateForwardStep
+	} while (orderStats.fillDateForward < fillDateForwardMax)
+	writer.close
 }
 
 def terminateCondition() {
@@ -353,34 +367,38 @@ def finish() {
 	val fails = failDuration.size
 	val percentage = if((successes + fails) == 0) 0 else successes * 100 /
 			(successes + fails)
-	log(
+	infoIf(extendedResult,
 		String.format("Result: \t\tOrders: %d/%d Successful percentage: %d%%", successes,
 			successes + fails,
 			percentage))
 	val failResults = failDuration.stream.mapToDouble([f | f]).summaryStatistics
-	log(
+	infoIf(extendedResult,
 		String.format("Fail duration: \tAverage: %f\tMax: %f\tMin: %f", failResults.getAverage, failResults.getMax,
 			failResults.getMin))
 	val successfulResults = successfulDuration.stream.mapToDouble([f | f]).summaryStatistics
-	log(
+	infoIf(extendedResult,
 		String.format("Ok duration: \tAverage: %f\tMax: %f\tMin: %f", successfulResults.getAverage,
 			successfulResults.getMax, successfulResults.
 				getMin))
 	val failPriceResults = failPrices.stream.mapToLong([f | f]).summaryStatistics
-	log(
+	infoIf(extendedResult,
 		String.format("Fail price: \tAverage: %f\tMax: %d\tMin: %d", failPriceResults.getAverage,
 			failPriceResults.getMax,
 			failPriceResults.
 				getMin))
 	val successPriceResults = successfulPrices.stream.mapToLong([f | f]).summaryStatistics
-	log(
+	infoIf(extendedResult,
 		String.format("Ok prive: \t\tAverage: %f\tMax: %d\tMin: %d", successPriceResults.getAverage,
 			successPriceResults.getMax, successPriceResults.getMin))
 	val deliveryResults = deliveries.stream.mapToInt([f | f]).summaryStatistics
-	log(
+	infoIf(extendedResult,
 		String.format("Deliveries: \t\tSum: %d", deliveryResults.getSum))
 	
-	log(String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
+	infoIf(extendedResult,
+		String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
+	val simpleData = String.format("%d;%f;%d", orderStats.fillDateForward, orderStats.fillCoeff, (orderStats.balance - initialBalance))
+	infoIf(!extendedResult, simpleData)
+	writer.println(simpleData);
 }
 
 void infoIf(boolean condition, String text){
