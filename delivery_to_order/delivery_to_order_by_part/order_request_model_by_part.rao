@@ -3,6 +3,7 @@ import domain.Order
 import domain.Part
 import domain.PartRequest
 import domain.QOrder
+import domain.QPart
 import domain.QPartRequest
 
 import ru.bmstu.rk9.rao.lib.persistence.SqlDataProvider
@@ -16,6 +17,8 @@ import java.util.stream.Collectors
 import java.util.Map
 import java.util.HashMap
 import java.util.DoubleSummaryStatistics
+import java.util.IntSummaryStatistics
+import util.OkFailPair
 
 /* Connection data */
 constant driver = "com.mysql.jdbc.Driver"
@@ -28,13 +31,15 @@ constant successfulDuration = new ArrayList<Double>
 constant failPrices = new ArrayList<Long>
 constant successfulPrices = new ArrayList<Long>
 constant deliveries = new ArrayList<Integer>
-constant writer = new PrintWriter("order_request_model_by_part.csv", "UTF-8")
+constant writer = new PrintWriter("order_request_model_profit.csv", "UTF-8")
+constant writerWarehouse = new PrintWriter("order_request_model_warehouse.csv", "UTF-8")
+constant writerProfitWarehouse = new PrintWriter("order_request_model_profit-warehouse.csv", "UTF-8")
 /* Simulation constants */
-constant fillDateForwardMin = 0
-constant fillDateForwardMax = 9
+constant fillDateForwardMin = 1
+constant fillDateForwardMax = 10
 constant fillDateForwardStep = 1
 constant fillCoeffMin = 0.1
-constant fillCoeffMax = 2
+constant fillCoeffMax = 1
 constant fillCoeffStep = 0.05
 constant startSimulation = "2017-01-01"
 constant finishSimulation = "2018-01-01"
@@ -42,7 +47,7 @@ constant initialBalance = 1_000_000
 constant successfulDurationMaxDays = 0
 constant seed = 1234567L
 constant logLevel = Level.INFO
-constant extendedResult = false
+constant extendedResult = true
 
 enum OrderResult {OK, FAIL, LATE}
 enum OrderState {REQUESTED, PROCESSING, FINISHED}
@@ -54,11 +59,16 @@ type OrderStats {
 	long balance
 	double fillCoeff
 	int fillDateForward
+	long warehouseInitialCosts
 	Map<String, Double> partGetPossibility
+	Map<String, Double> partDeliveryWaitPossibility
+	Map<String, Double> partNoWaitPossibility
 	Uniform randomDeviveryOk
+	IntSummaryStatistics eduSuccess
 }
 
-resource orderStats = OrderStats.create(initialBalance, 1, 6, new HashMap, null)
+resource orderStats = OrderStats.create(initialBalance, 1, 6, 0, new HashMap, new HashMap, new HashMap, null,
+	new IntSummaryStatistics)
 
 long getModificationInterval(Order order) {
 	val start = order.dateOfCreation
@@ -83,6 +93,18 @@ long getDeliveryInterval(PartRequest partRequest) {
 	val end = partRequest.dateOfDelivery
 	val interval = start.until(end, ChronoUnit.DAYS)
 	return interval
+}
+
+long interval(PartRequest partRequest) {
+	val order = partRequest.order
+	if (partRequest.dateOfDelivery !== null && getDeliveryInterval(partRequest) >= 0)
+		return getDeliveryInterval(partRequest)
+	// Детали с отрицательной длительностью считаем уже на складе
+	else if (partRequest.dateOfDelivery !== null)
+		return 0
+	else if (order.dateOfRealization !== null)
+		return getRealizationInterval(order)
+	return getModificationInterval(order)
 }
 
 long calculatePrice(OrderType orderType){
@@ -132,7 +154,6 @@ void takeParts(PartRequest request) {
 		for(row : partList)
 			futureRequirementCount += row.count
 		
-			
 		var deliveryPrice = 0
 		var supplyAmount = 0
 		if (futureRequirementCount == 1) {
@@ -162,36 +183,6 @@ void takeParts(PartRequest request) {
 		orderStats.balance = orderStats.balance - price
 		part.stocked += supplyAmount - request.count
 	}
-}
-
-long duration(PartRequest request) {
-	val order = request.order
-	val part = request.part
-	if (canTakePartsFromWarehouse(request)) {
-		debug(String.format("Деталь %s взята со склада", part.name));
-		return 0
-	// Детали с датой доставки null считаем неотгруженными, для таких случаем возвращаем разницк создания и последнего изменения заказа
-	} else if (request.dateOfDelivery !== null && getDeliveryInterval(request) >= 0) {
-		debug(
-			String.format("Деталь %s будет доставлена через %d дней", part.name,
-				getDeliveryInterval(request)))
-		return getDeliveryInterval(request)
-	// Детали с отрицательной длительностью считаем уже на складе
-	} else if (request.dateOfDelivery !== null) {
-		debug(
-			String.format("Деталь %s имеет <0 длительность, считаем, что на складе. Длительность: %d", part.name,
-				getDeliveryInterval(request)));
-		return 0
-	} else if (order.dateOfRealization !== null) {
-		debug(
-			String.format("Деталь %s будет доставлена через %d дней (по дате реализации заказа)", part.name,
-				getRealizationInterval(order)));
-		return getRealizationInterval(order)
-	}
-	debug(
-		String.format("Деталь %s будет доставлена через %d дней (по дате изменения заказа)", part.name,
-			getModificationInterval(order)));
-	return getModificationInterval(order)
 }
 
 /* Model data */
@@ -227,14 +218,20 @@ operation OrderProcessing() {
 
 	def duration() {
 		val parts = order.original.requestedParts
-		var duration = Long.MIN_VALUE
-		for (partRequest : parts) {
-			duration = Math.max(duration, duration(partRequest))
-		}
+		var duration = 0L
+		for (partRequest : parts)
+			if (!canTakePartsFromWarehouse(partRequest)) {
+				duration = Math.max(duration, 1)
+				duration = Math.max(duration, interval(partRequest))
+			}
+		
 		val orderOkStat = new DoubleSummaryStatistics
 		for (partRequest : parts) {
 			val partId = partRequest.part.id
-			val possibility = orderStats.partGetPossibility.get(partId);
+			// val getPossibility = orderStats.partGetPossibility.get(partId)
+			val waitPossibilityStored = orderStats.partNoWaitPossibility.getOrDefault(partId, orderStats.partGetPossibility.get(partId))
+			val waitPossibilityDeliver = orderStats.partDeliveryWaitPossibility.getOrDefault(partId, orderStats.partGetPossibility.get(partId))
+			val possibility = if (duration == 0) waitPossibilityStored else waitPossibilityDeliver;
 			orderOkStat.accept(possibility);
 		}
 		if (orderOkStat.getAverage < orderStats.randomDeviveryOk.next)
@@ -267,6 +264,7 @@ rule UtilizeOrder() {
 				failPrices.add(price)
 			}
 		}
+		orderStats.eduSuccess.accept(if ((order.original.dateOfRealization !== null) == (order.resulted === OrderResult.OK)) 0 else 1)
 		debug(String.format("Заказ обработан %d р. %s\t\tБаланс: %d %s", price, order.resulted, orderStats.balance, order.original))
 	}
 }
@@ -276,7 +274,7 @@ logic Model {
 	activity utilizeOrder = new Activity(UtilizeOrder.create())
 }
 
-def experiments(){
+def experiments() {
 	init
 	
 	/* Gist creation */
@@ -288,7 +286,9 @@ def experiments(){
 	val _orderList = _query.from(qOrder).where(qOrder.dateOfCreation.between(startDate, endDate)).orderBy(
 		qOrder.id.asc).fetch
 
-	val map = new TreeMap<String, Pair<Double, Double>>
+	val partGetPossibility = new TreeMap<String, OkFailPair>
+	val partDeliveryWaitPossibility = new TreeMap<String, OkFailPair>
+	val partNoWaitPossibility = new TreeMap<String, OkFailPair>
 	for (order : _orderList) {
 		if (order.requestedParts.isEmpty && order.dateOfRealization === null && order.dateOfProcessing === null) {
 		}
@@ -297,25 +297,33 @@ def experiments(){
 			val ok = order.dateOfRealization !== null
 			for (request : order.requestedParts) {
 				val part = request.part
-				val partData = map.computeIfAbsent(part.id, [k|(0.0d -> 0.0d)])
-				if (ok) {
-					map.put(part.id, partData.key + 1 -> partData.value)
-				} else {
-					map.put(part.id, partData.key -> partData.value + 1)
-				}
+				val interval = interval(request)
+				partGetPossibility.compute(part.id, [k, v|(if(v === null) new OkFailPair else v).add(ok)])
+				if(interval > 0)
+					partDeliveryWaitPossibility.compute(part.id, [k, v|(if(v === null) new OkFailPair else v).add(ok)])
+				else
+					partNoWaitPossibility.compute(part.id, [k, v|(if(v === null) new OkFailPair else v).add(ok)])
 			}
 		}
 	}
-	val seq = map.entrySet.stream.map([ e |
-		e.key -> (e.value.key / (e.value.value + e.value.key))
+	orderStats.partGetPossibility = partGetPossibility.entrySet.stream.map([ e |
+		e.key -> e.value.possibility
 	]).collect(Collectors.<Pair<String, Double>, String, Double>toMap([k|k.key], [v|v.value]))
-	info("Using this sequence for order wait: " + seq.toString)
-	orderStats.partGetPossibility = seq
+	orderStats.partDeliveryWaitPossibility = partDeliveryWaitPossibility.entrySet.stream.map([ e |
+		e.key -> e.value.possibility
+	]).collect(Collectors.<Pair<String, Double>, String, Double>toMap([k|k.key], [v|v.value]))
+	orderStats.partNoWaitPossibility = partNoWaitPossibility.entrySet.stream.map([ e |
+		e.key -> e.value.possibility
+	]).collect(Collectors.<Pair<String, Double>, String, Double>toMap([k|k.key], [v|v.value]))
+	orderStats.warehouseInitialCosts = sellWarehouse
+	info("Part presence success probability: " + orderStats.partGetPossibility.toString)
+	info("Part delivery wait success probability: " + orderStats.partDeliveryWaitPossibility.toString)
+	info("Part instant sell success probability: " + orderStats.partNoWaitPossibility.toString)
+	info("Warehouse stored price during start: " + orderStats.warehouseInitialCosts)
 	
-	/* Experiment fill coeff */
-	var countExperiment = 1;
-	orderStats.fillDateForward = fillDateForwardMin
-	do {
+	var countExperiment = 1
+	for (orderStats.fillDateForward = fillDateForwardMin; orderStats.fillDateForward <
+			fillDateForwardMax; orderStats.fillDateForward = orderStats.fillDateForward + fillDateForwardStep) {
 		orderStats.fillCoeff = fillCoeffMin
 		do {
 			info(
@@ -325,9 +333,10 @@ def experiments(){
 			start
 			orderStats.fillCoeff = orderStats.fillCoeff + fillCoeffStep
 		} while (orderStats.fillCoeff < fillCoeffMax)
-		orderStats.fillDateForward = orderStats.fillDateForward + fillDateForwardStep
-	} while (orderStats.fillDateForward < fillDateForwardMax)
+	}
 	writer.close
+	writerWarehouse.close
+	writerProfitWarehouse.close
 }
 
 def terminateCondition() {
@@ -362,6 +371,17 @@ void createSimulationEvents() {
 	}
 }
 
+long sellWarehouse() {
+	val qpart = QPart.part
+	val query = data.<Part>getQuery
+	val partList = query.from(qpart).fetch
+	var price = 0L
+	for (part : partList) {
+		price += part.purchaseprice * part.stocked
+	}
+	return price
+}
+
 def finish() {
 	val successes = successfulDuration.size
 	val fails = failDuration.size
@@ -394,11 +414,22 @@ def finish() {
 	infoIf(extendedResult,
 		String.format("Deliveries: \t\tSum: %d", deliveryResults.getSum))
 	
-	infoIf(extendedResult,
-		String.format("Balance: \t\tLast: %d \tDelta: %d", orderStats.balance, (orderStats.balance - initialBalance)))
-	val simpleData = String.format("%d;%f;%d", orderStats.fillDateForward, orderStats.fillCoeff, (orderStats.balance - initialBalance))
+	
+	val selledWarehouse = sellWarehouse - orderStats.warehouseInitialCosts
+	val profit = orderStats.balance - initialBalance
+	val simpleData = String.format("%d;%f;%d", orderStats.fillDateForward, orderStats.fillCoeff, profit)
+	val simpleWarehouseData = String.format("%d;%f;%d", orderStats.fillDateForward, orderStats.fillCoeff, selledWarehouse)
+	val simpleProfitWarehouseData = String.format("%d;%f;%d", orderStats.fillDateForward, orderStats.fillCoeff, profit + selledWarehouse)
 	infoIf(!extendedResult, simpleData)
-	writer.println(simpleData);
+	infoIf(!extendedResult, simpleWarehouseData)
+	infoIf(!extendedResult, simpleProfitWarehouseData)
+	infoIf(extendedResult,
+		String.format("Profit: %d \tSelled warehouse: %d \tTotal profit: %d",
+			profit, selledWarehouse, profit + selledWarehouse))
+	infoIf(extendedResult, String.format("Education success: %f", orderStats.eduSuccess.getAverage))
+	writer.println(simpleData)
+	writerWarehouse.println(simpleWarehouseData)
+	writerProfitWarehouse.println(simpleProfitWarehouseData)
 }
 
 void infoIf(boolean condition, String text){
